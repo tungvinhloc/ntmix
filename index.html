@@ -1,1 +1,984 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>NTMIX OMR Mobile - Chấm Thi Tốc Độ</title>
+    
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
+    <script async src="OpenCV.js" onload="onOpenCvReady();"></script>
 
+    <style>
+        :root { --primary: #1a73e8; --success: #0f9d58; --danger: #d93025; --dark: #1e293b; --bg: #f1f5f9; }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, sans-serif; -webkit-tap-highlight-color: transparent; }
+        body { background: var(--bg); color: var(--dark); padding-bottom: 40px; }
+        header { background: linear-gradient(135deg, #0f172a, #1e3a8a); color: white; padding: 16px 12px; text-align: center; box-shadow: 0 2px 8px rgba(0,0,0,0.2); position: sticky; top: 0; z-index: 100;}
+        header h1 { font-size: 20px; font-weight: 800; letter-spacing: 1px; }
+        header p { font-size: 12px; color: #fbbf24; margin-top: 4px; }
+        .badge-cv { display: inline-block; padding: 4px 12px; border-radius: 20px; font-size: 11px; font-weight: bold; background: #f59e0b; color: #fff; margin-top: 8px; transition: 0.3s; }
+        .badge-cv.ready { background: var(--success); }
+
+        .container { max-width: 800px; margin: 15px auto; padding: 0 12px; display: flex; flex-direction: column; gap: 15px; }
+        
+        .card { background: white; border-radius: 12px; padding: 16px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); }
+        .card-title { font-size: 16px; font-weight: 700; color: #1e3a8a; margin-bottom: 12px; border-bottom: 2px solid #eff6ff; padding-bottom: 8px; display: flex; justify-content: space-between; align-items: center;}
+        
+        .form-group { margin-bottom: 12px; }
+        .form-group label { display: block; font-size: 13px; font-weight: 600; margin-bottom: 6px; color: #475569; }
+        input, select { width: 100%; padding: 12px 10px; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 14px; background: #f8fafc; font-weight: bold; outline: none; transition: 0.2s;}
+        input:focus, select:focus { border-color: var(--primary); }
+        .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+        .grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; }
+
+        .btn { display: inline-flex; align-items: center; justify-content: center; width: 100%; padding: 14px 12px; border: none; border-radius: 10px; font-size: 14px; font-weight: 700; color: white; cursor: pointer; transition: 0.2s; gap: 6px; }
+        .btn:hover { filter: brightness(1.1); }
+        .btn:active { transform: scale(0.98); }
+        .btn-primary { background: var(--primary); }
+        .btn-success { background: var(--success); }
+        .btn-danger { background: var(--danger); }
+        .btn-secondary { background: #64748b; }
+        .btn-outline { background: transparent; border: 2px dashed #cbd5e1; color: #334155; }
+
+        .score-dashboard { background: #fff; border: 2px solid #dc2626; border-radius: 12px; padding: 15px; margin-top: 15px; display: none; }
+        .score-header { display: flex; justify-content: space-between; border-bottom: 1px dashed #fca5a5; padding-bottom: 10px; margin-bottom: 12px; }
+        .score-total-box { font-size: 32px; font-weight: 900; color: #dc2626; line-height: 1.1;}
+        .score-meta { font-size: 14px; font-weight: 700; color: #1e3a8a; text-align: right; line-height: 1.5;}
+        .score-parts-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; text-align: center; }
+        .part-box { background: #fef2f2; border: 1px solid #fecaca; border-radius: 8px; padding: 10px 4px; }
+        .part-box .p-title { font-size: 11px; font-weight: 700; color: #991b1b; }
+        .part-box .p-val { font-size: 18px; font-weight: 900; color: #dc2626; margin-top: 4px; }
+        .part-box .p-sub { font-size: 10px; color: #64748b; margin-top: 2px; }
+
+        table { width: 100%; border-collapse: collapse; font-size: 12px; margin-top: 10px; }
+        th, td { padding: 10px 6px; border-bottom: 1px solid #e2e8f0; text-align: center; }
+        th { background: #f1f5f9; color: #1e293b; font-weight: 700; white-space: nowrap;}
+        .row-warn { background-color: #fef2f2; }
+        .badge-warn { background: var(--danger); color: white; padding: 3px 6px; border-radius: 12px; font-size: 10px; font-weight: bold; display: inline-block; text-align: center;}
+
+        /* MOBILE OPTIMIZED WEBCAM WRAPPER (Portrait 3:4 ratio) */
+        .webcam-wrapper { 
+            position: relative; width: 100%; background: #000; border-radius: 12px; 
+            overflow: hidden; aspect-ratio: 3/4; box-shadow: 0 4px 15px rgba(0,0,0,0.2); 
+            display: flex; align-items: center; justify-content: center;
+        }
+        #webcam-video { position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; }
+        #webcam-canvas-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; z-index: 10; pointer-events: none; }
+        
+        #guide-box {
+            position: absolute; top: 2%; left: 50%; transform: translateX(-50%);
+            height: 96%; aspect-ratio: 800/1130;
+            border: 2px dashed rgba(255,255,255,0.8);
+            background: rgba(255,255,255,0.05);
+            z-index: 5; pointer-events: none;
+            box-shadow: 0 0 0 9999px rgba(0, 0, 0, 0.4);
+        }
+
+        .webcam-hud { position: absolute; bottom: 20px; left: 0; width: 100%; text-align: center; z-index: 20; pointer-events: none;}
+        #cam-status-text { background: rgba(0,0,0,0.75); color: white; padding: 8px 18px; border-radius: 20px; font-size: 13px; font-weight: bold; display: inline-block; border: 2px solid transparent; transition: 0.3s; box-shadow: 0 2px 10px rgba(0,0,0,0.3);}
+        
+        #result-canvas { width: 100%; max-width: 100%; border-radius: 8px; border: 1px solid #cbd5e1; display: none; margin: 15px auto 0; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+    </style>
+</head>
+<body>
+
+<header>
+    <h1>NTMIX OMR Mobile</h1>
+    <p>Phiên bản V66.0 Tối ưu riêng cho Smartphone</p>
+    <span id="cv-status" class="badge-cv">⏳ Đang tải thư viện AI...</span>
+</header>
+
+<div class="container">
+    
+    <!-- MÓDULE 1: CAMERA VÀ QUÉT NẰM TRÊN CÙNG ĐỂ DỄ THAO TÁC TRÊN ĐIỆN THOẠI -->
+    <div class="card">
+        <div class="card-title">
+            <span>📷 Khu Vực Quét Phiếu</span>
+            <button class="btn btn-success" style="width: auto; padding: 6px 12px; font-size: 12px; min-width: 80px;" onclick="document.getElementById('file-img').click()">Tải Ảnh Lên</button>
+            <input type="file" id="file-img" accept="image/*" multiple style="display: none;" onchange="handleImageUpload(this)">
+        </div>
+        
+        <div class="grid-2" style="margin-bottom: 12px;">
+            <button class="btn btn-primary" id="btn-start-cam" onclick="startWebcam()">🎥 Bật Camera</button>
+            <button class="btn btn-secondary" onclick="stopWebcam()">⏹️ Tắt Camera</button>
+        </div>
+
+        <div class="webcam-wrapper" id="webcam-wrapper">
+            <video id="webcam-video" autoplay playsinline muted></video>
+            <canvas id="webcam-canvas-overlay"></canvas>
+            <div id="guide-box"></div>
+            <div class="webcam-hud">
+                <span id="cam-status-text">Cầm dọc điện thoại. Đặt phiếu vào viền</span>
+            </div>
+        </div>
+
+        <div id="score-dashboard" class="score-dashboard">
+            <div class="score-header">
+                <div>
+                    <div style="font-size: 11px; font-weight: 700; color: #64748b; margin-bottom:4px;">TỔNG ĐIỂM BÀI LÀM</div>
+                    <div class="score-total-box" id="ui-total">0.00đ</div>
+                </div>
+                <div class="score-meta">
+                    <div id="ui-stu-name" style="color: #1e3a8a; font-weight: 800; font-size: 15px;">Học sinh: ---</div>
+                    <div id="ui-sbd-made" style="margin-top: 4px; font-size:12px;">SBD: --- | Mã đề: ---</div>
+                </div>
+            </div>
+            <div class="score-parts-grid">
+                <div class="part-box"><div class="p-title">PHẦN I</div><div class="p-val" id="ui-p1-score">0đ</div><div class="p-sub" id="ui-p1-detail">0/0 câu</div></div>
+                <div class="part-box"><div class="p-title">PHẦN II</div><div class="p-val" id="ui-p2-score">0đ</div><div class="p-sub" id="ui-p2-detail">0/0 ý</div></div>
+                <div class="part-box"><div class="p-title">PHẦN III</div><div class="p-val" id="ui-p3-score">0đ</div><div class="p-sub" id="ui-p3-detail">0/0 câu</div></div>
+            </div>
+            <div id="ui-warnings" style="margin-top: 10px; font-size: 12px; color: #d93025; font-weight: bold; text-align: center;"></div>
+            <div class="grid-2" style="margin-top: 15px;">
+                <button class="btn btn-secondary" onclick="document.getElementById('result-canvas').style.display='block'; this.style.display='none';">👁️ Xem Ảnh</button>
+                <button class="btn btn-primary" onclick="downloadResultImage()">⬇️ Tải Ảnh Về</button>
+            </div>
+        </div>
+        <canvas id="result-canvas"></canvas>
+    </div>
+
+    <!-- MÓDULE 2: BẢNG KẾT QUẢ -->
+    <div class="card">
+        <div class="card-title" style="flex-wrap: wrap; gap:10px;">
+            <span>📋 Đã chấm (<span id="count-graded">0</span>)</span>
+            <div style="display:flex; gap:5px;">
+                <button class="btn btn-success" style="padding: 8px 10px; font-size: 11px; width: auto;" onclick="exportResultsExcel()">📥 Xuất Excel</button>
+                <button class="btn btn-danger" style="padding: 8px 10px; font-size: 11px; width: auto;" onclick="clearResults()">🗑️ Xóa hết</button>
+            </div>
+        </div>
+        <div style="overflow-x: auto; -webkit-overflow-scrolling: touch; border: 1px solid #e2e8f0; border-radius: 8px;">
+            <table style="margin-top:0;">
+                <thead><tr><th>STT</th><th>SBD</th><th>Họ & Tên</th><th>Mã Đề</th><th>ĐIỂM</th><th>Lỗi</th></tr></thead>
+                <tbody id="results-tbody"><tr><td colspan="6" style="color:#94a3b8; font-style:italic;">Chưa có dữ liệu</td></tr></tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- MÓDULE 3: NẠP DỮ LIỆU EXCEL -->
+    <div class="card">
+        <div class="card-title">📂 Dữ Liệu Excel</div>
+        <div class="form-group">
+            <label class="btn btn-outline" style="margin-bottom: 8px;">
+                📁 Nạp File Đáp Án
+                <input type="file" id="file-key" accept=".xlsx, .xls, .csv" style="display:none;" onchange="loadExcelKey(this)">
+            </label>
+            <div id="key-status-box" style="color: var(--success); font-size: 12px; font-weight: bold; text-align: center;">Chưa nạp đáp án</div>
+        </div>
+        <div class="form-group">
+            <label class="btn btn-outline">
+                📁 Nạp File Danh sách HS
+                <input type="file" id="file-dshs" accept=".xlsx, .xls, .csv" style="display:none;" onchange="loadExcelDSHS(this)">
+            </label>
+            <div id="dshs-status" style="color: var(--primary); font-size: 12px; font-weight: bold; text-align: center; margin-top: 4px;">Chưa nạp DSHS (Tùy chọn)</div>
+        </div>
+    </div>
+
+    <!-- MÓDULE 4: CẤU HÌNH HỆ THỐNG -->
+    <div class="card">
+        <div class="card-title">⚙️ Cấu Hình Chấm Điểm</div>
+        <div class="form-group">
+            <label>📄 Mẫu phiếu:</label>
+            <select id="cfg-sheet-type" onchange="drawVirtualGrid()">
+                <option value="bgd_2025_8sbd" selected>Phiếu BGD 2025 (SBD 8 số - Mã 4 số)</option>
+                <option value="old_tnmaker">Phiếu TNMaker Cũ (SBD 8 số - Mã 4 số)</option>
+            </select>
+        </div>
+        
+        <div class="grid-2">
+            <div class="form-group"><label>Dịch Ngang (X):</label><input type="number" id="cfg-offset-x" value="0" onchange="drawVirtualGrid()"></div>
+            <div class="form-group"><label>Dịch Dọc (Y):</label><input type="number" id="cfg-offset-y" value="0" onchange="drawVirtualGrid()"></div>
+        </div>
+
+        <div class="form-group" style="background: #ecfdf5; padding: 10px; border-radius: 8px; border: 1px dashed #10b981;">
+            <label style="color: #047857;">📷 Tốc độ chớp Webcam:</label>
+            <select id="cfg-scan-speed" style="border-color: #34d399; font-weight: bold; color: #047857;">
+                <option value="3">⚡ Nhanh (0.3s - Khuyên dùng)</option>
+                <option value="6" selected>🎯 Tiêu chuẩn (0.6s - Chống rung)</option>
+                <option value="12">🐢 Chậm (1.2s)</option>
+            </select>
+        </div>
+        
+        <div class="grid-2">
+            <div class="form-group"><label>Ngưỡng Mực Chì:</label><input type="number" id="cfg-conf" step="0.02" value="0.25"></div>
+            <div class="form-group"><label>Ngưỡng Dấu Trừ:</label><input type="number" id="cfg-conf-minus" step="0.02" value="0.40"></div>
+        </div>
+        <div class="grid-2">
+            <div class="form-group"><label>Điểm P.I:</label><input type="number" id="cfg-p1" step="0.05" value="0.25"></div>
+            <div class="form-group"><label>Điểm P.III:</label><input type="number" id="cfg-p3" step="0.05" value="0.5"></div>
+        </div>
+        <div class="form-group">
+            <label>Điểm P.II (1 | 2 | 3 | 4 ý đúng):</label>
+            <div class="grid-4">
+                <input type="number" id="cfg-p2-1" step="0.05" value="0.1" style="padding: 10px 4px; text-align:center;">
+                <input type="number" id="cfg-p2-2" step="0.05" value="0.25" style="padding: 10px 4px; text-align:center;">
+                <input type="number" id="cfg-p2-3" step="0.05" value="0.5" style="padding: 10px 4px; text-align:center;">
+                <input type="number" id="cfg-p2-4" step="0.05" value="1.0" style="padding: 10px 4px; text-align:center;">
+            </div>
+        </div>
+        <div class="form-group">
+            <label>Mã đề dự phòng (Khi quên tô):</label>
+            <input type="text" id="fallback-code" placeholder="VD: 0234">
+        </div>
+        <div class="form-group">
+            <label style="display: flex; align-items: center; gap: 10px; cursor: pointer; background: #f8fafc; padding: 12px; border-radius:8px; border:1px solid #cbd5e1;">
+                <input type="checkbox" id="cfg-show-grid" style="width: 20px; height: 20px;" checked onchange="drawVirtualGrid()"> 
+                <span>Vẽ viền định vị lên ảnh chấm</span>
+            </label>
+        </div>
+    </div>
+</div>
+
+<script>
+window.cvReady = false;
+function onOpenCvReady() {
+    window.cvReady = true;
+    let badge = document.getElementById('cv-status');
+    badge.textContent = "✅ Lõi AI Sẵn Sàng!";
+    badge.classList.add('ready');
+}
+
+function getNumVal(id, defVal) { let el = document.getElementById(id); return (el && el.value !== "") ? parseFloat(el.value) : defVal; }
+function getStrVal(id, defVal) { let el = document.getElementById(id); return (el && el.value) ? el.value.trim() : defVal; }
+function getCheckVal(id, defVal) { let el = document.getElementById(id); return el ? el.checked : defVal; }
+
+let answerKey = {}; let dshsDict = {}; 
+let gradedRows = JSON.parse(localStorage.getItem('ntmix_history') || '[]');
+let videoStream = null; let scanInterval = null;
+let stableFrames = 0; let lastGradedSbd = "Phieu";
+
+function renderResultsTable() {
+    let countGradedEl = document.getElementById('count-graded');
+    if(countGradedEl) countGradedEl.textContent = gradedRows.length;
+    
+    let resultsTbody = document.getElementById('results-tbody');
+    if(resultsTbody) {
+        if(gradedRows.length === 0) {
+            resultsTbody.innerHTML = `<tr><td colspan="6" style="color:#94a3b8; font-style:italic;">Chưa có dữ liệu</td></tr>`;
+        } else {
+            resultsTbody.innerHTML = gradedRows.slice().reverse().map((r, idx) => {
+                let actualIndex = gradedRows.length - idx;
+                let warnHtml = r.warnings ? `<span class="badge-warn">Lỗi</span>` : `<span style="color:var(--success); font-weight:bold;">OK</span>`;
+                let rowClass = r.warnings ? 'row-warn' : '';
+                return `<tr class="${rowClass}">
+                    <td>${actualIndex}</td>
+                    <td><b>${r.sbd}</b></td>
+                    <td style="text-align:left; max-width:100px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${r.name}</td>
+                    <td>${r.code}</td>
+                    <td><b style="color:#dc2626;">${r.totalScore}</b></td>
+                    <td>${warnHtml}</td>
+                </tr>`;
+            }).join('');
+        }
+    }
+}
+
+function clearResults() {
+    if(confirm('Thầy có chắc chắn muốn xóa toàn bộ lịch sử chấm bài? Dữ liệu không thể khôi phục.')) {
+        gradedRows = [];
+        localStorage.removeItem('ntmix_history');
+        renderResultsTable();
+    }
+}
+
+window.addEventListener('DOMContentLoaded', () => { 
+    drawVirtualGrid(); 
+    renderResultsTable(); 
+});
+
+const SHEET_CONFIGS = {
+    'bgd_2025_8sbd': {
+        name: 'Phiếu BGD 2025 (SBD 8 số)',
+        anchorY: { p1: 390, p2: 630, p3: 785 },
+        sbd: { x: [558, 577, 596, 615, 634, 653, 672, 691], y: [85, 109, 133, 157, 181, 205, 229, 253, 277, 301], cw: 14, ch: 14 },
+        made: { x: [723, 741, 759, 777], y: [85, 109, 133, 157, 181, 205, 229, 253, 277, 301], cw: 14, ch: 14 },
+        p1: { blockX: [75, 260, 445, 630], offsetsX: [0, 20, 40, 60], y: [415, 434, 453, 472, 491, 510, 529, 548, 567, 586], cw: 14, ch: 14 },
+        p2: { blockX: [75, 260, 445, 630], offsetsX: [0, 20, 65, 85], y: [655, 675, 695, 715], cw: 14, ch: 14 },
+        p3: { blockX: [85, 205, 325, 445, 565, 685], offsetsX: [0, 20, 40, 60], yMinus: 810, yDigit: [830, 849, 868, 887, 906, 925, 944, 963, 982, 1001, 1020], chars: [',', '0', '1', '2', '3', '4', '5', '6', '7', '8', '9'], cw: 14, ch: 14 }
+    },
+    'old_tnmaker': {
+        name: 'Phiếu TNMaker Cũ',
+        anchorY: { p1: 390, p2: 620, p3: 770 },
+        sbd: { x: [520, 539, 558, 577, 596, 615, 634, 653], y: [168, 187, 206, 225, 244, 263, 282, 301, 320, 339], cw: 14, ch: 14 },
+        made: { x: [680, 699, 718, 737], y: [168, 187, 206, 225, 244, 263, 282, 301, 320, 339], cw: 14, ch: 14 },
+        p1: { blockX: [71, 259, 447, 635], offsetsX: [0, 38, 76, 114], y: [417, 435, 454, 473, 491, 510, 528, 547, 565, 584], cw: 14, ch: 14 },
+        p2: { blockX: [71, 259, 447, 635], offsetsX: [0, 38, 76, 114], y: [686, 705, 724, 743], cw: 14, ch: 14 },
+        p3: { blockX: [64, 184, 304, 424, 544, 664], offsetsX: [0, 26, 52, 78], yMinus: 852, yDigit: [871, 891, 910, 929, 948, 967, 986, 1005, 1024, 1043, 1062], chars: [',', '0', '1', '2', '3', '4', '5', '6', '7', '8', '9'], cw: 14, ch: 14 }
+    }
+};
+
+function playBeep() { try { const ctx = new (window.AudioContext)(); const osc = ctx.createOscillator(); const gain = ctx.createGain(); osc.type = "sine"; osc.frequency.setValueAtTime(1250, ctx.currentTime); gain.gain.setValueAtTime(0.2, ctx.currentTime); osc.connect(gain); gain.connect(ctx.destination); osc.start(); osc.stop(ctx.currentTime + 0.12); } catch (e) {} }
+
+function loadExcelKey(input) {
+    if (!input.files[0]) return;
+    const reader = new FileReader();
+    reader.onload = function(evt) {
+        try {
+            const wb = XLSX.read(new Uint8Array(evt.target.result), {type: 'array'});
+            const rows = XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]], {header: 1, defval: ""});
+            answerKey = {};
+            for (let col = 1; col < rows[0].length; col++) {
+                const code = String(rows[0][col]).trim(); if (!code) continue;
+                let p1 = [], p2 = [], p3 = [];
+                for (let r = 1; r < rows.length; r++) {
+                    let val = String(rows[r][col]).trim().toUpperCase(); if (!val) continue;
+                    let isPart2 = (val.length === 4 && /^[ĐSD]+$/.test(val));
+                    if (val.length === 1 && ['A','B','C','D'].includes(val)) {
+                        p1.push(val);
+                    } else if (isPart2) {
+                        p2.push(val.replace(/D/g, 'Đ'));
+                    } else {
+                        p3.push(String(rows[r][col]).trim());
+                    }
+                }
+                answerKey[code] = {p1, p2, p3};
+            }
+            document.getElementById('key-status-box').innerHTML = `✅ Đã nạp <b>${Object.keys(answerKey).length}</b> mã đề!`;
+            playBeep();
+        } catch(e) { alert("Lỗi nạp Excel: " + e.message); }
+    };
+    reader.readAsArrayBuffer(input.files[0]);
+}
+
+function loadExcelDSHS(input) {
+    if (!input.files[0]) return;
+    const reader = new FileReader();
+    reader.onload = function(evt) {
+        try {
+            const wb = XLSX.read(new Uint8Array(evt.target.result), {type: 'array'});
+            const rows = XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]], {header: 1, defval: ""});
+            dshsDict = {}; let count = 0;
+            for (let r = 1; r < rows.length; r++) {
+                let sbd = String(rows[r][1] || "").trim();
+                if (sbd) { dshsDict[sbd] = { name: String(rows[r][2] || "").trim(), className: String(rows[r][3] || "").trim() }; count++; }
+            }
+            document.getElementById('dshs-status').textContent = `✅ Đã nạp ${count} học sinh`;
+        } catch(e) { alert("Lỗi: " + e.message); }
+    };
+    reader.readAsArrayBuffer(input.files[0]);
+}
+
+function drawVirtualGrid() {
+    const canvas = document.getElementById('result-canvas');
+    if(canvas.style.display !== 'block') canvas.style.display = 'block';
+    
+    if(canvas.width < 100) {
+        canvas.width = 800; canvas.height = 1130;
+        const ctx = canvas.getContext('2d');
+        ctx.fillStyle = "#1e293b"; ctx.fillRect(0,0, 800, 1130);
+    }
+    
+    const ctx = canvas.getContext('2d');
+    let type = getStrVal('cfg-sheet-type', 'bgd_2025_8sbd');
+    let C = SHEET_CONFIGS[type];
+    let isSquare = getCheckVal('cfg-show-grid', false);
+    let ox = getNumVal('cfg-offset-x', 0);
+    let oy = getNumVal('cfg-offset-y', 0);
+
+    ctx.strokeStyle = "rgba(59, 130, 246, 0.8)"; 
+    ctx.lineWidth = 1.5;
+
+    function drawShape(x, y, w, h) {
+        let nx = x + ox; let ny = y + oy;
+        if(isSquare) { ctx.strokeRect(nx - w/2, ny - h/2, w, h); } 
+        else { ctx.beginPath(); ctx.arc(nx, ny, w/2, 0, 2 * Math.PI); ctx.stroke(); }
+    }
+    
+    C.sbd.x.forEach(x => { C.sbd.y.forEach(y => drawShape(x, y, C.sbd.cw, C.sbd.ch)); });
+    C.made.x.forEach(x => { C.made.y.forEach(y => drawShape(x, y, C.made.cw, C.made.ch)); });
+    C.p1.blockX.forEach(bx => { C.p1.offsetsX.forEach(offX => { C.p1.y.forEach(y => drawShape(bx + offX, y, C.p1.cw, C.p1.ch)); }); });
+    
+    if (C.p2.offsetsX.length === 4) {
+        C.p2.blockX.forEach(bx => { 
+            C.p2.y.forEach(y => {
+                drawShape(bx + C.p2.offsetsX[0], y, C.p2.cw, C.p2.ch);
+                drawShape(bx + C.p2.offsetsX[1], y, C.p2.cw, C.p2.ch);
+                drawShape(bx + C.p2.offsetsX[2], y, C.p2.cw, C.p2.ch);
+                drawShape(bx + C.p2.offsetsX[3], y, C.p2.cw, C.p2.ch);
+            }); 
+        });
+    } else {
+        C.p2.blockX.forEach(bx => { C.p1.offsetsX.forEach(offX => { C.p2.y.forEach(y => drawShape(bx + offX, y, C.p2.cw, C.p2.ch)); }); });
+    }
+
+    C.p3.blockX.forEach(bx => { 
+        drawShape(bx + C.p3.offsetsX[0], C.p3.yMinus, C.p3.cw, C.p3.ch);
+        C.p3.offsetsX.forEach(offX => { C.p3.yDigit.forEach(y => drawShape(bx + offX, y, C.p3.cw, C.p3.ch)); }); 
+    });
+}
+
+async function startWebcam() {
+    if (!window.cvReady) return alert("OpenCV đang tải, xin đợi 2 giây...");
+    
+    const video = document.getElementById('webcam-video');
+    try {
+        // Ép ưu tiên Camera sau (environment) trên Smartphone với độ phân giải cao
+        videoStream = await navigator.mediaDevices.getUserMedia({ 
+            video: { 
+                facingMode: { ideal: "environment" }, 
+                width: { ideal: 1080 },
+                height: { ideal: 1920 }
+            } 
+        });
+        video.srcObject = videoStream;
+        video.onloadedmetadata = () => { video.play(); startOpenCVScanLoop(); };
+        document.getElementById('cam-status-text').textContent = "Đang tìm 4 góc giấy...";
+        document.getElementById('cam-status-text').style.borderColor = "transparent";
+    } catch (err) { alert("Lỗi Webcam: Hãy cấp quyền Camera cho trình duyệt trên điện thoại."); }
+}
+
+function stopWebcam() {
+    if (scanInterval) clearInterval(scanInterval);
+    if (videoStream) { videoStream.getTracks().forEach(t => t.stop()); videoStream = null; }
+    const canvas = document.getElementById('webcam-canvas-overlay');
+    canvas.getContext('2d').clearRect(0, 0, canvas.width, canvas.height);
+    document.getElementById('cam-status-text').textContent = "Đã tắt Webcam";
+    document.getElementById('cam-status-text').style.borderColor = "transparent";
+}
+
+async function handleImageUpload(inputElement) {
+    const files = inputElement.files;
+    if (!files || !files.length) return;
+    
+    const statusText = document.getElementById('cam-status-text');
+    for (let i = 0; i < files.length; i++) {
+        statusText.textContent = `⏳ Đang xử lý file Scan ${i+1}/${files.length}...`;
+        await new Promise(r => setTimeout(r, 50));
+        await new Promise((resolve) => {
+            const img = new Image();
+            img.onload = () => {
+                let cvs = document.createElement('canvas');
+                cvs.width = img.width; cvs.height = img.height;
+                cvs.getContext('2d').drawImage(img, 0, 0);
+                try {
+                    processFullFrameOpenCV(cvs, true); 
+                } catch(err) {
+                    alert(`Lỗi chấm file ${files[i].name}: ${err.message}`);
+                }
+                resolve();
+            };
+            img.src = URL.createObjectURL(files[i]);
+        });
+    }
+    statusText.textContent = `✅ Đã chấm xong ${files.length} ảnh.`;
+    inputElement.value = '';
+}
+
+function startOpenCVScanLoop() {
+    if (scanInterval) clearInterval(scanInterval);
+    const video = document.getElementById('webcam-video');
+    const overlay = document.getElementById('webcam-canvas-overlay');
+    const ctx = overlay.getContext('2d');
+    const statusText = document.getElementById('cam-status-text');
+    stableFrames = 0;
+
+    let scanCanvas = document.createElement('canvas');
+    let scanCtx = scanCanvas.getContext('2d', { willReadFrequently: true });
+
+    scanInterval = setInterval(() => {
+        if (!videoStream || video.readyState !== video.HAVE_ENOUGH_DATA) return;
+        
+        let targetFrames = getNumVal('cfg-scan-speed', 6);
+        let VW = video.videoWidth; let VH = video.videoHeight;
+        
+        overlay.width = VW; overlay.height = VH;
+        scanCanvas.width = VW; scanCanvas.height = VH;
+        scanCtx.drawImage(video, 0, 0, VW, VH);
+        
+        let src = cv.matFromImageData(scanCtx.getImageData(0, 0, VW, VH));
+        let gray = new cv.Mat(); cv.cvtColor(src, gray, cv.COLOR_RGBA2GRAY, 0);
+        let blur = new cv.Mat(); cv.GaussianBlur(gray, blur, new cv.Size(5, 5), 0);
+        let thresh = new cv.Mat(); cv.adaptiveThreshold(blur, thresh, 255, cv.ADAPTIVE_THRESH_GAUSSIAN_C, cv.THRESH_BINARY_INV, 51, 15);
+        
+        let contours = new cv.MatVector(); let hierarchy = new cv.Mat();
+        cv.findContours(thresh, contours, hierarchy, cv.RETR_EXTERNAL, cv.CHAIN_APPROX_SIMPLE);
+        
+        let maxArea = 0; let bestApprox = new cv.Mat();
+        for (let i = 0; i < contours.size(); i++) {
+            let cnt = contours.get(i); let area = cv.contourArea(cnt);
+            if (area > (VW * VH * 0.15)) { 
+                let peri = cv.arcLength(cnt, true);
+                let approx = new cv.Mat();
+                cv.approxPolyDP(cnt, approx, 0.02 * peri, true);
+                if (approx.rows === 4 && area > maxArea) {
+                    maxArea = area;
+                    approx.copyTo(bestApprox);
+                }
+                approx.delete();
+            }
+            cnt.delete();
+        }
+
+        ctx.clearRect(0, 0, VW, VH);
+
+        if (maxArea > 0 && bestApprox.rows === 4) {
+            ctx.strokeStyle = "#0f9d58"; ctx.lineWidth = 6;
+            ctx.beginPath();
+            let pts = [];
+            for (let i = 0; i < 4; i++) {
+                pts.push({x: bestApprox.data32S[i*2], y: bestApprox.data32S[i*2+1]});
+                if(i===0) ctx.moveTo(pts[i].x, pts[i].y); else ctx.lineTo(pts[i].x, pts[i].y);
+            }
+            ctx.closePath(); ctx.stroke();
+            
+            stableFrames++;
+            statusText.textContent = `Đang khóa nét... (${stableFrames}/${targetFrames})`;
+            statusText.style.borderColor = "#0f9d58";
+            statusText.style.color = "#0f9d58";
+
+            if (stableFrames >= targetFrames) {
+                clearInterval(scanInterval);
+                statusText.textContent = "⚡ ĐÃ CHỤP! ĐANG XỬ LÝ...";
+                statusText.style.background = "#0f9d58"; statusText.style.color = "#fff";
+                playBeep();
+                let fullCanvas = document.createElement('canvas');
+                fullCanvas.width = VW; fullCanvas.height = VH;
+                fullCanvas.getContext('2d').drawImage(video, 0, 0);
+                setTimeout(() => { processFullFrameOpenCV(fullCanvas, false); }, 50);
+            }
+        } else {
+            if(stableFrames > 0) stableFrames--;
+            statusText.textContent = "Cầm thẳng. Đặt phiếu vào viền nét đứt...";
+            statusText.style.borderColor = "transparent";
+            statusText.style.color = "#fff"; statusText.style.background = "rgba(0,0,0,0.75)";
+        }
+
+        src.delete(); gray.delete(); blur.delete(); thresh.delete(); contours.delete(); hierarchy.delete(); bestApprox.delete();
+    }, 100);
+}
+
+function processFullFrameOpenCV(sourceCanvas, isUpload) {
+    try {
+        const TARGET_W = 800; const TARGET_H = 1130;
+        let src = cv.imread(sourceCanvas);
+        let gray = new cv.Mat(); cv.cvtColor(src, gray, cv.COLOR_RGBA2GRAY, 0);
+        let blur = new cv.Mat(); cv.GaussianBlur(gray, blur, new cv.Size(5, 5), 0);
+        let thresh = new cv.Mat(); cv.adaptiveThreshold(blur, thresh, 255, cv.ADAPTIVE_THRESH_GAUSSIAN_C, cv.THRESH_BINARY_INV, 51, 15);
+        
+        let contours = new cv.MatVector(); let hierarchy = new cv.Mat();
+        cv.findContours(thresh, contours, hierarchy, cv.RETR_LIST, cv.CHAIN_APPROX_SIMPLE);
+
+        let markers = [];
+        let minA = (src.cols * src.rows) * 0.0001; 
+        let maxA = (src.cols * src.rows) * 0.05;
+
+        for (let i = 0; i < contours.size(); i++) {
+            let cnt = contours.get(i); let area = cv.contourArea(cnt);
+            if (area > minA && area < maxA) {
+                let rect = cv.boundingRect(cnt); let ar = rect.width / rect.height;
+                if (ar >= 0.5 && ar <= 1.5) {
+                    let hull = new cv.Mat(); cv.convexHull(cnt, hull, false, true);
+                    let hArea = cv.contourArea(hull);
+                    if (hArea > 0 && (area / hArea) > 0.7) {
+                        let M = cv.moments(cnt, false);
+                        if (M.m00 !== 0) markers.push({ x: M.m10/M.m00, y: M.m01/M.m00 });
+                    }
+                    hull.delete();
+                }
+            }
+            cnt.delete();
+        }
+        contours.delete(); hierarchy.delete(); thresh.delete(); blur.delete(); gray.delete();
+
+        let best4 = [];
+        if (markers.length >= 4) {
+            let corners = [ {x:0, y:0}, {x:src.cols, y:0}, {x:0, y:src.rows}, {x:src.cols, y:src.rows} ];
+            for (let c of corners) {
+                let closest = markers.reduce((best, m) => {
+                    let d = Math.pow(m.x - c.x, 2) + Math.pow(m.y - c.y, 2);
+                    return d < best.d && !best4.includes(m) ? {m: m, d: d} : best;
+                }, {m: null, d: Infinity});
+                if(closest.m) best4.push(closest.m);
+            }
+        }
+
+        if (best4.length < 4) {
+            alert("Lỗi: Không tìm thấy 4 ô vuông đen định vị trên ảnh. Vui lòng chụp/scan rõ lại.");
+            src.delete();
+            if(!isUpload) setTimeout(startOpenCVScanLoop, 1500);
+            return;
+        }
+
+        let pTL = best4.reduce((a, b) => (a.x + a.y < b.x + b.y ? a : b));
+        let pBR = best4.reduce((a, b) => (a.x + a.y > b.x + b.y ? a : b));
+        let pTR = best4.reduce((a, b) => (a.x - a.y > b.x - b.y ? a : b));
+        let pBL = best4.reduce((a, b) => (a.x - a.y < b.x - b.y ? a : b));
+
+        let dstMat = new cv.Mat();
+        let srcTri = cv.matFromArray(4, 1, cv.CV_32FC2, [pTL.x, pTL.y, pTR.x, pTR.y, pBL.x, pBL.y, pBR.x, pBR.y]);
+        let dstTri = cv.matFromArray(4, 1, cv.CV_32FC2, [40, 40, TARGET_W - 40, 40, 40, TARGET_H - 40, TARGET_W - 40, TARGET_H - 40]);
+
+        let M = cv.getPerspectiveTransform(srcTri, dstTri);
+        cv.warpPerspective(src, dstMat, M, new cv.Size(TARGET_W, TARGET_H), cv.INTER_LINEAR, cv.BORDER_CONSTANT, new cv.Scalar());
+
+        let flatCanvas = document.createElement('canvas');
+        flatCanvas.width = TARGET_W; flatCanvas.height = TARGET_H;
+        cv.imshow(flatCanvas, dstMat);
+
+        src.delete(); dstMat.delete(); srcTri.delete(); dstTri.delete(); M.delete();
+
+        processImagePureJS(flatCanvas, isUpload);
+
+    } catch(err) { alert("Lỗi xử lý OpenCV: " + err.message); }
+}
+
+function processImagePureJS(flatCanvas, isUpload) {
+    try {
+        const WIDTH = 800; const HEIGHT = 1130;
+        const sCtx = flatCanvas.getContext('2d', { willReadFrequently: true });
+        const data = sCtx.getImageData(0, 0, WIDTH, HEIGHT).data;
+
+        let type = getStrVal('cfg-sheet-type', 'bgd_2025_8sbd');
+        let GRID_SPEC = SHEET_CONFIGS[type];
+        
+        let minConf = getNumVal('cfg-conf', 0.25); 
+        let minConfMinus = getNumVal('cfg-conf-minus', 0.40);
+        let diemP1 = getNumVal('cfg-p1', 0.25);
+        let diemP2 = [getNumVal('cfg-p2-1', 0.1), getNumVal('cfg-p2-2', 0.25), getNumVal('cfg-p2-3', 0.5), getNumVal('cfg-p2-4', 1.0)];
+        let diemP3 = getNumVal('cfg-p3', 0.5);
+        let showGrid = getCheckVal('cfg-show-grid', false);
+        let fallbackCode = getStrVal('fallback-code', "");
+        let ox = getNumVal('cfg-offset-x', 0);
+        let oy = getNumVal('cfg-offset-y', 0);
+
+        function findLocalAnchor(idealY) {
+            if(!idealY) return {dx: 0, dy: 0};
+            let sx = 15, sy = idealY - 30; 
+            let ew = 65, eh = idealY + 30;
+            let minVal = 255;
+            for (let y = sy; y < eh; y += 2) {
+                for (let x = sx; x < ew; x += 2) {
+                    if(x < 0 || x >= WIDTH || y < 0 || y >= HEIGHT) continue;
+                    let idx = (y * WIDTH + x) * 4;
+                    let gray = 0.299 * data[idx] + 0.587 * data[idx+1] + 0.114 * data[idx+2];
+                    if (gray < minVal) minVal = gray;
+                }
+            }
+            let thresh = Math.min(130, minVal + 40);
+            let sumX = 0, sumY = 0, count = 0;
+            for (let y = sy; y < eh; y++) {
+                for (let x = sx; x < ew; x++) {
+                    if(x < 0 || x >= WIDTH || y < 0 || y >= HEIGHT) continue;
+                    let idx = (y * WIDTH + x) * 4;
+                    let gray = 0.299 * data[idx] + 0.587 * data[idx+1] + 0.114 * data[idx+2];
+                    if (gray <= thresh) { sumX += x; sumY += y; count++; }
+                }
+            }
+            if (count > 15) { 
+                let actualX = sumX / count; let actualY = sumY / count;
+                if (showGrid) { sCtx.strokeStyle = "#ff00ff"; sCtx.lineWidth = 2; sCtx.strokeRect(actualX - 8, actualY - 8, 16, 16); }
+                return { dx: actualX - 40, dy: actualY - idealY };
+            }
+            return { dx: 0, dy: 0 };
+        }
+
+        let anchorP1 = findLocalAnchor(GRID_SPEC.anchorY?.p1);
+        let anchorP2 = findLocalAnchor(GRID_SPEC.anchorY?.p2);
+        let anchorP3 = findLocalAnchor(GRID_SPEC.anchorY?.p3);
+
+        function getRegionDarkness(cx, cy, w) {
+            let startX = Math.round(cx - w/2); let startY = Math.round(cy - w/2);
+            let bestScore = 0;
+            for (let dy = -3; dy <= 3; dy += 3) {
+                for (let dx = -3; dx <= 3; dx += 3) {
+                    let sx = startX + dx; let sy = startY + dy;
+                    let bgSum = 0, bgCount = 0;
+                    for (let py = sy - 7; py <= sy + w + 7; py+=2) {
+                        for (let px = sx - 7; px <= sx + w + 7; px+=2) {
+                            if (px < 0 || px >= WIDTH || py < 0 || py >= HEIGHT) continue;
+                            if (px >= sx && px < sx+w && py >= sy && py < sy+w) continue;
+                            let idx = (py * WIDTH + px) * 4;
+                            bgSum += 0.299 * data[idx] + 0.587 * data[idx+1] + 0.114 * data[idx+2];
+                            bgCount++;
+                        }
+                    }
+                    let bgAvg = bgCount > 0 ? bgSum / bgCount : 255;
+                    let localThresh = Math.min(165, bgAvg * 0.88); 
+
+                    let darkCount = 0, total = 0;
+                    for (let y = sy; y < sy + w; y++) {
+                        for (let x = sx; x < sx + w; x++) {
+                            if (x < 0 || x >= WIDTH || y < 0 || y >= HEIGHT) continue;
+                            let idx = (y * WIDTH + x) * 4;
+                            let gray = 0.299 * data[idx] + 0.587 * data[idx+1] + 0.114 * data[idx+2];
+                            if (gray < localThresh) darkCount++;
+                            total++;
+                        }
+                    }
+                    let score = total > 0 ? darkCount / total : 0;
+                    if (score > bestScore) bestScore = score;
+                }
+            }
+            return bestScore;
+        }
+
+        function drawBubble(cx, cy, status) {
+            sCtx.beginPath();
+            if (showGrid) {
+                sCtx.lineWidth = 2.5;
+                if (status === 'correct_fill') { sCtx.strokeStyle = "#00c853"; sCtx.strokeRect(cx-8, cy-8, 16, 16); }
+                else if (status === 'wrong_fill') { sCtx.strokeStyle = "#d50000"; sCtx.strokeRect(cx-8, cy-8, 16, 16); }
+                else if (status === 'missing_key') { sCtx.strokeStyle = "#ffd600"; sCtx.strokeRect(cx-7, cy-7, 14, 14); }
+                else if (status === 'info_read') { sCtx.strokeStyle = "#2962ff"; sCtx.strokeRect(cx-8, cy-8, 16, 16); }
+            } else {
+                if (status === 'correct_fill') { sCtx.fillStyle = "rgba(0, 200, 0, 0.75)"; sCtx.arc(cx, cy, 8, 0, 2*Math.PI); sCtx.fill(); }
+                else if (status === 'wrong_fill') { sCtx.fillStyle = "rgba(255, 0, 0, 0.75)"; sCtx.arc(cx, cy, 8, 0, 2*Math.PI); sCtx.fill(); }
+                else if (status === 'missing_key') { sCtx.fillStyle = "rgba(255, 215, 0, 0.9)"; sCtx.arc(cx, cy, 6, 0, 2*Math.PI); sCtx.fill(); }
+                else if (status === 'info_read') { sCtx.fillStyle = "rgba(41, 98, 255, 0.75)"; sCtx.arc(cx, cy, 8, 0, 2*Math.PI); sCtx.fill(); }
+            }
+        }
+
+        let scannedSbd = "";
+        for (let idealX of GRID_SPEC.sbd.x) {
+            let x = idealX + ox;
+            let scores = GRID_SPEC.sbd.y.map(idealY => getRegionDarkness(x, idealY + oy, 12));
+            let maxIdx = scores.indexOf(Math.max(...scores)), sorted = [...scores].sort((a,b)=>a-b);
+            if (scores[maxIdx] > minConf && (scores[maxIdx] - sorted[4]) > 0.08) { 
+                scannedSbd += String(maxIdx); drawBubble(x, GRID_SPEC.sbd.y[maxIdx] + oy, 'info_read'); 
+            } else scannedSbd += "0";
+        }
+
+        let scannedCode = "";
+        for (let idealX of GRID_SPEC.made.x) {
+            let x = idealX + ox;
+            let scores = GRID_SPEC.made.y.map(idealY => getRegionDarkness(x, idealY + oy, 12));
+            let maxIdx = scores.indexOf(Math.max(...scores)), sorted = [...scores].sort((a,b)=>a-b);
+            if (scores[maxIdx] > minConf && (scores[maxIdx] - sorted[4]) > 0.08) { 
+                scannedCode += String(maxIdx); drawBubble(x, GRID_SPEC.made.y[maxIdx] + oy, 'info_read'); 
+            } else scannedCode += "0";
+        }
+
+        let code = scannedCode.replace(/\?/g, '0'); let warnings = [];
+        if (Object.keys(answerKey).length === 0) {} 
+        else if (!answerKey[code]) {
+            if (fallbackCode && answerKey[fallbackCode]) code = fallbackCode;
+            else warnings.push(`Mã đề ${scannedCode} không có`);
+        }
+        
+        let key = answerKey[code] || { p1: [], p2: [], p3: [] };
+        let stuInfo = dshsDict[scannedSbd] || { name: "", className: "" };
+
+        let right1 = 0; const labelsP1 = ['A', 'B', 'C', 'D'];
+        let limitP1 = key.p1 && key.p1.length > 0 ? key.p1.length : 40;
+        
+        for (let i = 0; i < limitP1; i++) {
+            let blockIdx = Math.floor(i / 10), rowIdx = i % 10;
+            if (blockIdx >= 4) break;
+            
+            let y = GRID_SPEC.p1.y[rowIdx] + anchorP1.dy + oy;
+            let xList = GRID_SPEC.p1.offsetsX.map(off => GRID_SPEC.p1.blockX[blockIdx] + off + anchorP1.dx + ox);
+            
+            let scores = xList.map(x => getRegionDarkness(x, y, 12));
+            let maxScore = Math.max(...scores);
+            let filledIndices = [];
+            for (let j=0; j<4; j++) { if (scores[j] > minConf && (maxScore - scores[j]) < 0.15) filledIndices.push(j); }
+
+            let corrLabel = (key.p1 && i < key.p1.length) ? key.p1[i] : null;
+            let corrIdx = corrLabel ? labelsP1.indexOf(corrLabel) : -1;
+
+            if (filledIndices.length === 1) {
+                let fIdx = filledIndices[0];
+                if (corrLabel) {
+                    if (fIdx === corrIdx) { right1++; drawBubble(xList[fIdx], y, 'correct_fill'); }
+                    else { drawBubble(xList[fIdx], y, 'wrong_fill'); if (corrIdx >= 0) drawBubble(xList[corrIdx], y, 'missing_key'); }
+                } else { drawBubble(xList[fIdx], y, 'info_read'); }
+            } else if (filledIndices.length > 1) { 
+                filledIndices.forEach(idx => drawBubble(xList[idx], y, 'wrong_fill'));
+                if (corrIdx >= 0 && !filledIndices.includes(corrIdx)) drawBubble(xList[corrIdx], y, 'missing_key');
+            } else {
+                if (corrIdx >= 0) drawBubble(xList[corrIdx], y, 'missing_key');
+            }
+        }
+        let scoreP1 = +(right1 * diemP1).toFixed(2);
+
+        let key2Str = key.p2 ? key.p2.join('') : ''; let student2 = '', scoreP2 = 0, right2Details = 0;
+        let limitP2 = key2Str.length > 0 ? (key2Str.length / 4) : 4; 
+
+        for (let i = 0; i < limitP2; i++) {
+            let blockIdx = Math.floor(i / 2);
+            let baseX = GRID_SPEC.p2.blockX[blockIdx] + anchorP2.dx + ox;
+            let qOffsetIdx = (i % 2 === 0) ? 0 : 2; 
+            
+            let xList = [];
+            if (GRID_SPEC.p2.offsetsX.length === 4) {
+                xList = [baseX + GRID_SPEC.p2.offsetsX[qOffsetIdx], baseX + GRID_SPEC.p2.offsetsX[qOffsetIdx + 1]];
+            } else {
+                let sp = GRID_SPEC.sbd.x[1] - GRID_SPEC.sbd.x[0];
+                xList = (i % 2 === 1) ? [baseX + sp*4, baseX + sp*6] : [baseX, baseX + sp*2];
+            }
+
+            for (let rowIdx = 0; rowIdx < 4; rowIdx++) {
+                let y = GRID_SPEC.p2.y[rowIdx] + anchorP2.dy + oy;
+                let gIdx = i * 4 + rowIdx, expected = (key2Str && gIdx < key2Str.length) ? key2Str[gIdx] : '';
+                
+                let scores = xList.map(x => getRegionDarkness(x, y, 12));
+                let maxScore = Math.max(...scores);
+                
+                let filledIndices = [];
+                for (let j=0; j<2; j++) { if (scores[j] > minConf && (maxScore - scores[j]) < 0.15) filledIndices.push(j); }
+                
+                if (filledIndices.length === 1) {
+                    let fIdx = filledIndices[0]; let val = fIdx === 0 ? 'Đ' : 'S'; student2 += val;
+                    if (expected) {
+                        if (val === expected) drawBubble(xList[fIdx], y, 'correct_fill');
+                        else { drawBubble(xList[fIdx], y, 'wrong_fill'); drawBubble(xList[expected === 'Đ' ? 0 : 1], y, 'missing_key'); }
+                    } else { drawBubble(xList[fIdx], y, 'info_read'); }
+                } else if (filledIndices.length > 1) {
+                    student2 += 'X';
+                    filledIndices.forEach(idx => drawBubble(xList[idx], y, 'wrong_fill'));
+                    if (expected) { let expIdx = expected === 'Đ' ? 0 : 1; if (!filledIndices.includes(expIdx)) drawBubble(xList[expIdx], y, 'missing_key'); }
+                } else {
+                    student2 += 'X';
+                    if (expected) drawBubble(xList[expected === 'Đ' ? 0 : 1], y, 'missing_key');
+                }
+            }
+        }
+        for (let i = 0; i < key2Str.length; i += 4) {
+            let stuQ = student2.slice(i, i + 4), keyQ = key2Str.slice(i, i + 4), cCount = 0;
+            for (let j = 0; j < Math.min(stuQ.length, keyQ.length); j++) { if (stuQ[j] === keyQ[j] && stuQ[j] !== 'X') cCount++; }
+            right2Details += cCount;
+            if (cCount >= 1 && cCount <= 4) scoreP2 += diemP2[cCount - 1];
+        }
+        scoreP2 = +scoreP2.toFixed(2);
+
+        let scoreP3 = 0, right3 = 0, validP3Count = 0; 
+        let limitP3 = key.p3 && key.p3.length > 0 ? key.p3.length : 6;
+
+        for (let q = 0; q < limitP3; q++) {
+            let rawKey = (key.p3 && q < key.p3.length) ? String(key.p3[q]) : "";
+            let cleanKey = rawKey.trim().replace(/\./g, ',').replace(/[^-0-9,]/g, '');
+            if (cleanKey) validP3Count++;
+            
+            let baseX = GRID_SPEC.p3.blockX[q] + anchorP3.dx + ox;
+            let minusY = GRID_SPEC.p3.yMinus + anchorP3.dy + oy;
+            
+            let stuAnsStr = "";
+            let expectedMinus = cleanKey.startsWith('-');
+            
+            let minusX = baseX + GRID_SPEC.p3.offsetsX[0];
+            let minusScore = getRegionDarkness(minusX, minusY, 10);
+            let filledMinus = minusScore > minConfMinus;
+            
+            if (filledMinus) {
+                if (cleanKey) drawBubble(minusX, minusY, expectedMinus ? 'correct_fill' : 'wrong_fill');
+                else drawBubble(minusX, minusY, 'info_read');
+                stuAnsStr += "-";
+            } else if (cleanKey && expectedMinus) { drawBubble(minusX, minusY, 'missing_key'); }
+            
+            let expectedCols = cleanKey.replace(/^-/, '').split(''); 
+            
+            for (let colIdx = 0; colIdx < 4; colIdx++) {
+                let x = baseX + GRID_SPEC.p3.offsetsX[colIdx];
+                let expectedChar = colIdx < expectedCols.length ? expectedCols[colIdx] : ''; 
+                
+                let scoresDigits = GRID_SPEC.p3.yDigit.map(idealY => getRegionDarkness(x, idealY + anchorP3.dy + oy, 12));
+                let maxScore = Math.max(...scoresDigits);
+                
+                let filledIndices = [];
+                for (let j=0; j<11; j++) { if (scoresDigits[j] > minConf && (maxScore - scoresDigits[j]) < 0.15) filledIndices.push(j); }
+
+                if (filledIndices.length === 1) {
+                    let fIdx = filledIndices[0]; let filledChar = GRID_SPEC.p3.chars[fIdx];
+                    let finalY = GRID_SPEC.p3.yDigit[fIdx] + anchorP3.dy + oy;
+                    
+                    stuAnsStr += filledChar;
+                    if (cleanKey) {
+                        if (filledChar === expectedChar) drawBubble(x, finalY, 'correct_fill');
+                        else { 
+                            drawBubble(x, finalY, 'wrong_fill'); 
+                            if (expectedChar && GRID_SPEC.p3.chars.includes(expectedChar)) drawBubble(x, GRID_SPEC.p3.yDigit[GRID_SPEC.p3.chars.indexOf(expectedChar)] + anchorP3.dy + oy, 'missing_key'); 
+                        }
+                    } else drawBubble(x, finalY, 'info_read');
+                } else if (filledIndices.length > 1) { 
+                    filledIndices.forEach(idx => drawBubble(x, GRID_SPEC.p3.yDigit[idx] + anchorP3.dy + oy, 'wrong_fill'));
+                    if (cleanKey && expectedChar && GRID_SPEC.p3.chars.includes(expectedChar)) {
+                        let expIdx = GRID_SPEC.p3.chars.indexOf(expectedChar);
+                        if(!filledIndices.includes(expIdx)) drawBubble(x, GRID_SPEC.p3.yDigit[expIdx] + anchorP3.dy + oy, 'missing_key');
+                    }
+                } else {
+                    if (cleanKey && expectedChar && GRID_SPEC.p3.chars.includes(expectedChar)) drawBubble(x, GRID_SPEC.p3.yDigit[GRID_SPEC.p3.chars.indexOf(expectedChar)] + anchorP3.dy + oy, 'missing_key');
+                }
+            }
+            if (cleanKey && stuAnsStr === cleanKey) { right3++; scoreP3 += diemP3; }
+        }
+        
+        scoreP3 = +scoreP3.toFixed(2);
+        let totalScore = +(scoreP1 + scoreP2 + scoreP3).toFixed(2);
+
+        sCtx.fillStyle = "#ffffff"; sCtx.fillRect(12, 85, 230, 165);
+        sCtx.lineWidth = 3; sCtx.strokeStyle = "#dc2626"; sCtx.strokeRect(12, 85, 230, 165);
+        sCtx.fillStyle = "#dc2626"; sCtx.font = "bold 26px Arial"; sCtx.fillText(`TỔNG: ${totalScore}đ`, 24, 125);
+        sCtx.font = "bold 19px Arial"; sCtx.fillText(`P.I:   ${scoreP1}đ`, 28, 162); sCtx.fillText(`P.II:  ${scoreP2}đ`, 28, 195); sCtx.fillText(`P.III: ${scoreP3}đ`, 28, 228);
+
+        const outCanvas = document.getElementById('result-canvas');
+        outCanvas.width = WIDTH; outCanvas.height = HEIGHT;
+        outCanvas.getContext('2d').drawImage(flatCanvas, 0, 0);
+        outCanvas.style.display = 'block'; lastGradedSbd = `${scannedSbd}_${code}`;
+
+        document.getElementById('score-dashboard').style.display = 'block';
+        document.getElementById('ui-total').textContent = `${totalScore}đ`;
+        
+        let uiStuName = document.getElementById('ui-stu-name');
+        if(uiStuName) uiStuName.textContent = stuInfo.name ? `${stuInfo.name} (${stuInfo.className})` : "Học sinh: (Chưa nạp DSHS)";
+        
+        let uiSbdMade = document.getElementById('ui-sbd-made');
+        if(uiSbdMade) uiSbdMade.textContent = `SBD: ${scannedSbd} | Mã đề: ${code}`;
+        
+        let uiP1Score = document.getElementById('ui-p1-score'); if(uiP1Score) uiP1Score.textContent = `${scoreP1}đ`; 
+        let uiP1Detail = document.getElementById('ui-p1-detail'); if(uiP1Detail) uiP1Detail.textContent = `Đúng ${right1}/${key.p1 ? key.p1.length : 0}`;
+        
+        let uiP2Score = document.getElementById('ui-p2-score'); if(uiP2Score) uiP2Score.textContent = `${scoreP2}đ`; 
+        let uiP2Detail = document.getElementById('ui-p2-detail'); if(uiP2Detail) uiP2Detail.textContent = `Đúng ${right2Details}/${key2Str.length}`;
+        
+        let uiP3Score = document.getElementById('ui-p3-score'); if(uiP3Score) uiP3Score.textContent = `${scoreP3}đ`; 
+        let uiP3Detail = document.getElementById('ui-p3-detail'); if(uiP3Detail) uiP3Detail.textContent = `Đúng ${right3}/${validP3Count}`;
+        
+        let warningsEl = document.getElementById('ui-warnings');
+        if (warnings.length > 0) {
+            if(warningsEl) warningsEl.innerHTML = `⚠️ ${warnings.join(' | ')}`;
+            let statusText = document.getElementById('cam-status-text');
+            if(statusText) { statusText.textContent = `❌ Lỗi: Thiếu mã đề hoặc file đáp án`; statusText.style.background = "var(--danger)"; }
+        } else {
+            if(warningsEl) warningsEl.textContent = "";
+            let statusText = document.getElementById('cam-status-text');
+            if(statusText) { statusText.textContent = `✅ Đã chấm xong SBD: ${scannedSbd}`; statusText.style.background = "var(--success)"; }
+        }
+
+        // V65: LƯU TRỮ VÀO LOCAL STORAGE (THIẾT KẾ CHO MOBILE)
+        gradedRows.push({ 
+            sbd: scannedSbd, 
+            name: stuInfo.name, 
+            className: stuInfo.className, 
+            code: code, 
+            scoreP1: scoreP1, 
+            scoreP2: scoreP2, 
+            scoreP3: scoreP3, 
+            totalScore: totalScore, 
+            warnings: warnings.join('; ') 
+        });
+        localStorage.setItem('ntmix_history', JSON.stringify(gradedRows));
+        renderResultsTable();
+
+        if (!isUpload && warnings.length === 0) setTimeout(startOpenCVScanLoop, 1500);
+
+    } catch(err) { alert("Lỗi xử lý: " + err.message); }
+}
+
+function downloadResultImage() {
+    const link = document.createElement('a');
+    link.download = `Cham_${lastGradedSbd}.jpg`;
+    link.href = document.getElementById('result-canvas').toDataURL('image/jpeg', 0.9);
+    link.click();
+}
+
+function exportResultsExcel() {
+    if (!gradedRows.length) return alert("Chưa có phiếu nào!");
+    const data = [["STT", "Họ Tên", "Lớp", "SBD", "Mã Đề", "Điểm P.I", "Điểm P.II", "Điểm P.III", "TỔNG ĐIỂM", "Cảnh báo"], 
+                  ...gradedRows.map((r, i) => [i + 1, r.name, r.className, r.sbd, r.code, r.scoreP1, r.scoreP2, r.scoreP3, r.totalScore, r.warnings])];
+    const wb = XLSX.utils.book_new(); 
+    XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(data), "BangDiem"); 
+    XLSX.writeFile(wb, `BangDiem_NTMIX_${Date.now()}.xlsx`);
+}
+</script>
+</body>
+</html>
