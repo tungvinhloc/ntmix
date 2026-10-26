@@ -2,8 +2,8 @@
 <html lang="vi">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>NTMIX OMR Mobile - Chấm Thi Tốc Độ</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NTMIX PC - Chấm Webcam & Scan Chuẩn 100%</title>
     
     <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
@@ -12,29 +12,30 @@
 
     <style>
         :root { --primary: #1a73e8; --success: #0f9d58; --danger: #d93025; --dark: #1e293b; --bg: #f1f5f9; }
-        * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, sans-serif; -webkit-tap-highlight-color: transparent; }
-        body { background: var(--bg); color: var(--dark); padding-bottom: 40px; }
-        header { background: linear-gradient(135deg, #0f172a, #1e3a8a); color: white; padding: 16px 12px; text-align: center; box-shadow: 0 2px 8px rgba(0,0,0,0.2); position: sticky; top: 0; z-index: 100;}
-        header h1 { font-size: 20px; font-weight: 800; letter-spacing: 1px; }
-        header p { font-size: 12px; color: #fbbf24; margin-top: 4px; }
-        .badge-cv { display: inline-block; padding: 4px 12px; border-radius: 20px; font-size: 11px; font-weight: bold; background: #f59e0b; color: #fff; margin-top: 8px; transition: 0.3s; }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, sans-serif; }
+        body { background: var(--bg); color: var(--dark); padding-bottom: 75px; }
+        header { background: linear-gradient(135deg, #0f172a, #1e3a8a); color: white; padding: 16px; text-align: center; box-shadow: 0 2px 8px rgba(0,0,0,0.2); }
+        header h1 { font-size: 22px; font-weight: 800; letter-spacing: 1px; }
+        header p { font-size: 13px; color: #fbbf24; margin-top: 4px; }
+        .badge-cv { display: inline-block; padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: bold; background: #f59e0b; color: #fff; margin-top: 8px; transition: 0.3s; }
         .badge-cv.ready { background: var(--success); }
 
-        .container { max-width: 800px; margin: 15px auto; padding: 0 12px; display: flex; flex-direction: column; gap: 15px; }
+        .container { max-width: 1000px; margin: 20px auto; padding: 0 15px; display: grid; grid-template-columns: 1fr; gap: 20px; }
+        @media(min-width: 800px) { .container { grid-template-columns: 350px 1fr; } } 
         
-        .card { background: white; border-radius: 12px; padding: 16px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); }
-        .card-title { font-size: 16px; font-weight: 700; color: #1e3a8a; margin-bottom: 12px; border-bottom: 2px solid #eff6ff; padding-bottom: 8px; display: flex; justify-content: space-between; align-items: center;}
+        .card { background: white; border-radius: 12px; padding: 18px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); margin-bottom: 20px; }
+        .card-title { font-size: 16px; font-weight: 700; color: #1e3a8a; margin-bottom: 12px; border-bottom: 2px solid #eff6ff; padding-bottom: 8px; }
         
         .form-group { margin-bottom: 12px; }
         .form-group label { display: block; font-size: 13px; font-weight: 600; margin-bottom: 6px; color: #475569; }
-        input, select { width: 100%; padding: 12px 10px; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 14px; background: #f8fafc; font-weight: bold; outline: none; transition: 0.2s;}
+        input, select { width: 100%; padding: 10px; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 14px; background: #f8fafc; font-weight: bold; outline: none; transition: 0.2s;}
         input:focus, select:focus { border-color: var(--primary); }
         .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
         .grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; }
 
-        .btn { display: inline-flex; align-items: center; justify-content: center; width: 100%; padding: 14px 12px; border: none; border-radius: 10px; font-size: 14px; font-weight: 700; color: white; cursor: pointer; transition: 0.2s; gap: 6px; }
-        .btn:hover { filter: brightness(1.1); }
-        .btn:active { transform: scale(0.98); }
+        .btn { display: inline-flex; align-items: center; justify-content: center; width: 100%; padding: 12px; border: none; border-radius: 10px; font-size: 14px; font-weight: 700; color: white; cursor: pointer; transition: 0.2s; gap: 6px; }
+        .btn:hover { filter: brightness(1.1); transform: translateY(-1px); }
+        .btn:active { transform: translateY(1px); }
         .btn-primary { background: var(--primary); }
         .btn-success { background: var(--success); }
         .btn-danger { background: var(--danger); }
@@ -43,188 +44,184 @@
 
         .score-dashboard { background: #fff; border: 2px solid #dc2626; border-radius: 12px; padding: 15px; margin-top: 15px; display: none; }
         .score-header { display: flex; justify-content: space-between; border-bottom: 1px dashed #fca5a5; padding-bottom: 10px; margin-bottom: 12px; }
-        .score-total-box { font-size: 32px; font-weight: 900; color: #dc2626; line-height: 1.1;}
+        .score-total-box { font-size: 28px; font-weight: 900; color: #dc2626; }
         .score-meta { font-size: 14px; font-weight: 700; color: #1e3a8a; text-align: right; line-height: 1.5;}
-        .score-parts-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; text-align: center; }
-        .part-box { background: #fef2f2; border: 1px solid #fecaca; border-radius: 8px; padding: 10px 4px; }
-        .part-box .p-title { font-size: 11px; font-weight: 700; color: #991b1b; }
-        .part-box .p-val { font-size: 18px; font-weight: 900; color: #dc2626; margin-top: 4px; }
-        .part-box .p-sub { font-size: 10px; color: #64748b; margin-top: 2px; }
+        .score-parts-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; text-align: center; }
+        .part-box { background: #fef2f2; border: 1px solid #fecaca; border-radius: 8px; padding: 10px 5px; }
+        .part-box .p-title { font-size: 12px; font-weight: 700; color: #991b1b; }
+        .part-box .p-val { font-size: 20px; font-weight: 900; color: #dc2626; margin-top: 4px; }
+        .part-box .p-sub { font-size: 11px; color: #64748b; margin-top: 2px; }
 
-        table { width: 100%; border-collapse: collapse; font-size: 12px; margin-top: 10px; }
-        th, td { padding: 10px 6px; border-bottom: 1px solid #e2e8f0; text-align: center; }
-        th { background: #f1f5f9; color: #1e293b; font-weight: 700; white-space: nowrap;}
+        table { width: 100%; border-collapse: collapse; font-size: 13px; margin-top: 15px; }
+        th, td { padding: 10px 8px; border-bottom: 1px solid #e2e8f0; text-align: center; }
+        th { background: #f1f5f9; color: #1e293b; font-weight: 700; }
         .row-warn { background-color: #fef2f2; }
-        .badge-warn { background: var(--danger); color: white; padding: 3px 6px; border-radius: 12px; font-size: 10px; font-weight: bold; display: inline-block; text-align: center;}
+        .badge-warn { background: var(--danger); color: white; padding: 2px 6px; border-radius: 12px; font-size: 11px; font-weight: bold; }
 
-        /* MOBILE OPTIMIZED WEBCAM WRAPPER (Portrait 3:4 ratio) */
         .webcam-wrapper { 
-            position: relative; width: 100%; background: #000; border-radius: 12px; 
-            overflow: hidden; aspect-ratio: 3/4; box-shadow: 0 4px 15px rgba(0,0,0,0.2); 
+            position: relative; width: 100%; background: #1e293b; border-radius: 12px; 
+            overflow: hidden; aspect-ratio: 4/3; box-shadow: 0 4px 15px rgba(0,0,0,0.2); 
             display: flex; align-items: center; justify-content: center;
         }
-        #webcam-video { position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; }
-        #webcam-canvas-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; z-index: 10; pointer-events: none; }
+        #webcam-video { position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: contain; }
+        #webcam-canvas-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: contain; z-index: 10; pointer-events: none; }
         
         #guide-box {
-            position: absolute; top: 2%; left: 50%; transform: translateX(-50%);
-            height: 96%; aspect-ratio: 800/1130;
-            border: 2px dashed rgba(255,255,255,0.8);
+            position: absolute; top: 5%; left: 50%; transform: translateX(-50%);
+            height: 90%; aspect-ratio: 800/1130;
+            border: 2px dashed rgba(255,255,255,0.7);
             background: rgba(255,255,255,0.05);
             z-index: 5; pointer-events: none;
-            box-shadow: 0 0 0 9999px rgba(0, 0, 0, 0.4);
         }
 
-        .webcam-hud { position: absolute; bottom: 20px; left: 0; width: 100%; text-align: center; z-index: 20; pointer-events: none;}
-        #cam-status-text { background: rgba(0,0,0,0.75); color: white; padding: 8px 18px; border-radius: 20px; font-size: 13px; font-weight: bold; display: inline-block; border: 2px solid transparent; transition: 0.3s; box-shadow: 0 2px 10px rgba(0,0,0,0.3);}
+        .webcam-hud { position: absolute; bottom: 15px; left: 0; width: 100%; text-align: center; z-index: 20; pointer-events: none;}
+        #cam-status-text { background: rgba(0,0,0,0.7); color: white; padding: 6px 16px; border-radius: 20px; font-size: 14px; font-weight: bold; display: inline-block; border: 2px solid transparent; transition: 0.3s; }
         
-        #result-canvas { width: 100%; max-width: 100%; border-radius: 8px; border: 1px solid #cbd5e1; display: none; margin: 15px auto 0; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+        #result-canvas { width: 100%; max-width: 600px; border-radius: 8px; border: 1px solid #cbd5e1; display: none; margin: 15px auto 0; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
     </style>
 </head>
 <body>
 
 <header>
-    <h1>NTMIX OMR Mobile</h1>
-    <p>Phiên bản V66.0 Tối ưu riêng cho Smartphone</p>
-    <span id="cv-status" class="badge-cv">⏳ Đang tải thư viện AI...</span>
+    <h1>NTMIX OMR PC - V65.0 Trạm Dữ Liệu</h1>
+    <p>Lưu trữ vĩnh cửu · Tự động ghi nhớ điểm số · Tránh mất dữ liệu</p>
+    <span id="cv-status" class="badge-cv">⏳ Đang tải thư viện OpenCV...</span>
 </header>
 
 <div class="container">
-    
-    <!-- MÓDULE 1: CAMERA VÀ QUÉT NẰM TRÊN CÙNG ĐỂ DỄ THAO TÁC TRÊN ĐIỆN THOẠI -->
-    <div class="card">
-        <div class="card-title">
-            <span>📷 Khu Vực Quét Phiếu</span>
-            <button class="btn btn-success" style="width: auto; padding: 6px 12px; font-size: 12px; min-width: 80px;" onclick="document.getElementById('file-img').click()">Tải Ảnh Lên</button>
-            <input type="file" id="file-img" accept="image/*" multiple style="display: none;" onchange="handleImageUpload(this)">
-        </div>
-        
-        <div class="grid-2" style="margin-bottom: 12px;">
-            <button class="btn btn-primary" id="btn-start-cam" onclick="startWebcam()">🎥 Bật Camera</button>
-            <button class="btn btn-secondary" onclick="stopWebcam()">⏹️ Tắt Camera</button>
-        </div>
-
-        <div class="webcam-wrapper" id="webcam-wrapper">
-            <video id="webcam-video" autoplay playsinline muted></video>
-            <canvas id="webcam-canvas-overlay"></canvas>
-            <div id="guide-box"></div>
-            <div class="webcam-hud">
-                <span id="cam-status-text">Cầm dọc điện thoại. Đặt phiếu vào viền</span>
+    <div class="left-panel">
+        <div class="card">
+            <div class="card-title">1. Dữ Liệu Chấm</div>
+            <div class="form-group">
+                <label class="btn btn-outline" style="margin-bottom: 8px;">
+                    📁 Nạp Excel Đáp Án
+                    <input type="file" id="file-key" accept=".xlsx, .xls, .csv" style="display:none;" onchange="loadExcelKey(this)">
+                </label>
+                <div id="key-status-box" style="color: var(--success); font-size: 13px; font-weight: bold; text-align: center;">Chưa nạp đáp án</div>
+            </div>
+            <div class="form-group">
+                <label class="btn btn-outline">
+                    📁 Nạp File DSHS (Tùy chọn)
+                    <input type="file" id="file-dshs" accept=".xlsx, .xls, .csv" style="display:none;" onchange="loadExcelDSHS(this)">
+                </label>
+                <div id="dshs-status" style="color: var(--primary); font-size: 13px; font-weight: bold; text-align: center; margin-top: 4px;">Chưa nạp DSHS</div>
             </div>
         </div>
 
-        <div id="score-dashboard" class="score-dashboard">
-            <div class="score-header">
+        <div class="card">
+            <div class="card-title">2. Cấu Hình Thuật Toán</div>
+            <div class="form-group">
+                <label>📄 Mẫu phiếu:</label>
+                <select id="cfg-sheet-type" onchange="drawVirtualGrid()">
+                    <option value="bgd_2025_8sbd" selected>Phiếu BGD 2025 (SBD 8 số - Mã 4 số)</option>
+                    <option value="old_tnmaker">Phiếu TNMaker Cũ (SBD 8 số - Mã 4 số)</option>
+                </select>
+            </div>
+            
+            <div class="grid-2">
+                <div class="form-group"><label>Dịch Ngang (X):</label><input type="number" id="cfg-offset-x" value="0" onchange="drawVirtualGrid()"></div>
+                <div class="form-group"><label>Dịch Dọc (Y):</label><input type="number" id="cfg-offset-y" value="0" onchange="drawVirtualGrid()"></div>
+            </div>
+
+            <div class="form-group" style="background: #ecfdf5; padding: 10px; border-radius: 8px; border: 1px dashed #10b981;">
+                <label style="color: #047857;">📷 Tốc độ chớp Webcam:</label>
+                <select id="cfg-scan-speed" style="border-color: #34d399; font-weight: bold; color: #047857;">
+                    <option value="3">⚡ Nhanh (0.3s - Khuyên dùng)</option>
+                    <option value="6" selected>🎯 Tiêu chuẩn (0.6s - Chống rung)</option>
+                    <option value="12">🐢 Chậm (1.2s)</option>
+                </select>
+            </div>
+            
+            <div class="grid-2">
+                <div class="form-group"><label>Ngưỡng Mực Chì:</label><input type="number" id="cfg-conf" step="0.02" value="0.25"></div>
+                <div class="form-group"><label>Ngưỡng Dấu Trừ:</label><input type="number" id="cfg-conf-minus" step="0.02" value="0.40"></div>
+            </div>
+            <div class="grid-2">
+                <div class="form-group"><label>Điểm P.I:</label><input type="number" id="cfg-p1" step="0.05" value="0.25"></div>
+                <div class="form-group"><label>Điểm P.III:</label><input type="number" id="cfg-p3" step="0.05" value="0.5"></div>
+            </div>
+            <div class="form-group">
+                <label>Điểm P.II (1 | 2 | 3 | 4 ý đúng):</label>
+                <div class="grid-4">
+                    <input type="number" id="cfg-p2-1" step="0.05" value="0.1">
+                    <input type="number" id="cfg-p2-2" step="0.05" value="0.25">
+                    <input type="number" id="cfg-p2-3" step="0.05" value="0.5">
+                    <input type="number" id="cfg-p2-4" step="0.05" value="1.0">
+                </div>
+            </div>
+            <div class="form-group">
+                <label>Mã đề dự phòng (Khi HS quên tô):</label>
+                <input type="text" id="fallback-code" placeholder="VD: 0234">
+            </div>
+            <div class="form-group">
+                <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+                    <input type="checkbox" id="cfg-show-grid" style="width: 16px; height: 16px;" checked onchange="drawVirtualGrid()"> Vẽ viền định vị lên ảnh chấm
+                </label>
+            </div>
+        </div>
+    </div>
+
+    <div class="right-panel">
+        <div class="card">
+            <div class="card-title" style="display: flex; justify-content: space-between; align-items: center;">
+                <span>Khu Vực Quét (Webcam / Upload)</span>
+                <button class="btn btn-success" style="width: auto; padding: 6px 12px; font-size: 12px;" onclick="document.getElementById('file-img').click()">🖼️ Tải Ảnh Lên</button>
+                <input type="file" id="file-img" accept="image/*" multiple style="display: none;" onchange="handleImageUpload(this)">
+            </div>
+            
+            <div class="grid-2" style="margin-bottom: 12px;">
+                <button class="btn btn-primary" id="btn-start-cam" onclick="startWebcam()">🎥 Mở Webcam</button>
+                <button class="btn btn-secondary" onclick="stopWebcam()">⏹️ Tắt Webcam</button>
+            </div>
+
+            <div class="webcam-wrapper" id="webcam-wrapper">
+                <video id="webcam-video" autoplay playsinline muted></video>
+                <canvas id="webcam-canvas-overlay"></canvas>
+                <div id="guide-box"></div>
+                <div class="webcam-hud">
+                    <span id="cam-status-text">Mở Webcam hoặc Tải Ảnh chụp lên</span>
+                </div>
+            </div>
+
+            <div id="score-dashboard" class="score-dashboard">
+                <div class="score-header">
+                    <div>
+                        <div style="font-size: 12px; font-weight: 700; color: #64748b;">TỔNG ĐIỂM BÀI LÀM</div>
+                        <div class="score-total-box" id="ui-total">0.00đ</div>
+                    </div>
+                    <div class="score-meta">
+                        <div id="ui-stu-name" style="color: #1e3a8a; font-weight: 800; font-size: 16px;">Học sinh: ---</div>
+                        <div id="ui-sbd-made" style="margin-top: 4px;">SBD: --- | Mã đề: ---</div>
+                    </div>
+                </div>
+                <div class="score-parts-grid">
+                    <div class="part-box"><div class="p-title">PHẦN I</div><div class="p-val" id="ui-p1-score">0đ</div><div class="p-sub" id="ui-p1-detail">0/0 câu</div></div>
+                    <div class="part-box"><div class="p-title">PHẦN II</div><div class="p-val" id="ui-p2-score">0đ</div><div class="p-sub" id="ui-p2-detail">0/0 ý</div></div>
+                    <div class="part-box"><div class="p-title">PHẦN III</div><div class="p-val" id="ui-p3-score">0đ</div><div class="p-sub" id="ui-p3-detail">0/0 câu</div></div>
+                </div>
+                <div id="ui-warnings" style="margin-top: 10px; font-size: 13px; color: #d93025; font-weight: bold; text-align: center;"></div>
+                <div class="grid-2" style="margin-top: 15px;">
+                    <button class="btn btn-secondary" onclick="document.getElementById('result-canvas').style.display='block'">👁️ Xem Ảnh Chấm</button>
+                    <button class="btn btn-primary" onclick="downloadResultImage()">⬇️ Tải Ảnh Về Máy</button>
+                </div>
+            </div>
+            <canvas id="result-canvas"></canvas>
+        </div>
+
+        <div class="card">
+            <div class="card-title" style="display: flex; justify-content: space-between; align-items: center;">
+                <span>Danh sách bài đã chấm (<span id="count-graded">0</span>)</span>
                 <div>
-                    <div style="font-size: 11px; font-weight: 700; color: #64748b; margin-bottom:4px;">TỔNG ĐIỂM BÀI LÀM</div>
-                    <div class="score-total-box" id="ui-total">0.00đ</div>
-                </div>
-                <div class="score-meta">
-                    <div id="ui-stu-name" style="color: #1e3a8a; font-weight: 800; font-size: 15px;">Học sinh: ---</div>
-                    <div id="ui-sbd-made" style="margin-top: 4px; font-size:12px;">SBD: --- | Mã đề: ---</div>
+                    <button class="btn btn-success" style="padding: 6px 12px; font-size: 12px; width: auto;" onclick="exportResultsExcel()">📥 Xuất Excel</button>
+                    <button class="btn btn-danger" style="padding: 6px 12px; font-size: 12px; width: auto; margin-left: 5px;" onclick="clearResults()">🗑️ Xóa hết</button>
                 </div>
             </div>
-            <div class="score-parts-grid">
-                <div class="part-box"><div class="p-title">PHẦN I</div><div class="p-val" id="ui-p1-score">0đ</div><div class="p-sub" id="ui-p1-detail">0/0 câu</div></div>
-                <div class="part-box"><div class="p-title">PHẦN II</div><div class="p-val" id="ui-p2-score">0đ</div><div class="p-sub" id="ui-p2-detail">0/0 ý</div></div>
-                <div class="part-box"><div class="p-title">PHẦN III</div><div class="p-val" id="ui-p3-score">0đ</div><div class="p-sub" id="ui-p3-detail">0/0 câu</div></div>
+            <div style="overflow-x: auto;">
+                <table>
+                    <thead><tr><th>STT</th><th>SBD</th><th>Họ và Tên</th><th>Mã Đề</th><th>TỔNG ĐIỂM</th><th>Cảnh báo</th></tr></thead>
+                    <tbody id="results-tbody"><tr><td colspan="6" style="color:#94a3b8; font-style:italic;">Chưa có dữ liệu</td></tr></tbody>
+                </table>
             </div>
-            <div id="ui-warnings" style="margin-top: 10px; font-size: 12px; color: #d93025; font-weight: bold; text-align: center;"></div>
-            <div class="grid-2" style="margin-top: 15px;">
-                <button class="btn btn-secondary" onclick="document.getElementById('result-canvas').style.display='block'; this.style.display='none';">👁️ Xem Ảnh</button>
-                <button class="btn btn-primary" onclick="downloadResultImage()">⬇️ Tải Ảnh Về</button>
-            </div>
-        </div>
-        <canvas id="result-canvas"></canvas>
-    </div>
-
-    <!-- MÓDULE 2: BẢNG KẾT QUẢ -->
-    <div class="card">
-        <div class="card-title" style="flex-wrap: wrap; gap:10px;">
-            <span>📋 Đã chấm (<span id="count-graded">0</span>)</span>
-            <div style="display:flex; gap:5px;">
-                <button class="btn btn-success" style="padding: 8px 10px; font-size: 11px; width: auto;" onclick="exportResultsExcel()">📥 Xuất Excel</button>
-                <button class="btn btn-danger" style="padding: 8px 10px; font-size: 11px; width: auto;" onclick="clearResults()">🗑️ Xóa hết</button>
-            </div>
-        </div>
-        <div style="overflow-x: auto; -webkit-overflow-scrolling: touch; border: 1px solid #e2e8f0; border-radius: 8px;">
-            <table style="margin-top:0;">
-                <thead><tr><th>STT</th><th>SBD</th><th>Họ & Tên</th><th>Mã Đề</th><th>ĐIỂM</th><th>Lỗi</th></tr></thead>
-                <tbody id="results-tbody"><tr><td colspan="6" style="color:#94a3b8; font-style:italic;">Chưa có dữ liệu</td></tr></tbody>
-            </table>
-        </div>
-    </div>
-
-    <!-- MÓDULE 3: NẠP DỮ LIỆU EXCEL -->
-    <div class="card">
-        <div class="card-title">📂 Dữ Liệu Excel</div>
-        <div class="form-group">
-            <label class="btn btn-outline" style="margin-bottom: 8px;">
-                📁 Nạp File Đáp Án
-                <input type="file" id="file-key" accept=".xlsx, .xls, .csv" style="display:none;" onchange="loadExcelKey(this)">
-            </label>
-            <div id="key-status-box" style="color: var(--success); font-size: 12px; font-weight: bold; text-align: center;">Chưa nạp đáp án</div>
-        </div>
-        <div class="form-group">
-            <label class="btn btn-outline">
-                📁 Nạp File Danh sách HS
-                <input type="file" id="file-dshs" accept=".xlsx, .xls, .csv" style="display:none;" onchange="loadExcelDSHS(this)">
-            </label>
-            <div id="dshs-status" style="color: var(--primary); font-size: 12px; font-weight: bold; text-align: center; margin-top: 4px;">Chưa nạp DSHS (Tùy chọn)</div>
-        </div>
-    </div>
-
-    <!-- MÓDULE 4: CẤU HÌNH HỆ THỐNG -->
-    <div class="card">
-        <div class="card-title">⚙️ Cấu Hình Chấm Điểm</div>
-        <div class="form-group">
-            <label>📄 Mẫu phiếu:</label>
-            <select id="cfg-sheet-type" onchange="drawVirtualGrid()">
-                <option value="bgd_2025_8sbd" selected>Phiếu BGD 2025 (SBD 8 số - Mã 4 số)</option>
-                <option value="old_tnmaker">Phiếu TNMaker Cũ (SBD 8 số - Mã 4 số)</option>
-            </select>
-        </div>
-        
-        <div class="grid-2">
-            <div class="form-group"><label>Dịch Ngang (X):</label><input type="number" id="cfg-offset-x" value="0" onchange="drawVirtualGrid()"></div>
-            <div class="form-group"><label>Dịch Dọc (Y):</label><input type="number" id="cfg-offset-y" value="0" onchange="drawVirtualGrid()"></div>
-        </div>
-
-        <div class="form-group" style="background: #ecfdf5; padding: 10px; border-radius: 8px; border: 1px dashed #10b981;">
-            <label style="color: #047857;">📷 Tốc độ chớp Webcam:</label>
-            <select id="cfg-scan-speed" style="border-color: #34d399; font-weight: bold; color: #047857;">
-                <option value="3">⚡ Nhanh (0.3s - Khuyên dùng)</option>
-                <option value="6" selected>🎯 Tiêu chuẩn (0.6s - Chống rung)</option>
-                <option value="12">🐢 Chậm (1.2s)</option>
-            </select>
-        </div>
-        
-        <div class="grid-2">
-            <div class="form-group"><label>Ngưỡng Mực Chì:</label><input type="number" id="cfg-conf" step="0.02" value="0.25"></div>
-            <div class="form-group"><label>Ngưỡng Dấu Trừ:</label><input type="number" id="cfg-conf-minus" step="0.02" value="0.40"></div>
-        </div>
-        <div class="grid-2">
-            <div class="form-group"><label>Điểm P.I:</label><input type="number" id="cfg-p1" step="0.05" value="0.25"></div>
-            <div class="form-group"><label>Điểm P.III:</label><input type="number" id="cfg-p3" step="0.05" value="0.5"></div>
-        </div>
-        <div class="form-group">
-            <label>Điểm P.II (1 | 2 | 3 | 4 ý đúng):</label>
-            <div class="grid-4">
-                <input type="number" id="cfg-p2-1" step="0.05" value="0.1" style="padding: 10px 4px; text-align:center;">
-                <input type="number" id="cfg-p2-2" step="0.05" value="0.25" style="padding: 10px 4px; text-align:center;">
-                <input type="number" id="cfg-p2-3" step="0.05" value="0.5" style="padding: 10px 4px; text-align:center;">
-                <input type="number" id="cfg-p2-4" step="0.05" value="1.0" style="padding: 10px 4px; text-align:center;">
-            </div>
-        </div>
-        <div class="form-group">
-            <label>Mã đề dự phòng (Khi quên tô):</label>
-            <input type="text" id="fallback-code" placeholder="VD: 0234">
-        </div>
-        <div class="form-group">
-            <label style="display: flex; align-items: center; gap: 10px; cursor: pointer; background: #f8fafc; padding: 12px; border-radius:8px; border:1px solid #cbd5e1;">
-                <input type="checkbox" id="cfg-show-grid" style="width: 20px; height: 20px;" checked onchange="drawVirtualGrid()"> 
-                <span>Vẽ viền định vị lên ảnh chấm</span>
-            </label>
         </div>
     </div>
 </div>
@@ -234,7 +231,7 @@ window.cvReady = false;
 function onOpenCvReady() {
     window.cvReady = true;
     let badge = document.getElementById('cv-status');
-    badge.textContent = "✅ Lõi AI Sẵn Sàng!";
+    badge.textContent = "✅ Lõi OpenCV Sẵn Sàng!";
     badge.classList.add('ready');
 }
 
@@ -243,10 +240,12 @@ function getStrVal(id, defVal) { let el = document.getElementById(id); return (e
 function getCheckVal(id, defVal) { let el = document.getElementById(id); return el ? el.checked : defVal; }
 
 let answerKey = {}; let dshsDict = {}; 
+// V65: Tải dữ liệu cũ từ LocalStorage để F5 không mất điểm
 let gradedRows = JSON.parse(localStorage.getItem('ntmix_history') || '[]');
 let videoStream = null; let scanInterval = null;
 let stableFrames = 0; let lastGradedSbd = "Phieu";
 
+// Hàm kết xuất bảng kết quả lên giao diện
 function renderResultsTable() {
     let countGradedEl = document.getElementById('count-graded');
     if(countGradedEl) countGradedEl.textContent = gradedRows.length;
@@ -254,16 +253,15 @@ function renderResultsTable() {
     let resultsTbody = document.getElementById('results-tbody');
     if(resultsTbody) {
         if(gradedRows.length === 0) {
-            resultsTbody.innerHTML = `<tr><td colspan="6" style="color:#94a3b8; font-style:italic;">Chưa có dữ liệu</td></tr>`;
+            resultsTbody.innerHTML = `<tr><td colspan="6" style="color:#94a3b8; font-style:italic;">Chưa có dữ liệu (Kết quả sẽ được tự động lưu lại tại đây)</td></tr>`;
         } else {
-            resultsTbody.innerHTML = gradedRows.slice().reverse().map((r, idx) => {
-                let actualIndex = gradedRows.length - idx;
-                let warnHtml = r.warnings ? `<span class="badge-warn">Lỗi</span>` : `<span style="color:var(--success); font-weight:bold;">OK</span>`;
+            resultsTbody.innerHTML = gradedRows.map((r, i) => {
+                let warnHtml = r.warnings ? `<span class="badge-warn">${r.warnings}</span>` : `<span style="color:var(--success)">OK</span>`;
                 let rowClass = r.warnings ? 'row-warn' : '';
                 return `<tr class="${rowClass}">
-                    <td>${actualIndex}</td>
+                    <td>${i+1}</td>
                     <td><b>${r.sbd}</b></td>
-                    <td style="text-align:left; max-width:100px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${r.name}</td>
+                    <td style="text-align:left;">${r.name}</td>
                     <td>${r.code}</td>
                     <td><b style="color:#dc2626;">${r.totalScore}</b></td>
                     <td>${warnHtml}</td>
@@ -273,6 +271,7 @@ function renderResultsTable() {
     }
 }
 
+// Xóa lịch sử chấm
 function clearResults() {
     if(confirm('Thầy có chắc chắn muốn xóa toàn bộ lịch sử chấm bài? Dữ liệu không thể khôi phục.')) {
         gradedRows = [];
@@ -281,6 +280,7 @@ function clearResults() {
     }
 }
 
+// Chạy khởi tạo bảng khi load trang
 window.addEventListener('DOMContentLoaded', () => { 
     drawVirtualGrid(); 
     renderResultsTable(); 
@@ -412,19 +412,12 @@ async function startWebcam() {
     
     const video = document.getElementById('webcam-video');
     try {
-        // Ép ưu tiên Camera sau (environment) trên Smartphone với độ phân giải cao
-        videoStream = await navigator.mediaDevices.getUserMedia({ 
-            video: { 
-                facingMode: { ideal: "environment" }, 
-                width: { ideal: 1080 },
-                height: { ideal: 1920 }
-            } 
-        });
+        videoStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment", width: { ideal: 1920 } } });
         video.srcObject = videoStream;
         video.onloadedmetadata = () => { video.play(); startOpenCVScanLoop(); };
         document.getElementById('cam-status-text').textContent = "Đang tìm 4 góc giấy...";
         document.getElementById('cam-status-text').style.borderColor = "transparent";
-    } catch (err) { alert("Lỗi Webcam: Hãy cấp quyền Camera cho trình duyệt trên điện thoại."); }
+    } catch (err) { alert("Lỗi Webcam: " + err.message); }
 }
 
 function stopWebcam() {
@@ -512,7 +505,7 @@ function startOpenCVScanLoop() {
         ctx.clearRect(0, 0, VW, VH);
 
         if (maxArea > 0 && bestApprox.rows === 4) {
-            ctx.strokeStyle = "#0f9d58"; ctx.lineWidth = 6;
+            ctx.strokeStyle = "#0f9d58"; ctx.lineWidth = 4;
             ctx.beginPath();
             let pts = [];
             for (let i = 0; i < 4; i++) {
@@ -538,9 +531,9 @@ function startOpenCVScanLoop() {
             }
         } else {
             if(stableFrames > 0) stableFrames--;
-            statusText.textContent = "Cầm thẳng. Đặt phiếu vào viền nét đứt...";
+            statusText.textContent = "Đặt giấy lọt vào khung viền đứt nét...";
             statusText.style.borderColor = "transparent";
-            statusText.style.color = "#fff"; statusText.style.background = "rgba(0,0,0,0.75)";
+            statusText.style.color = "#fff"; statusText.style.background = "rgba(0,0,0,0.7)";
         }
 
         src.delete(); gray.delete(); blur.delete(); thresh.delete(); contours.delete(); hierarchy.delete(); bestApprox.delete();
@@ -944,7 +937,7 @@ function processImagePureJS(flatCanvas, isUpload) {
             if(statusText) { statusText.textContent = `✅ Đã chấm xong SBD: ${scannedSbd}`; statusText.style.background = "var(--success)"; }
         }
 
-        // V65: LƯU TRỮ VÀO LOCAL STORAGE (THIẾT KẾ CHO MOBILE)
+        // V65: LƯU TRỮ VÀO LOCAL STORAGE
         gradedRows.push({ 
             sbd: scannedSbd, 
             name: stuInfo.name, 
@@ -973,6 +966,7 @@ function downloadResultImage() {
 
 function exportResultsExcel() {
     if (!gradedRows.length) return alert("Chưa có phiếu nào!");
+    // V65: XUẤT ĐIỂM CHI TIẾT TỪNG PHẦN
     const data = [["STT", "Họ Tên", "Lớp", "SBD", "Mã Đề", "Điểm P.I", "Điểm P.II", "Điểm P.III", "TỔNG ĐIỂM", "Cảnh báo"], 
                   ...gradedRows.map((r, i) => [i + 1, r.name, r.className, r.sbd, r.code, r.scoreP1, r.scoreP2, r.scoreP3, r.totalScore, r.warnings])];
     const wb = XLSX.utils.book_new(); 
