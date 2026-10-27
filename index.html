@@ -3,15 +3,16 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>App Chấm Trắc Nghiệm NTMIX AI - Pro Edition</title>
+    <title>V1.2 App chấm trắc nghiệm NTMIX - AI Core</title>
     <!-- Thư viện cơ bản -->
     <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.min.js"></script>
+    <!-- Thư viện hỗ trợ đóng gói ZIP -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
     
     <style>
-        :root { --primary: #1a73e8; --success: #0f9d58; --danger: #d93025; --purple: #7c3aed; --dark: #1e293b; --bg: #f8fafc; }
+        :root { --primary: #1a73e8; --success: #0f9d58; --danger: #d93025; --purple: #7c3aed; --dark: #1e293b; --bg: #f1f5f9; }
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
         body { background: var(--bg); color: var(--dark); padding-bottom: 75px; }
         header { background: linear-gradient(135deg, #1e3a8a, #2563eb); color: white; padding: 12px 16px; text-align: center; position: sticky; top: 0; z-index: 10; box-shadow: 0 2px 8px rgba(0,0,0,0.15); }
@@ -52,15 +53,17 @@
             position: absolute; 
             top: 45%; left: 50%; transform: translate(-50%, -50%);
             width: 96vw; max-width: 650px; 
-            aspect-ratio: 800 / 1130; 
+            aspect-ratio: 742 / 1083; 
             box-shadow: 0 0 0 9999px rgba(0,0,0,0.85); 
             border: 2px solid rgba(0, 255, 0, 0.5); 
             pointer-events: none;
             z-index: 10;
         }
 
+        #grid-preview { position: absolute; top: 0; left: 0; width: 100%; height: 100%; }
+
         .corner-box {
-            position: absolute; width: 12%; aspect-ratio: 1 / 1;
+            position: absolute; width: 11%; aspect-ratio: 1 / 1;
             border: 3px solid #00ff00; background: rgba(0, 255, 0, 0.15); transition: background 0.2s;
         }
         .corner-box.tl { top: 0; left: 0; border-bottom: none; border-right: none; }
@@ -113,9 +116,9 @@
 <body>
 
 <header>
-    <h1>App Chấm Trắc Nghiệm NTMIX</h1>
-    <p>Tác giả: Nguyễn Thanh Tùng - Bản Nâng Cấp AI Homography</p>
-    <span class="badge-cv">AI Vision Core v2.0</span>
+    <h1>App chấm trắc nghiệm NTMIX</h1>
+    <p>Tác giả: Nguyễn Thanh Tùng - AI Precision Core v1.2</p>
+    <span class="badge-cv">NTMIX - Homography 2025</span>
 </header>
 
 <div class="container">
@@ -134,7 +137,7 @@
             <div class="form-group">
                 <label>📄 Hoặc chọn file Excel Đáp án:</label>
                 <div class="btn-upload" onclick="document.getElementById('file-key').click()">
-                    <span id="label-file-key">📁 Bấm vào đây để chọn File Excel</span>
+                    <span id="label-file-key">📁 Bấm vào đây để chọn File</span>
                 </div>
                 <input type="file" id="file-key" accept=".xlsx, .xls" style="display: none;">
             </div>
@@ -143,7 +146,7 @@
             <div class="form-group" style="margin-top: 10px;">
                 <label>👥 File Danh sách Học sinh (Tùy chọn):</label>
                 <div class="btn-upload" onclick="document.getElementById('file-dshs').click()">
-                    <span id="label-file-dshs">📁 Bấm vào đây để nạp DSHS (.xlsx)</span>
+                    <span id="label-file-dshs">📁 Bấm vào đây để chọn File</span>
                 </div>
                 <input type="file" id="file-dshs" accept=".xlsx, .xls" style="display: none;">
                 <small id="dshs-status" style="color: var(--primary); font-weight: 600; display: block; margin-top: 6px; text-align: center;"></small>
@@ -151,13 +154,36 @@
         </div>
 
         <div class="card">
-            <div class="card-title">2. Cấu hình Thang Điểm & Thuật Toán AI</div>
+            <div class="card-title">2. Cấu hình Máy Quét & Chấm</div>
+            
+            <div class="form-group" style="background: #ecfdf5; padding: 10px; border-radius: 8px; border: 1px dashed #10b981; margin-bottom: 12px;">
+                <label style="color: #047857;">📷 Tốc độ Bắt nét tự động (Auto-Scan):</label>
+                <select id="cfg-scan-speed" style="border-color: #34d399; font-weight: bold; color: #047857;" onchange="syncSpeed('cfg')">
+                    <option value="3">⚡ Bắt nét: Nhanh (0.3s)</option>
+                    <option value="5" selected>🎯 Bắt nét: Tiêu chuẩn (0.5s)</option>
+                    <option value="9">🐢 Bắt nét: Chắc chắn (0.9s)</option>
+                </select>
+            </div>
+
+            <div class="form-group" style="background: #eef2ff; padding: 10px; border-radius: 8px; border: 1px dashed #6366f1;">
+                <label style="color: #4338ca;">⚙️ Căn chỉnh bù trừ in ấn (Pixel):</label>
+                <div class="grid-2">
+                    <div>
+                        <span style="font-size: 11px; color: #64748b;">Dịch Ngang (X)</span>
+                        <input type="number" id="cfg-offset-x" value="0" onchange="drawVirtualGrid()" style="color: #dc2626;">
+                    </div>
+                    <div>
+                        <span style="font-size: 11px; color: #64748b;">Dịch Dọc (Y)</span>
+                        <input type="number" id="cfg-offset-y" value="0" onchange="drawVirtualGrid()" style="color: #dc2626;">
+                    </div>
+                </div>
+            </div>
             <div class="grid-2">
-                <div class="form-group"><label>Điểm Phần I (mỗi câu):</label><input type="number" id="cfg-p1" step="0.05" value="0.25"></div>
-                <div class="form-group"><label>Điểm Phần III (mỗi câu):</label><input type="number" id="cfg-p3" step="0.05" value="0.5"></div>
+                <div class="form-group"><label>Điểm Phần I:</label><input type="number" id="cfg-p1" step="0.05" value="0.25"></div>
+                <div class="form-group"><label>Điểm Phần III:</label><input type="number" id="cfg-p3" step="0.05" value="0.5"></div>
             </div>
             <div class="form-group">
-                <label>Điểm Phần II (ứng với 1 | 2 | 3 | 4 ý đúng):</label>
+                <label>Điểm Phần II (1 | 2 | 3 | 4 ý đúng):</label>
                 <div class="grid-4">
                     <input type="number" id="cfg-p2-1" step="0.05" value="0.1">
                     <input type="number" id="cfg-p2-2" step="0.05" value="0.25">
@@ -167,18 +193,21 @@
             </div>
             <div class="grid-2">
                 <div class="form-group">
-                    <label>Độ nhạy nhận diện (Threshold):</label>
-                    <input type="number" id="cfg-conf" step="0.02" value="0.15">
+                    <label>Ngưỡng nhận diện chì chung:</label>
+                    <input type="number" id="cfg-conf" step="0.02" value="0.18">
                 </div>
                 <div class="form-group">
-                    <label>Bù lệch trục lề in (X / Y mm):</label>
-                    <div class="grid-2">
-                        <input type="number" id="cfg-offset-x" value="0" placeholder="X">
-                        <input type="number" id="cfg-offset-y" value="0" placeholder="Y">
-                    </div>
+                    <label>Ngưỡng lọc ô dấu trừ (-):</label>
+                    <input type="number" id="cfg-conf-minus" step="0.02" value="0.22">
                 </div>
             </div>
-            <div class="form-group" style="margin-top: 8px;"><label>🔧 Mã đề dự phòng (Khi HS quên tô):</label><input type="text" id="fallback-code" placeholder="VD: 101"></div>
+            <div class="form-group">
+                <label class="check-inline" style="display: flex; align-items: center; gap: 8px; font-weight: bold; color: #1e3a8a; cursor: pointer;">
+                    <input type="checkbox" id="cfg-show-grid" style="width: 18px; height: 18px;" checked>
+                    📐 Vẽ vòng tròn chỉ báo kết quả trên ảnh
+                </label>
+            </div>
+            <div class="form-group" style="margin-top: 12px;"><label>🔧 Mã đề dự phòng (Khi HS quên tô):</label><input type="text" id="fallback-code" placeholder="VD: 101"></div>
             <button class="btn btn-primary" onclick="switchTab('tab-scan')" style="margin-top: 10px;">Lưu & Mở Giao Diện Chấm ➔</button>
         </div>
     </div>
@@ -187,17 +216,17 @@
         <div class="card">
             <div class="card-title">Chấm Phiếu Trực Tiếp</div>
             <div class="grid-2" style="margin-bottom: 10px;">
-                <button class="btn btn-primary" onclick="openFullscreenCamera()">📷 Mở Camera Chấm</button>
-                <div class="btn btn-success" style="margin: 0; cursor: pointer; display: flex; align-items: center; justify-content: center;" onclick="document.getElementById('file-images').click()">🖼️ Chọn Ảnh Từ Máy</div>
+                <button class="btn btn-primary" onclick="openFullscreenCamera()">📷 Mở Máy Quét</button>
+                <div class="btn btn-success" style="margin: 0; cursor: pointer; display: flex; align-items: center; justify-content: center;" onclick="document.getElementById('file-images').click()">🖼️ Chọn Từ Máy</div>
                 <input type="file" id="file-images" accept="image/*" capture="environment" multiple style="display: none;" onchange="handleImageFiles(this)">
             </div>
             
-            <div id="scan-status">👋 Sẵn sàng! Hãy Mở camera hoặc Chọn ảnh bài làm từ máy.</div>
+            <div id="scan-status">👋 Sẵn sàng! Hãy Mở máy quét hoặc Chọn ảnh từ máy.</div>
 
             <div id="score-dashboard" class="score-dashboard">
                 <div class="score-header">
                     <div>
-                        <div style="font-size: 11px; font-weight: 700; color: #64748b;">TỔNG ĐIỂM BÀI THI</div>
+                        <div style="font-size: 11px; font-weight: 700; color: #64748b;">TỔNG ĐIỂM BÀI LÀM</div>
                         <div class="score-total-box" id="ui-total">0.00đ</div>
                     </div>
                     <div class="score-meta">
@@ -212,11 +241,11 @@
                 </div>
                 <div id="ui-warnings" style="margin-top: 8px; font-size: 12px; color: #d93025; font-weight: 600; text-align: center;"></div>
                 <div class="grid-2" style="margin-top: 10px;">
-                    <button class="btn btn-primary" onclick="openFullscreenCamera()">🔄 Quét Tờ Tiếp Theo</button>
-                    <button class="btn btn-secondary" onclick="downloadResultImage()">⬇️ Tải Ảnh Đã Chấm</button>
+                    <button class="btn btn-primary" onclick="openFullscreenCamera()">🔄 Quét Tờ Khác</button>
+                    <button class="btn btn-secondary" onclick="downloadResultImage()">⬇️ Lưu Ảnh Đang Hiện</button>
                 </div>
             </div>
-            <canvas id="result-canvas"></canvas>
+            <canvas id="result-canvas" style="width: 100%; border-radius: 8px; border: 1px solid #cbd5e1; display: none; margin-top: 10px;"></canvas>
         </div>
     </div>
 
@@ -227,12 +256,12 @@
             </div>
             <div class="grid-2" style="margin-bottom: 12px;">
                 <button class="btn btn-success" onclick="exportResultsExcel()">📥 Xuất Excel Điểm</button>
-                <button class="btn btn-warning" onclick="downloadAllImagesZip()">📦 Tải File ZIP Ảnh</button>
+                <button class="btn btn-warning" onclick="downloadAllImagesZip()">📦 Tải Tất Cả Ảnh (ZIP)</button>
             </div>
             
             <div class="table-wrap">
                 <table>
-                    <thead><tr><th>STT</th><th>SBD</th><th>Họ & Tên</th><th>Mã Đề</th><th>TỔNG ĐIỂM</th></tr></thead>
+                    <thead><tr><th>STT</th><th>SBD</th><th>Tên</th><th>Mã</th><th>TỔNG</th></tr></thead>
                     <tbody id="results-tbody"></tbody>
                 </table>
             </div>
@@ -244,6 +273,7 @@
     <div id="video-container">
         <video id="video" autoplay playsinline muted></video>
         <div id="cam-overlay">
+            <canvas id="grid-preview"></canvas>
             <div class="corner-box tl" id="cb-tl"></div>
             <div class="corner-box tr" id="cb-tr"></div>
             <div class="corner-box bl" id="cb-bl"></div>
@@ -251,88 +281,109 @@
         </div>
     </div>
     <div class="cam-controls">
-        <p id="hud-text">Căn 4 ô vuông đen vào 4 góc khung xanh</p>
+        <p id="hud-text">Đưa 4 ô đen ngoài cùng vào 4 góc xanh lục</p>
         <div class="cam-btn-group">
-            <select id="cam-speed-select" class="speed-select">
-                <option value="3">Bắt nét: Rất Nhanh</option>
-                <option value="5" selected>Bắt nét: Tiêu chuẩn</option>
-                <option value="8">Bắt nét: Chắc chắn</option>
+            <select id="cam-speed-select" class="speed-select" onchange="syncSpeed('cam')">
+                <option value="3">Lấy nét: Nhanh</option>
+                <option value="5" selected>Lấy nét: Tiêu chuẩn</option>
+                <option value="9">Lấy nét: Chắc chắn</option>
             </select>
-            <button class="btn btn-danger" style="padding: 10px 16px; font-size: 15px;" onclick="manualCapture()">📸 Chụp & Chấm</button>
-            <button class="btn btn-secondary" style="padding: 10px 16px; font-size: 15px;" onclick="closeFullscreenCamera()">❌ Thoát</button>
+            <button class="btn btn-danger" style="padding: 10px 15px; font-size: 15px;" onclick="manualCapture()">📸 Chụp Mẫu</button>
+            <button class="btn btn-secondary" style="padding: 10px 15px; font-size: 15px;" onclick="closeFullscreenCamera()">❌ Đóng</button>
         </div>
     </div>
 </div>
 
 <div class="bottom-nav">
     <div class="nav-item active" onclick="switchTab('tab-config')">⚙️ Cấu hình</div>
-    <div class="nav-item" onclick="switchTab('tab-scan')">📷 Chấm bài</div>
+    <div class="nav-item" onclick="switchTab('tab-scan')">📷 Máy Quét</div>
     <div class="nav-item" onclick="switchTab('tab-results')">📊 Bảng điểm (<span id="nav-count">0</span>)</div>
 </div>
 
 <script>
-/* ==========================================================================
-   LÕI AI OMR CHUẨN XÁC: HOMOGRAPHY + INTEGRAL MASK + DYNAMIC SUBTRACTION
-   ========================================================================== */
-let answerKey = {};
-let dshsDict = {};
+window.addEventListener('DOMContentLoaded', () => {
+    drawVirtualGrid(); 
+});
+
+let answerKey = {}; 
+let dshsDict = {}; 
 let gradedRows = [];
 let gradedImagesData = [];
-let videoStream = null;
-let qrStream = null;
+let videoStream = null; 
+let qrStream = null; 
 let qrScanTimer = null;
-let autoScanTimer = null;
+let autoScanTimer = null; 
 let stableFrames = 0;
 let lastGradedSbd = "Phieu";
 
-// Thông số mẫu phiếu chuẩn NTMIX BGD 2025 (Hệ tọa độ gốc mm quy đổi từ file Paint)
-const SHEET_SPEC = {
-    PW: 210,
-    PH: 297,
-    RB: 1.45,
-    CORNERS: [
-        [10.0, 10.0],
-        [197.0, 10.0],
-        [197.0, 287.0],
-        [10.0, 287.0]
-    ],
-    // 8 cột Số báo danh
-    SBD_X: [141.0, 145.0, 149.3, 153.3, 157.4, 161.4, 165.5, 169.5],
+/* ==========================================================================
+   TỌA ĐỘ CHUẨN ĐO THỦ CÔNG TỪ PAINT (PHIẾU BGD 2025 - 4 MÃ ĐỀ)
+   ========================================================================== */
+const SHEET_BASE_W = 742;  // Chiều rộng khung mẫu chuẩn pixel
+const SHEET_BASE_H = 1083; // Chiều cao khung mẫu chuẩn pixel
+
+const CORNERS_CANONICAL = [
+    [24, 29],     // TL (Nút trên trái)
+    [718, 29],    // TR (Nút trên phải)
+    [718, 1054],  // BR (Nút đáy phải)
+    [24, 1054]    // BL (Nút đáy trái)
+];
+
+const GRID_SPEC = {
+    // 8 cột SBD
+    sbd: {
+        x: [510, 525, 541, 556, 571, 586, 601, 616],
+        y: [106, 128, 149, 171, 193, 215, 237, 258, 280, 302]
+    },
     // 4 cột Mã đề
-    MD_X: [179.8, 183.8, 187.8, 191.9],
-    // Hàng số 0 đến 9
-    ID_Y: [30.8, 36.8, 42.4, 48.4, 54.3, 60.3, 66.2, 71.9, 77.8, 83.8],
-    // Phần I: 4 khối x 10 câu
-    P1_X: [
-        [26.7, 35.3, 44.2, 52.8],
-        [70.4, 79.3, 88.2, 96.8],
-        [114.6, 123.2, 132.1, 140.7],
-        [158.5, 167.4, 176.0, 184.7]
-    ],
-    P1_Y: [113.0, 117.3, 121.9, 126.5, 130.8, 135.7, 140.3, 144.6, 148.9, 153.8],
-    // Phần II: 8 câu (mỗi câu 2 cột Đ/S)
-    P2_X: [
-        [26.4, 35.3], [44.5, 52.8],
-        [70.6, 79.5], [88.2, 97.1],
-        [114.6, 123.5], [132.4, 141.3],
-        [159.3, 167.4], [176.3, 185.2]
-    ],
-    P2_Y: [178.6, 183.2, 187.8, 192.4],
-    // Phần III: 6 câu điền số
-    P3_X: [
-        [25.1, 31.3, 37.2, 43.4],
-        [53.1, 59.3, 65.2, 71.4],
-        [81.4, 87.4, 93.3, 99.5],
-        [109.5, 115.7, 121.9, 127.8],
-        [137.8, 143.7, 149.6, 155.8],
-        [165.8, 172.0, 178.0, 184.2]
-    ],
-    P3_DASH: 219.2,
-    P3_COMMA: 223.8,
-    P3_D: [228.9, 233.2, 238.1, 242.9, 247.3, 251.9, 256.7, 261.3, 265.9, 270.8]
+    made: {
+        x: [654, 669, 684, 699],
+        y: [106, 128, 149, 171, 193, 215, 237, 258, 280, 302]
+    },
+    // PHẦN I: 4 khối x 10 câu
+    p1: {
+        blocksX: [
+            [86, 118, 151, 183],     // Câu 1 - 10
+            [248, 281, 314, 346],    // Câu 11 - 20
+            [412, 444, 477, 509],    // Câu 21 - 30
+            [575, 608, 640, 672]     // Câu 31 - 40
+        ],
+        y: [410, 426, 443, 460, 476, 494, 511, 527, 543, 561]
+    },
+    // PHẦN II: 8 câu (mỗi câu 2 cột Đ/S)
+    p2: {
+        colsX: [
+            [85, 118],   // Câu 1
+            [152, 183],  // Câu 2
+            [249, 282],  // Câu 3
+            [314, 347],  // Câu 4
+            [412, 445],  // Câu 5
+            [478, 511],  // Câu 6
+            [578, 608],  // Câu 7
+            [641, 674]   // Câu 8
+        ],
+        y: [653, 670, 687, 704] // Các ý a, b, c, d
+    },
+    // PHẦN III: 6 câu điền số
+    p3: {
+        colsX: [
+            [80, 103, 125, 148],   // Câu 1
+            [184, 207, 229, 252],  // Câu 2
+            [289, 311, 333, 356],  // Câu 3
+            [393, 416, 439, 461],  // Câu 4
+            [498, 520, 542, 565],  // Câu 5
+            [602, 625, 647, 670]   // Câu 6
+        ],
+        yMinus: 803,
+        yComma: 820,
+        yDigit: [839, 855, 873, 891, 907, 924, 942, 959, 976, 994],
+        digitChars: ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9']
+    }
 };
 
-// 1. Phép giải Ma trận Homography (Xạ ảnh 8 tham số)
+/* ==========================================================================
+   LÕI AI TOÁN HỌC: HOMOGRAPHY & ADAPTIVE INTEGRAL MASKING
+   ========================================================================== */
 function solveHomography(S, D) {
     const A = [];
     for (let i = 0; i < 4; i++) {
@@ -359,7 +410,6 @@ function applyHomography(H, x, y) {
     return [(H[0] * x + H[1] * y + H[2]) / d, (H[3] * x + H[4] * y + H[5]) / d];
 }
 
-// 2. Thuật toán Adaptive Masking qua Integral Image để tìm ô vuông đen định vị
 function buildAdaptiveMask(gray, w, h) {
     const R = Math.max(12, Math.round(Math.min(w, h) / 14));
     const W1 = w + 1;
@@ -390,7 +440,7 @@ function findBlobs(mask, w, h) {
     const seen = new Uint8Array(N);
     const stack = new Int32Array(N);
     const buf = new Int32Array(N);
-    const minA = Math.max(25, N / 50000), maxA = N / 80;
+    const minA = Math.max(20, N / 50000), maxA = N / 80;
     const blobs = [];
     for (let s = 0; s < N; s++) {
         if (!mask[s] || seen[s]) continue;
@@ -439,7 +489,6 @@ function detectPaperMarkers(imgData, w, h) {
 
     if (candidates.length < 4) return null;
 
-    // Phân loại 4 góc theo phân vùng toạ độ
     let tl = null, tr = null, bl = null, br = null;
     let dTL = 1e9, dTR = 1e9, dBL = 1e9, dBR = 1e9;
     candidates.forEach(c => {
@@ -454,7 +503,6 @@ function detectPaperMarkers(imgData, w, h) {
     });
 
     if (!tl || !tr || !bl || !br) return null;
-    // Đảm bảo không trùng blob
     const set = new Set([tl, tr, bl, br]);
     if (set.size < 4) return null;
 
@@ -464,7 +512,6 @@ function detectPaperMarkers(imgData, w, h) {
     };
 }
 
-// 3. Đo độ tối ô tròn với cơ chế khử nhiễu nền thích ứng
 function sampleBilinear(gray, w, h, x, y) {
     if (x < 0 || y < 0 || x >= w - 1 || y >= h - 1) return 255;
     let x0 = x | 0, y0 = y | 0;
@@ -474,22 +521,21 @@ function sampleBilinear(gray, w, h, x, y) {
     return (p00 * (1 - fx) + p10 * fx) * (1 - fy) + (p01 * (1 - fx) + p11 * fx) * fy;
 }
 
-function calculateBubbleScore(gray, w, h, H, bx, by, rb, ox, oy) {
+function calculateBubbleScore(gray, w, h, H, bx, by, ox, oy) {
     let innerSum = 0, innerCount = 0;
     let haloSum = 0, haloCount = 0;
+    let rb = 6; // Bán kính ô chì trong hệ pixel chuẩn
 
-    let rad = rb * 0.65;
-    for (let dy = -rad; dy <= rad; dy += 0.4) {
-        for (let dx = -rad; dx <= rad; dx += 0.4) {
-            if (dx * dx + dy * dy <= rad * rad) {
+    for (let dy = -rb; dy <= rb; dy += 1.5) {
+        for (let dx = -rb; dx <= rb; dx += 1.5) {
+            if (dx * dx + dy * dy <= rb * rb) {
                 let pt = applyHomography(H, bx + dx + ox, by + dy + oy);
                 innerSum += sampleBilinear(gray, w, h, pt[0], pt[1]);
                 innerCount++;
             }
         }
     }
-    // Lấy vành xung quanh (Halo) làm nền so sánh
-    let rHalo0 = rb * 1.05, rHalo1 = rb * 1.5;
+    let rHalo0 = rb * 1.5, rHalo1 = rb * 2.2;
     for (let a = 0; a < 12; a++) {
         let ang = (a * Math.PI) / 6.0;
         let pt0 = applyHomography(H, bx + rHalo0 * Math.cos(ang) + ox, by + rHalo0 * Math.sin(ang) + oy);
@@ -505,8 +551,54 @@ function calculateBubbleScore(gray, w, h, H, bx, by, rb, ox, oy) {
 }
 
 /* ==========================================================================
-   QUẢN LÝ GIAO DIỆN & TƯƠNG TÁC NGƯỜI DÙNG
+   GIAO DIỆN & TƯƠNG TÁC NGƯỜI DÙNG
    ========================================================================== */
+function syncSpeed(source) {
+    let val = source === 'cfg' ? document.getElementById('cfg-scan-speed').value : document.getElementById('cam-speed-select').value;
+    document.getElementById('cfg-scan-speed').value = val;
+    document.getElementById('cam-speed-select').value = val;
+}
+
+function drawVirtualGrid() {
+    const canvas = document.getElementById('grid-preview');
+    if(!canvas) return;
+    canvas.width = SHEET_BASE_W; canvas.height = SHEET_BASE_H;
+    const ctx = canvas.getContext('2d');
+    ctx.clearRect(0, 0, SHEET_BASE_W, SHEET_BASE_H);
+    
+    ctx.strokeStyle = "rgba(100, 149, 237, 0.4)"; 
+    ctx.lineWidth = 2;
+    const radius = 6;
+
+    let ox = parseInt(document.getElementById('cfg-offset-x')?.value) || 0;
+    let oy = parseInt(document.getElementById('cfg-offset-y')?.value) || 0;
+
+    function drawCircle(x, y) { ctx.beginPath(); ctx.arc(x + ox, y + oy, radius, 0, 2 * Math.PI); ctx.stroke(); }
+    
+    GRID_SPEC.sbd.x.forEach(x => { GRID_SPEC.sbd.y.forEach(y => drawCircle(x, y)); });
+    GRID_SPEC.made.x.forEach(x => { GRID_SPEC.made.y.forEach(y => drawCircle(x, y)); });
+    
+    GRID_SPEC.p1.blocksX.forEach(bxList => {
+        bxList.forEach(bx => {
+            GRID_SPEC.p1.y.forEach(y => drawCircle(bx, y));
+        });
+    });
+
+    GRID_SPEC.p2.colsX.forEach(cols => {
+        cols.forEach(x => {
+            GRID_SPEC.p2.y.forEach(y => drawCircle(x, y));
+        });
+    });
+
+    GRID_SPEC.p3.colsX.forEach(cols => {
+        drawCircle(cols[0], GRID_SPEC.p3.yMinus);
+        cols.forEach((x, colIdx) => {
+            if (colIdx === 1 || colIdx === 2) drawCircle(x, GRID_SPEC.p3.yComma);
+            GRID_SPEC.p3.yDigit.forEach(y => drawCircle(x, y));
+        });
+    });
+}
+
 function switchTab(tabId) {
     if (tabId !== 'tab-config') stopQrScanner();
     document.querySelectorAll('.tab-pane').forEach(el => el.classList.remove('active'));
@@ -531,14 +623,12 @@ function updateKeyStatusDisplay() {
     const codes = Object.keys(answerKey).sort();
     const box = document.getElementById('key-status-box');
     if (codes.length === 0) { box.style.display = 'none'; return; }
-    box.style.display = 'block';
-    box.innerHTML = `✅ <b>Đã nạp thành công:</b> ${codes.length} mã đề (${codes.slice(0, 6).join(', ')}${codes.length > 6 ? '...' : ''})`;
+    box.style.display = 'block'; box.innerHTML = `✅ <b>Đã nạp:</b> ${codes.length} mã đề (${codes.join(', ')})`;
 }
 
 function parseNtmixQrString(rawText) {
     try {
-        const obj = JSON.parse(rawText.trim());
-        const parsedKey = {};
+        const obj = JSON.parse(rawText.trim()); const parsedKey = {};
         for (const [k, val] of Object.entries(obj)) {
             if (k === "success" || k === "type") continue;
             if (typeof val !== "string" || !val.includes("#")) continue;
@@ -549,21 +639,17 @@ function parseNtmixQrString(rawText) {
             parsedKey[String(k).trim()] = { p1, p2, p3 };
         }
         if (Object.keys(parsedKey).length === 0) return false;
-        answerKey = parsedKey;
-        playBeep();
-        updateKeyStatusDisplay();
-        return true;
+        answerKey = parsedKey; playBeep(); updateKeyStatusDisplay(); return true;
     } catch (err) { return false; }
 }
 
 async function toggleQrScanner() {
-    const wrapper = document.getElementById('qr-scanner-wrapper');
-    const video = document.getElementById('qr-video');
+    const wrapper = document.getElementById('qr-scanner-wrapper'); const video = document.getElementById('qr-video');
     if (qrStream) { stopQrScanner(); return; }
     try {
         qrStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment", width: { ideal: 1280 } } });
         video.srcObject = qrStream; wrapper.style.display = 'block'; 
-        document.getElementById('btn-qr-cam').textContent = "❌ Đóng Camera QR";
+        document.getElementById('btn-qr-cam').textContent = "❌ Đóng Quét QR";
         const qrCanvas = document.createElement('canvas'); const qrCtx = qrCanvas.getContext('2d');
         qrScanTimer = setInterval(() => {
             if (!qrStream || video.readyState !== video.HAVE_ENOUGH_DATA) return;
@@ -573,14 +659,13 @@ async function toggleQrScanner() {
             const code = jsQR(imgData.data, imgData.width, imgData.height, { inversionAttempts: "dontInvert" });
             if (code && code.data) { if (parseNtmixQrString(code.data)) stopQrScanner(); }
         }, 150);
-    } catch (err) { alert("Không thể mở camera quét QR: " + err.message); }
+    } catch (err) { alert("Không mở được camera: " + err.message); }
 }
 
 function stopQrScanner() {
     if (qrScanTimer) clearInterval(qrScanTimer);
     if (qrStream) qrStream.getTracks().forEach(t => t.stop());
-    qrStream = null;
-    document.getElementById('qr-scanner-wrapper').style.display = 'none';
+    qrStream = null; document.getElementById('qr-scanner-wrapper').style.display = 'none';
     document.getElementById('btn-qr-cam').textContent = "📷 Quét Mã QR";
 }
 
@@ -598,8 +683,8 @@ function handleQrImageFile(file) {
             const code = jsQR(imgData.data, imgData.width, imgData.height);
             if (code && code.data) {
                 if (parseNtmixQrString(code.data)) alert("Đã nạp đáp án thành công từ ảnh QR!");
-                else alert("Nội dung mã QR không đúng cấu trúc đề NTMIX!");
-            } else alert("Không tìm thấy mã QR trong ảnh này!");
+                else alert("Nội dung QR không đúng định dạng đề NTMIX!");
+            } else alert("Không tìm thấy mã QR trong ảnh!");
         };
         img.src = e.target.result;
     };
@@ -642,7 +727,7 @@ document.getElementById('file-dshs').addEventListener('change', function(e) {
             let sbd = String(rows[r][1] || "").trim();
             if (sbd) { dshsDict[sbd] = { name: String(rows[r][2] || "").trim(), className: String(rows[r][3] || "").trim() }; count++; }
         }
-        document.getElementById('dshs-status').textContent = `✅ Đã nạp ${count} học sinh vào hệ thống`;
+        document.getElementById('dshs-status').textContent = `✅ Đã nạp ${count} học sinh`;
     };
     reader.readAsArrayBuffer(file);
 });
@@ -651,7 +736,7 @@ async function openFullscreenCamera() {
     const ui = document.getElementById('camera-fullscreen-ui');
     const video = document.getElementById('video');
     if (Object.keys(answerKey).length === 0) { 
-        alert("Thầy/Cô vui lòng nạp đáp án ở Bước 1 trước khi chấm bài!"); 
+        alert("Thầy/Cô vui lòng nạp đáp án ở Bước 1 trước khi quét!"); 
         switchTab('tab-config'); 
         return; 
     }
@@ -663,7 +748,7 @@ async function openFullscreenCamera() {
         video.srcObject = videoStream;
         ui.style.display = 'flex';
         video.onloadedmetadata = () => { video.play(); startAutoScan(); };
-    } catch (err) { alert("Trình duyệt không cho phép truy cập camera, Thầy/Cô hãy chọn ảnh bằng nút 'Chọn Ảnh Từ Máy'!"); }
+    } catch (err) { alert("Trình duyệt không cho phép truy cập camera, vui lòng dùng 'Chọn Từ Máy'!"); }
 }
 
 function closeFullscreenCamera() {
@@ -676,14 +761,12 @@ function startAutoScan() {
     if (autoScanTimer) clearInterval(autoScanTimer);
     const video = document.getElementById('video');
     const hudText = document.getElementById('hud-text');
-    const overlay = document.getElementById('cam-overlay');
     stableFrames = 0;
 
     autoScanTimer = setInterval(() => {
         if (!videoStream || video.readyState !== video.HAVE_ENOUGH_DATA || !video.videoWidth) return;
         const requiredFrames = parseInt(document.getElementById('cam-speed-select').value) || 5;
 
-        // Trích xuất khung hình hiện thời
         const tmpCanvas = document.createElement('canvas');
         const W = 640, H = Math.round(640 * (video.videoHeight / video.videoWidth));
         tmpCanvas.width = W; tmpCanvas.height = H;
@@ -711,7 +794,7 @@ function startAutoScan() {
             }
         } else {
             stableFrames = 0;
-            hudText.innerHTML = "Căn 4 ô vuông đen ngoài cùng vào khung xanh";
+            hudText.innerHTML = "Căn 4 ô đen ngoài cùng vào 4 góc xanh lục";
             hudText.style.color = "#ffffff";
             ['cb-tl', 'cb-tr', 'cb-bl', 'cb-br'].forEach(id => {
                 document.getElementById(id).style.background = "rgba(0, 255, 0, 0.15)";
@@ -743,7 +826,7 @@ async function handleImageFiles(inputElement) {
     }
     const statusBox = document.getElementById('scan-status');
     for (let i = 0; i < files.length; i++) {
-        statusBox.textContent = `⏳ AI đang phân tích bài ${i+1}/${files.length}... Vui lòng đợi!`;
+        statusBox.textContent = `⏳ Đang xử lý bài ${i+1}/${files.length}... Vui lòng đợi!`;
         statusBox.style.color = '#f59e0b';
         await new Promise(r => setTimeout(r, 60));
         await new Promise((resolve) => {
@@ -757,7 +840,7 @@ async function handleImageFiles(inputElement) {
                 resolve();
             };
             img.onerror = () => {
-                alert(`Không thể đọc được file ảnh: ${files[i].name}`);
+                alert(`Không đọc được file: ${files[i].name}`);
                 resolve();
             };
             img.src = URL.createObjectURL(files[i]);
@@ -767,7 +850,7 @@ async function handleImageFiles(inputElement) {
 }
 
 /* ==========================================================================
-   THUẬT TOÁN CHẤM ĐIỂM CHÍNH (AI HOMOGRAPHY CORE)
+   QUY TRÌNH CHẤM BÀI CHUẨN XÁC HOMOGRAPHY
    ========================================================================== */
 function processSingleImage(sourceCanvas, fileName) {
     const statusBox = document.getElementById('scan-status');
@@ -777,44 +860,43 @@ function processSingleImage(sourceCanvas, fileName) {
 
     const markerData = detectPaperMarkers(imgData.data, w, h);
     if (!markerData) {
-        statusBox.textContent = `❌ Lỗi bài ${fileName}: Không tìm đủ 4 ô vuông định vị ở góc!`;
+        statusBox.textContent = `❌ Lỗi bài ${fileName}: Không tìm thấy đủ 4 ô vuông đen ở 4 góc!`;
         statusBox.style.color = 'var(--danger)';
-        alert(`Không phát hiện đủ 4 ô vuông đen định vị ở 4 góc phiếu trong file: ${fileName}. Hãy kiểm tra xem ảnh có bị chụp thiếu góc không!`);
+        alert(`Không phát hiện đủ 4 ô vuông đen định vị trong ảnh: ${fileName}. Hãy kiểm tra xem ảnh có bị che góc hoặc cắt viền không!`);
         return;
     }
 
-    // Tính ma trận Homography: Chiếu từ mm gốc của phiếu sang tọa độ pixel thực tế của ảnh
-    const H = solveHomography(SHEET_SPEC.CORNERS, markerData.corners);
+    // Chiếu từ toạ độ gốc Paint sang toạ độ pixel thực tế của ảnh
+    const H = solveHomography(CORNERS_CANONICAL, markerData.corners);
     if (!H) {
-        statusBox.textContent = `❌ Lỗi hình học: Không giải được ma trận phối cảnh!`;
+        statusBox.textContent = `❌ Lỗi ma trận phối cảnh của ảnh!`;
         return;
     }
 
     const gray = markerData.gray;
     const ox = parseFloat(document.getElementById('cfg-offset-x').value) || 0;
     const oy = parseFloat(document.getElementById('cfg-offset-y').value) || 0;
-    const minConf = parseFloat(document.getElementById('cfg-conf').value) || 0.15;
+    const minConf = parseFloat(document.getElementById('cfg-conf').value) || 0.18;
+    const minConfMinus = parseFloat(document.getElementById('cfg-conf-minus').value) || 0.22;
     const fallbackCode = document.getElementById('fallback-code').value.trim();
 
-    // 1. Nhận diện SBD
+    // 1. Quét SBD
     let sbd = "";
-    for (let c = 0; c < SHEET_SPEC.SBD_X.length; c++) {
-        let x = SHEET_SPEC.SBD_X[c];
-        let scores = SHEET_SPEC.ID_Y.map(y => calculateBubbleScore(gray, w, h, H, x, y, SHEET_SPEC.RB, ox, oy));
-        let maxScore = Math.max(...scores);
-        let maxIdx = scores.indexOf(maxScore);
+    for (let c = 0; c < GRID_SPEC.sbd.x.length; c++) {
+        let x = GRID_SPEC.sbd.x[c];
+        let scores = GRID_SPEC.sbd.y.map(y => calculateBubbleScore(gray, w, h, H, x, y, ox, oy));
+        let maxScore = Math.max(...scores), maxIdx = scores.indexOf(maxScore);
         let sorted = [...scores].sort((a,b)=>a-b);
         if (maxScore > minConf && (maxScore - sorted[4]) > 0.05) sbd += String(maxIdx);
         else sbd += "0";
     }
 
-    // 2. Nhận diện Mã đề
+    // 2. Quét Mã đề
     let code = "";
-    for (let c = 0; c < SHEET_SPEC.MD_X.length; c++) {
-        let x = SHEET_SPEC.MD_X[c];
-        let scores = SHEET_SPEC.ID_Y.map(y => calculateBubbleScore(gray, w, h, H, x, y, SHEET_SPEC.RB, ox, oy));
-        let maxScore = Math.max(...scores);
-        let maxIdx = scores.indexOf(maxScore);
+    for (let c = 0; c < GRID_SPEC.made.x.length; c++) {
+        let x = GRID_SPEC.made.x[c];
+        let scores = GRID_SPEC.made.y.map(y => calculateBubbleScore(gray, w, h, H, x, y, ox, oy));
+        let maxScore = Math.max(...scores), maxIdx = scores.indexOf(maxScore);
         let sorted = [...scores].sort((a,b)=>a-b);
         if (maxScore > minConf && (maxScore - sorted[4]) > 0.05) code += String(maxIdx);
         else code += "0";
@@ -826,21 +908,19 @@ function processSingleImage(sourceCanvas, fileName) {
             code = fallbackCode;
             warnings.push(`Dùng mã đề dự phòng ${fallbackCode}`);
         } else {
-            warnings.push(`Chưa nạp đáp án cho Mã đề ${code}`);
+            warnings.push(`Chưa có đáp án Mã đề ${code}`);
         }
     }
 
     const key = answerKey[code] || { p1: [], p2: [], p3: [] };
     const stuInfo = dshsDict[sbd] || { name: "", className: "" };
 
-    // Canvas hiển thị đồ họa kết quả
     const outCanvas = document.getElementById('result-canvas');
     outCanvas.width = w; outCanvas.height = h;
     const oCtx = outCanvas.getContext('2d');
     oCtx.drawImage(sourceCanvas, 0, 0);
 
-    // Hàm vẽ dấu kết quả lên ảnh
-    function drawResultMarker(bx, by, type) {
+    function drawMappedMarker(bx, by, type) {
         let pt = applyHomography(H, bx + ox, by + oy);
         oCtx.beginPath();
         oCtx.arc(pt[0], pt[1], Math.max(5, w * 0.007), 0, 2 * Math.PI);
@@ -850,13 +930,9 @@ function processSingleImage(sourceCanvas, fileName) {
         else if (type === 'id') { oCtx.fillStyle = "rgba(59, 130, 246, 0.85)"; oCtx.fill(); }
     }
 
-    // Đánh dấu SBD và Mã đề
-    for (let c = 0; c < SHEET_SPEC.SBD_X.length; c++) {
-        drawResultMarker(SHEET_SPEC.SBD_X[c], SHEET_SPEC.ID_Y[parseInt(sbd[c])], 'id');
-    }
-    for (let c = 0; c < SHEET_SPEC.MD_X.length; c++) {
-        drawResultMarker(SHEET_SPEC.MD_X[c], SHEET_SPEC.ID_Y[parseInt(code[c])], 'id');
-    }
+    // Vẽ đánh dấu SBD & Mã đề
+    for (let c = 0; c < GRID_SPEC.sbd.x.length; c++) drawMappedMarker(GRID_SPEC.sbd.x[c], GRID_SPEC.sbd.y[parseInt(sbd[c])], 'id');
+    for (let c = 0; c < GRID_SPEC.made.x.length; c++) drawMappedMarker(GRID_SPEC.made.x[c], GRID_SPEC.made.y[parseInt(code[c])], 'id');
 
     // 3. Chấm Phần I
     let right1 = 0;
@@ -865,29 +941,22 @@ function processSingleImage(sourceCanvas, fileName) {
     for (let q = 0; q < p1Length; q++) {
         let col = Math.floor(q / 10), row = q % 10;
         if (col >= 4) break;
-        let y = SHEET_SPEC.P1_Y[row];
-        let xList = SHEET_SPEC.P1_X[col];
-        let scores = xList.map(x => calculateBubbleScore(gray, w, h, H, x, y, SHEET_SPEC.RB, ox, oy));
+        let y = GRID_SPEC.p1.y[row];
+        let xList = GRID_SPEC.p1.blocksX[col];
+        let scores = xList.map(x => calculateBubbleScore(gray, w, h, H, x, y, ox, oy));
         let maxScore = Math.max(...scores), maxIdx = scores.indexOf(maxScore);
         let isFilled = maxScore > minConf;
         let corrLabel = key.p1[q], corrIdx = labels1.indexOf(corrLabel);
 
         if (isFilled) {
-            if (labels1[maxIdx] === corrLabel) {
-                right1++;
-                drawResultMarker(xList[maxIdx], y, 'correct');
-            } else {
-                drawResultMarker(xList[maxIdx], y, 'wrong');
-                if (corrIdx >= 0) drawResultMarker(xList[corrIdx], y, 'key');
-            }
-        } else if (corrIdx >= 0) {
-            drawResultMarker(xList[corrIdx], y, 'key');
-        }
+            if (labels1[maxIdx] === corrLabel) { right1++; drawMappedMarker(xList[maxIdx], y, 'correct'); }
+            else { drawMappedMarker(xList[maxIdx], y, 'wrong'); if (corrIdx >= 0) drawMappedMarker(xList[corrIdx], y, 'key'); }
+        } else if (corrIdx >= 0) drawMappedMarker(xList[corrIdx], y, 'key');
     }
     const diemP1 = parseFloat(document.getElementById('cfg-p1').value) || 0.25;
     const scoreP1 = +(right1 * diemP1).toFixed(2);
 
-    // 4. Chấm Phần II (Đúng / Sai)
+    // 4. Chấm Phần II
     let scoreP2 = 0, right2Details = 0;
     const diemP2 = [
         parseFloat(document.getElementById('cfg-p2-1').value) || 0.1,
@@ -897,34 +966,27 @@ function processSingleImage(sourceCanvas, fileName) {
     ];
     for (let q = 0; q < key.p2.length; q++) {
         let correctCount = 0;
-        let expectedStr = key.p2[q]; // Ví dụ "ĐSĐS"
+        let expectedStr = key.p2[q];
         for (let r = 0; r < 4; r++) {
-            let y = SHEET_SPEC.P2_Y[r];
-            let xList = SHEET_SPEC.P2_X[q];
-            let scores = xList.map(x => calculateBubbleScore(gray, w, h, H, x, y, SHEET_SPEC.RB, ox, oy));
+            let y = GRID_SPEC.p2.y[r];
+            let xList = GRID_SPEC.p2.colsX[q];
+            let scores = xList.map(x => calculateBubbleScore(gray, w, h, H, x, y, ox, oy));
             let maxScore = Math.max(...scores), maxIdx = scores.indexOf(maxScore);
             let isFilled = maxScore > minConf;
             let val = isFilled ? (maxIdx === 0 ? 'Đ' : 'S') : 'X';
             let expVal = expectedStr ? expectedStr[r] : '';
 
             if (isFilled) {
-                if (val === expVal) {
-                    correctCount++;
-                    drawResultMarker(xList[maxIdx], y, 'correct');
-                } else {
-                    drawResultMarker(xList[maxIdx], y, 'wrong');
-                    if (expVal) drawResultMarker(xList[expVal === 'Đ' ? 0 : 1], y, 'key');
-                }
-            } else if (expVal) {
-                drawResultMarker(xList[expVal === 'Đ' ? 0 : 1], y, 'key');
-            }
+                if (val === expVal) { correctCount++; drawMappedMarker(xList[maxIdx], y, 'correct'); }
+                else { drawMappedMarker(xList[maxIdx], y, 'wrong'); if (expVal) drawMappedMarker(xList[expVal === 'Đ' ? 0 : 1], y, 'key'); }
+            } else if (expVal) drawMappedMarker(xList[expVal === 'Đ' ? 0 : 1], y, 'key');
         }
         right2Details += correctCount;
         if (correctCount >= 1 && correctCount <= 4) scoreP2 += diemP2[correctCount - 1];
     }
     scoreP2 = +scoreP2.toFixed(2);
 
-    // 5. Chấm Phần III (Điền số)
+    // 5. Chấm Phần III
     let scoreP3 = 0, right3 = 0;
     const diemP3 = parseFloat(document.getElementById('cfg-p3').value) || 0.5;
     for (let q = 0; q < key.p3.length; q++) {
@@ -932,40 +994,37 @@ function processSingleImage(sourceCanvas, fileName) {
         if (!expectedAns) continue;
         let stuAns = "";
 
-        // Kiểm tra dấu trừ
-        let minusScore = calculateBubbleScore(gray, w, h, H, SHEET_SPEC.P3_X[q][0], SHEET_SPEC.P3_DASH, SHEET_SPEC.RB, ox, oy);
-        let hasMinus = minusScore > (minConf * 1.1);
+        let minusScore = calculateBubbleScore(gray, w, h, H, GRID_SPEC.p3.colsX[q][0], GRID_SPEC.p3.yMinus, ox, oy);
+        let hasMinus = minusScore > minConfMinus;
         if (hasMinus) {
             stuAns += "-";
-            drawResultMarker(SHEET_SPEC.P3_X[q][0], SHEET_SPEC.P3_DASH, expectedAns.startsWith('-') ? 'correct' : 'wrong');
+            drawMappedMarker(GRID_SPEC.p3.colsX[q][0], GRID_SPEC.p3.yMinus, expectedAns.startsWith('-') ? 'correct' : 'wrong');
         }
 
         let digitsExpected = expectedAns.replace(/^-/, '').split('');
         for (let col = 0; col < 4; col++) {
-            let x = SHEET_SPEC.P3_X[q][col];
-            let scores = SHEET_SPEC.P3_D.map(y => calculateBubbleScore(gray, w, h, H, x, y, SHEET_SPEC.RB, ox, oy));
-            let commaScore = (col === 1 || col === 2) ? calculateBubbleScore(gray, w, h, H, x, SHEET_SPEC.P3_COMMA, SHEET_SPEC.RB, ox, oy) : 0;
+            let x = GRID_SPEC.p3.colsX[q][col];
+            let scores = GRID_SPEC.p3.yDigit.map(y => calculateBubbleScore(gray, w, h, H, x, y, ox, oy));
+            let commaScore = (col === 1 || col === 2) ? calculateBubbleScore(gray, w, h, H, x, GRID_SPEC.p3.yComma, ox, oy) : 0;
             
             let maxDigit = Math.max(...scores), maxIdx = scores.indexOf(maxDigit);
             let sorted = [...scores].sort((a,b)=>a-b);
             
             if (commaScore > maxDigit && commaScore > minConf) {
                 stuAns += ",";
-                drawResultMarker(x, SHEET_SPEC.P3_COMMA, (col < digitsExpected.length && digitsExpected[col] === ',') ? 'correct' : 'wrong');
+                drawMappedMarker(x, GRID_SPEC.p3.yComma, (col < digitsExpected.length && digitsExpected[col] === ',') ? 'correct' : 'wrong');
             } else if (maxDigit > minConf && (maxDigit - sorted[5]) > 0.05) {
                 stuAns += String(maxIdx);
                 let expChar = col < digitsExpected.length ? digitsExpected[col] : '';
-                drawResultMarker(x, SHEET_SPEC.P3_D[maxIdx], (String(maxIdx) === expChar) ? 'correct' : 'wrong');
+                drawMappedMarker(x, GRID_SPEC.p3.yDigit[maxIdx], (String(maxIdx) === expChar) ? 'correct' : 'wrong');
             }
         }
-
         if (stuAns === expectedAns) { right3++; scoreP3 += diemP3; }
     }
     scoreP3 = +scoreP3.toFixed(2);
-
     const totalScore = +(scoreP1 + scoreP2 + scoreP3).toFixed(2);
 
-    // Vẽ bảng điểm trực tiếp lên góc ảnh kết quả
+    // Bảng điểm in trực tiếp lên ảnh
     oCtx.fillStyle = "rgba(255, 255, 255, 0.95)";
     oCtx.fillRect(20, 20, 360, 210);
     oCtx.lineWidth = 3; oCtx.strokeStyle = "#dc2626";
@@ -984,16 +1043,14 @@ function processSingleImage(sourceCanvas, fileName) {
     outCanvas.style.display = 'block';
     lastGradedSbd = `${sbd}_${code}`;
 
-    // Lưu ảnh chấm vào bộ nhớ ZIP
     try {
         let b64 = outCanvas.toDataURL('image/jpeg', 0.85).split(',')[1];
         gradedImagesData.push({ filename: `${sbd}_${code}_${Date.now()}.jpg`, base64: b64 });
     } catch(e) {}
 
-    // Cập nhật UI Thống kê
     document.getElementById('score-dashboard').style.display = 'block';
     document.getElementById('ui-total').textContent = `${totalScore}đ`;
-    document.getElementById('ui-stu-name').textContent = stuInfo.name ? `Học sinh: ${stuInfo.name} (${stuInfo.className})` : "Học sinh: (Chưa có DSHS)";
+    document.getElementById('ui-stu-name').textContent = stuInfo.name ? `${stuInfo.name} (${stuInfo.className})` : "Học sinh: (Chưa nạp DSHS)";
     document.getElementById('ui-sbd-made').textContent = `SBD: ${sbd} | Mã đề: ${code}`;
     document.getElementById('ui-p1-score').textContent = `${scoreP1}đ`;
     document.getElementById('ui-p1-detail').textContent = `Đúng ${right1}/${key.p1.length || 40}`;
@@ -1004,11 +1061,11 @@ function processSingleImage(sourceCanvas, fileName) {
 
     if (warnings.length > 0) {
         document.getElementById('ui-warnings').textContent = "⚠️ " + warnings.join(" | ");
-        statusBox.textContent = `⚠️ Đã chấm xong SBD: ${sbd} nhưng cần lưu ý mã đề!`;
+        statusBox.textContent = `⚠️ Đã quét SBD: ${sbd} nhưng cần kiểm tra mã đề!`;
         statusBox.style.color = 'var(--danger)';
     } else {
         document.getElementById('ui-warnings').textContent = "";
-        statusBox.textContent = `✅ Đã chấm xong SBD: ${sbd} (Mã đề ${code}) - Điểm: ${totalScore}đ`;
+        statusBox.textContent = `✅ Đã chấm xong SBD: ${sbd} (Mã: ${code}) - Tổng: ${totalScore}đ`;
         statusBox.style.color = 'var(--success)';
     }
 
@@ -1032,33 +1089,33 @@ function updateResultsTable() {
 }
 
 function exportResultsExcel() {
-    if (!gradedRows.length) { alert("Chưa có kết quả bài nào để xuất!"); return; }
+    if (!gradedRows.length) { alert("Chưa có bài nào để xuất!"); return; }
     const data = [
         ["STT", "Họ và tên", "Lớp", "SBD", "Mã Đề", "Điểm P.I", "Điểm P.II", "Điểm P.III", "TỔNG ĐIỂM", "Cảnh báo", "File"],
         ...gradedRows.map((r, i) => [i + 1, r.name, r.className, r.sbd, r.code, r.scoreP1, r.scoreP2, r.scoreP3, r.totalScore, r.warnings, r.file])
     ];
     const wb = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(data), "BangDiem");
-    XLSX.writeFile(wb, `BangDiem_NTMIX_AI_${Date.now()}.xlsx`);
+    XLSX.writeFile(wb, `BangDiem_NTMIX_${Date.now()}.xlsx`);
 }
 
 function downloadAllImagesZip() {
-    if (gradedImagesData.length === 0) { alert("Chưa có ảnh nào được chấm để đóng gói!"); return; }
+    if (gradedImagesData.length === 0) { alert("Chưa có ảnh nào được chấm để lưu!"); return; }
     const btn = document.querySelector('.btn-warning');
     const originalText = btn.innerHTML;
-    btn.innerHTML = `⏳ Đang nén ZIP (${gradedImagesData.length} ảnh)...`;
+    btn.innerHTML = `⏳ Đang tạo ZIP (${gradedImagesData.length} ảnh)...`;
     btn.disabled = true;
 
     setTimeout(() => {
         let zip = new JSZip();
-        let folder = zip.folder("BaiCham_NTMIX");
+        let folder = zip.folder("AnhCham_NTMIX");
         gradedImagesData.forEach(img => folder.file(img.filename, img.base64, {base64: true}));
         zip.generateAsync({type:"blob"}).then(content => {
             saveAs(content, `AnhCham_NTMIX_${Date.now()}.zip`);
             btn.innerHTML = originalText;
             btn.disabled = false;
         }).catch(err => {
-            alert("Lỗi tạo file ZIP: " + err);
+            alert("Có lỗi khi tạo ZIP: " + err);
             btn.innerHTML = originalText;
             btn.disabled = false;
         });
