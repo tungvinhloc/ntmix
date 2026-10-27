@@ -538,7 +538,9 @@ function calculateBubbleScore(gray, w, h, H, bx, by, ox, oy) {
     return Math.max(0, (haloAvg - innerAvg) / haloAvg);
 }
 
-// Thay thế hoàn toàn hàm processImagePureJS cũ bằng thuật toán mới
+/* ==========================================================================
+   HÀM CHẤM VÀ VẼ HÌNH KẾT QUẢ CHUẨN ĐỒ HỌA NTMARK (INDEX.HTML)
+   ========================================================================== */
 function processImagePureJS(sourceCanvas, fileName) {
     const statusBox = document.getElementById('scan-status');
     const w = sourceCanvas.width, h = sourceCanvas.height;
@@ -566,7 +568,7 @@ function processImagePureJS(sourceCanvas, fileName) {
     const minConfMinus = parseFloat(document.getElementById('cfg-conf-minus')?.value) || 0.22;
     const fallbackCode = document.getElementById('fallback-code')?.value.trim() || "";
 
-    // 1. Quét SBD
+    // 1. Quét Số báo danh
     let sbd = "";
     for (let c = 0; c < GRID_SPEC.sbd.x.length; c++) {
         let x = GRID_SPEC.sbd.x[c];
@@ -601,23 +603,59 @@ function processImagePureJS(sourceCanvas, fileName) {
     const key = answerKey[code] || { p1: [], p2: [], p3: [] };
     const stuInfo = dshsDict[sbd] || { name: "", className: "" };
 
+    // Canvas vẽ ảnh kết quả
     const outCanvas = document.getElementById('result-canvas');
     outCanvas.width = w; outCanvas.height = h;
     const oCtx = outCanvas.getContext('2d');
     oCtx.drawImage(sourceCanvas, 0, 0);
 
-    function drawMappedMarker(bx, by, type) {
+    // Tính toán độ dày nét vẽ tự động theo độ phân giải ảnh (giống index.html)
+    const ppm = Math.hypot(markerData.corners[1][0] - markerData.corners[0][0], markerData.corners[1][1] - markerData.corners[0][1]) / (718 - 24);
+    const lw = Math.max(2, ppm * 0.45);
+    const rBubble = Math.max(6, 6.5 * ppm);
+
+    // 1. Vẽ khung định vị màu xanh dương nối 4 góc phiếu
+    oCtx.strokeStyle = 'rgba(60, 130, 255, 0.9)';
+    oCtx.lineWidth = Math.max(2.5, lw * 1.1);
+    oCtx.setLineDash([]);
+    oCtx.beginPath();
+    markerData.corners.forEach((p, i) => {
+        if (i === 0) oCtx.moveTo(p[0], p[1]);
+        else oCtx.lineTo(p[0], p[1]);
+    });
+    oCtx.closePath();
+    oCtx.stroke();
+
+    // Vẽ vòng tròn xanh bao quanh 4 mắt neo ở góc
+    markerData.corners.forEach(p => {
+        oCtx.beginPath();
+        oCtx.arc(p[0], p[1], Math.max(6, 10 * ppm), 0, Math.PI * 2);
+        oCtx.strokeStyle = 'rgba(31, 184, 106, 0.95)';
+        oCtx.lineWidth = lw;
+        oCtx.stroke();
+    });
+
+    // 2. Hàm vẽ vòng tròn viền rỗng (Hollow Ring) theo phong cách ntmark
+    function drawRing(bx, by, color, isDashed = false) {
         let pt = applyHomography(H, bx + ox, by + oy);
         oCtx.beginPath();
-        oCtx.arc(pt[0], pt[1], Math.max(5, w * 0.007), 0, 2 * Math.PI);
-        if (type === 'correct') { oCtx.fillStyle = "rgba(16, 185, 129, 0.85)"; oCtx.fill(); }
-        else if (type === 'wrong') { oCtx.fillStyle = "rgba(239, 68, 68, 0.85)"; oCtx.fill(); }
-        else if (type === 'key') { oCtx.strokeStyle = "rgba(245, 158, 11, 1)"; oCtx.lineWidth = 3; oCtx.stroke(); }
-        else if (type === 'id') { oCtx.fillStyle = "rgba(59, 130, 246, 0.85)"; oCtx.fill(); }
+        oCtx.arc(pt[0], pt[1], rBubble, 0, 2 * Math.PI);
+        oCtx.strokeStyle = color;
+        oCtx.lineWidth = lw;
+        if (isDashed) oCtx.setLineDash([lw * 1.5, lw * 1.2]);
+        else oCtx.setLineDash([]);
+        oCtx.stroke();
+        oCtx.setLineDash([]);
     }
 
-    for (let c = 0; c < GRID_SPEC.sbd.x.length; c++) drawMappedMarker(GRID_SPEC.sbd.x[c], GRID_SPEC.sbd.y[parseInt(sbd[c])], 'id');
-    for (let c = 0; c < GRID_SPEC.made.x.length; c++) drawMappedMarker(GRID_SPEC.made.x[c], GRID_SPEC.made.y[parseInt(code[c])], 'id');
+    const COLOR_GOOD = '#1fb86a'; // Xanh lục - Đúng
+    const COLOR_BAD  = '#ff4b3e'; // Đỏ - Sai
+    const COLOR_KEY  = '#ffb300'; // Vàng hổ phách - Đáp án đúng chuẩn
+    const COLOR_ID   = 'rgba(60, 130, 255, 0.95)'; // Xanh dương - SBD/Mã đề
+
+    // Vẽ Số báo danh & Mã đề
+    for (let c = 0; c < GRID_SPEC.sbd.x.length; c++) drawRing(GRID_SPEC.sbd.x[c], GRID_SPEC.sbd.y[parseInt(sbd[c])], COLOR_ID);
+    for (let c = 0; c < GRID_SPEC.made.x.length; c++) drawRing(GRID_SPEC.made.x[c], GRID_SPEC.made.y[parseInt(code[c])], COLOR_ID);
 
     // 3. Chấm Phần I
     let right1 = 0;
@@ -634,9 +672,16 @@ function processImagePureJS(sourceCanvas, fileName) {
         let corrLabel = key.p1[q], corrIdx = labels1.indexOf(corrLabel);
 
         if (isFilled) {
-            if (labels1[maxIdx] === corrLabel) { right1++; drawMappedMarker(xList[maxIdx], y, 'correct'); }
-            else { drawMappedMarker(xList[maxIdx], y, 'wrong'); if (corrIdx >= 0) drawMappedMarker(xList[corrIdx], y, 'key'); }
-        } else if (corrIdx >= 0) drawMappedMarker(xList[corrIdx], y, 'key');
+            if (labels1[maxIdx] === corrLabel) { 
+                right1++; 
+                drawRing(xList[maxIdx], y, COLOR_GOOD); 
+            } else { 
+                drawRing(xList[maxIdx], y, COLOR_BAD); 
+                if (corrIdx >= 0) drawRing(xList[corrIdx], y, COLOR_KEY); 
+            }
+        } else if (corrIdx >= 0) {
+            drawRing(xList[corrIdx], y, COLOR_KEY, true); 
+        }
     }
     const diemP1 = parseFloat(document.getElementById('cfg-p1')?.value) || 0.25;
     const scoreP1 = +(right1 * diemP1).toFixed(2);
@@ -662,9 +707,16 @@ function processImagePureJS(sourceCanvas, fileName) {
             let expVal = expectedStr ? expectedStr[r] : '';
 
             if (isFilled) {
-                if (val === expVal) { correctCount++; drawMappedMarker(xList[maxIdx], y, 'correct'); }
-                else { drawMappedMarker(xList[maxIdx], y, 'wrong'); if (expVal) drawMappedMarker(xList[expVal === 'Đ' ? 0 : 1], y, 'key'); }
-            } else if (expVal) drawMappedMarker(xList[expVal === 'Đ' ? 0 : 1], y, 'key');
+                if (val === expVal) { 
+                    correctCount++; 
+                    drawRing(xList[maxIdx], y, COLOR_GOOD); 
+                } else { 
+                    drawRing(xList[maxIdx], y, COLOR_BAD); 
+                    if (expVal) drawRing(xList[expVal === 'Đ' ? 0 : 1], y, COLOR_KEY); 
+                }
+            } else if (expVal) {
+                drawRing(xList[expVal === 'Đ' ? 0 : 1], y, COLOR_KEY, true);
+            }
         }
         right2Details += correctCount;
         if (correctCount >= 1 && correctCount <= 4) scoreP2 += diemP2[correctCount - 1];
@@ -683,7 +735,9 @@ function processImagePureJS(sourceCanvas, fileName) {
         let hasMinus = minusScore > minConfMinus;
         if (hasMinus) {
             stuAns += "-";
-            drawMappedMarker(GRID_SPEC.p3.colsX[q][0], GRID_SPEC.p3.yMinus, expectedAns.startsWith('-') ? 'correct' : 'wrong');
+            drawRing(GRID_SPEC.p3.colsX[q][0], GRID_SPEC.p3.yMinus, expectedAns.startsWith('-') ? COLOR_GOOD : COLOR_BAD);
+        } else if (expectedAns.startsWith('-')) {
+            drawRing(GRID_SPEC.p3.colsX[q][0], GRID_SPEC.p3.yMinus, COLOR_KEY, true);
         }
 
         let digitsExpected = expectedAns.replace(/^-/, '').split('');
@@ -694,14 +748,19 @@ function processImagePureJS(sourceCanvas, fileName) {
             
             let maxDigit = Math.max(...scores), maxIdx = scores.indexOf(maxDigit);
             let sorted = [...scores].sort((a,b)=>a-b);
-            
+            let expChar = col < digitsExpected.length ? digitsExpected[col] : '';
+
             if (commaScore > maxDigit && commaScore > minConf) {
                 stuAns += ",";
-                drawMappedMarker(x, GRID_SPEC.p3.yComma, (col < digitsExpected.length && digitsExpected[col] === ',') ? 'correct' : 'wrong');
+                drawRing(x, GRID_SPEC.p3.yComma, expChar === ',' ? COLOR_GOOD : COLOR_BAD);
             } else if (maxDigit > minConf && (maxDigit - sorted[5]) > 0.05) {
                 stuAns += String(maxIdx);
-                let expChar = col < digitsExpected.length ? digitsExpected[col] : '';
-                drawMappedMarker(x, GRID_SPEC.p3.yDigit[maxIdx], (String(maxIdx) === expChar) ? 'correct' : 'wrong');
+                drawRing(x, GRID_SPEC.p3.yDigit[maxIdx], String(maxIdx) === expChar ? COLOR_GOOD : COLOR_BAD);
+                if (expChar && String(maxIdx) !== expChar && GRID_SPEC.p3.digitChars.includes(expChar)) {
+                    drawRing(x, GRID_SPEC.p3.yDigit[GRID_SPEC.p3.digitChars.indexOf(expChar)], COLOR_KEY);
+                }
+            } else if (expChar && GRID_SPEC.p3.digitChars.includes(expChar)) {
+                drawRing(x, GRID_SPEC.p3.yDigit[GRID_SPEC.p3.digitChars.indexOf(expChar)], COLOR_KEY, true);
             }
         }
         if (stuAns === expectedAns) { right3++; scoreP3 += diemP3; }
@@ -709,30 +768,16 @@ function processImagePureJS(sourceCanvas, fileName) {
     scoreP3 = +scoreP3.toFixed(2);
     const totalScore = +(scoreP1 + scoreP2 + scoreP3).toFixed(2);
 
-    // Vẽ điểm lên ảnh kết quả
-    oCtx.fillStyle = "rgba(255, 255, 255, 0.95)";
-    oCtx.fillRect(20, 20, 360, 210);
-    oCtx.lineWidth = 3; oCtx.strokeStyle = "#dc2626";
-    oCtx.strokeRect(20, 20, 360, 210);
-    oCtx.fillStyle = "#dc2626"; oCtx.font = "bold 34px Arial";
-    oCtx.fillText(`TỔNG: ${totalScore}đ`, 40, 70);
-    oCtx.font = "bold 22px Arial";
-    oCtx.fillText(`P.I: ${scoreP1}đ  |  P.II: ${scoreP2}đ  |  P.III: ${scoreP3}đ`, 40, 115);
-    oCtx.fillStyle = "#1e3a8a"; oCtx.font = "bold 20px Arial";
-    oCtx.fillText(`SBD: ${sbd}  -  Mã đề: ${code}`, 40, 155);
-    if (stuInfo.name) {
-        oCtx.font = "bold 18px Arial";
-        oCtx.fillText(`HS: ${stuInfo.name} (${stuInfo.className})`, 40, 195);
-    }
-
     outCanvas.style.display = 'block';
     lastGradedSbd = `${sbd}_${code}`;
 
+    // Lưu ảnh vào danh sách nén ZIP
     try {
         let b64 = outCanvas.toDataURL('image/jpeg', 0.85).split(',')[1];
         gradedImagesData.push({ filename: `${sbd}_${code}_${Date.now()}.jpg`, base64: b64 });
     } catch(e) {}
 
+    // Cập nhật giao diện Dashboard phía trên (đã có đủ thông tin, không cần vẽ đè lên bài thi)
     document.getElementById('score-dashboard').style.display = 'block';
     document.getElementById('ui-total').textContent = `${totalScore}đ`;
     document.getElementById('ui-stu-name').textContent = stuInfo.name ? `${stuInfo.name} (${stuInfo.className})` : "Học sinh: (Chưa nạp DSHS)";
@@ -757,7 +802,6 @@ function processImagePureJS(sourceCanvas, fileName) {
     gradedRows.push({ sbd, name: stuInfo.name, className: stuInfo.className, code, scoreP1, scoreP2, scoreP3, totalScore, warnings: warnings.join('; '), file: fileName });
     updateResultsTable();
 }
-
 function downloadResultImage() {
     const link = document.createElement('a');
     link.download = `Cham_${lastGradedSbd}.jpg`;
