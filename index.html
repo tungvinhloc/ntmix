@@ -329,8 +329,16 @@ const CORNERS_CANONICAL = [
     [24, 1054]    // BL (Nút đáy trái)
 ];
 
+/* ==================== 1. TỌA ĐỘ CHUẨN ĐO TỪ PAINT (BGD 2025 - 4 MÃ ĐỀ) ==================== */
+const CORNERS_CANONICAL = [
+    [24, 29],     // TL (Nút trên trái)
+    [718, 29],    // TR (Nút trên phải)
+    [718, 1054],  // BR (Nút đáy phải)
+    [24, 1054]    // BL (Nút đáy trái)
+];
+
 const GRID_SPEC = {
-    // 8 cột SBD
+    // 8 cột Số báo danh
     sbd: {
         x: [510, 525, 541, 556, 571, 586, 601, 616],
         y: [106, 128, 149, 171, 193, 215, 237, 258, 280, 302]
@@ -340,7 +348,7 @@ const GRID_SPEC = {
         x: [654, 669, 684, 699],
         y: [106, 128, 149, 171, 193, 215, 237, 258, 280, 302]
     },
-    // PHẦN I: 4 khối x 10 câu
+    // Phần I: 4 khối x 10 câu
     p1: {
         blocksX: [
             [86, 118, 151, 183],     // Câu 1 - 10
@@ -350,7 +358,7 @@ const GRID_SPEC = {
         ],
         y: [410, 426, 443, 460, 476, 494, 511, 527, 543, 561]
     },
-    // PHẦN II: 8 câu (mỗi câu 2 cột Đ/S)
+    // Phần II: 8 câu (mỗi câu 2 cột Đ/S)
     p2: {
         colsX: [
             [85, 118],   // Câu 1
@@ -362,9 +370,9 @@ const GRID_SPEC = {
             [578, 608],  // Câu 7
             [641, 674]   // Câu 8
         ],
-        y: [653, 670, 687, 704] // Các ý a, b, c, d
+        y: [653, 670, 687, 704]
     },
-    // PHẦN III: 6 câu điền số
+    // Phần III: 6 câu điền số
     p3: {
         colsX: [
             [80, 103, 125, 148],   // Câu 1
@@ -381,9 +389,7 @@ const GRID_SPEC = {
     }
 };
 
-/* ==========================================================================
-   LÕI AI TOÁN HỌC: HOMOGRAPHY & ADAPTIVE INTEGRAL MASKING
-   ========================================================================== */
+/* ==================== 2. LÕI AI HOMOGRAPHY & QUY TRÌNH CHẤM ==================== */
 function solveHomography(S, D) {
     const A = [];
     for (let i = 0; i < 4; i++) {
@@ -410,7 +416,13 @@ function applyHomography(H, x, y) {
     return [(H[0] * x + H[1] * y + H[2]) / d, (H[3] * x + H[4] * y + H[5]) / d];
 }
 
-function buildAdaptiveMask(gray, w, h) {
+function detectPaperMarkers(imgData, w, h) {
+    const gray = new Float32Array(w * h);
+    for (let i = 0, p = 0; i < gray.length; i++, p += 4) {
+        gray[i] = imgData[p] * 0.299 + imgData[p + 1] * 0.587 + imgData[p + 2] * 0.114;
+    }
+
+    // Integral Masking O(N)
     const R = Math.max(12, Math.round(Math.min(w, h) / 14));
     const W1 = w + 1;
     const I = new Float64Array(W1 * (h + 1));
@@ -432,16 +444,12 @@ function buildAdaptiveMask(gray, w, h) {
             if (v < mean * 0.65 && (mean - v) > 20) mask[y * w + x] = 1;
         }
     }
-    return mask;
-}
 
-function findBlobs(mask, w, h) {
-    const N = w * h;
-    const seen = new Uint8Array(N);
-    const stack = new Int32Array(N);
-    const buf = new Int32Array(N);
+    // Tìm các cụm đen (Blobs)
+    const N = w * h, seen = new Uint8Array(N), stack = new Int32Array(N), buf = new Int32Array(N);
     const minA = Math.max(20, N / 50000), maxA = N / 80;
-    const blobs = [];
+    const candidates = [];
+
     for (let s = 0; s < N; s++) {
         if (!mask[s] || seen[s]) continue;
         let sp = 0, cnt = 0;
@@ -454,39 +462,22 @@ function findBlobs(mask, w, h) {
             if (y > 0 && mask[p - w] && !seen[p - w]) { seen[p - w] = 1; stack[sp++] = p - w; }
             if (y < h - 1 && mask[p + w] && !seen[p + w]) { seen[p + w] = 1; stack[sp++] = p + w; }
         }
-        if (cnt >= minA && cnt <= maxA) blobs.push(Int32Array.from(buf.subarray(0, cnt)));
+        if (cnt >= minA && cnt <= maxA) {
+            let sx = 0, sy = 0, minX = 1e9, maxX = -1e9, minY = 1e9, maxY = -1e9;
+            for (let i = 0; i < cnt; i++) {
+                let px = buf[i] % w, py = (buf[i] - px) / w;
+                sx += px; sy += py;
+                if (px < minX) minX = px; if (px > maxX) maxX = px;
+                if (py < minY) minY = py; if (py > maxY) maxY = py;
+            }
+            let bw = maxX - minX + 1, bh = maxY - minY + 1;
+            let ratio = Math.max(bw, bh) / Math.min(bw, bh);
+            let fill = cnt / (bw * bh);
+            if (fill > 0.65 && ratio < 1.45 && (bw + bh) / 2 > 6) {
+                candidates.push({ cx: sx / cnt, cy: sy / cnt });
+            }
+        }
     }
-    return blobs;
-}
-
-function analyzeBlobShape(px, w) {
-    let sx = 0, sy = 0, n = px.length;
-    let minX = 1e9, maxX = -1e9, minY = 1e9, maxY = -1e9;
-    for (let i = 0; i < n; i++) {
-        let x = px[i] % w, y = (px[i] - x) / w;
-        sx += x; sy += y;
-        if (x < minX) minX = x; if (x > maxX) maxX = x;
-        if (y < minY) minY = y; if (y > maxY) maxY = y;
-    }
-    let bw = maxX - minX + 1, bh = maxY - minY + 1;
-    let ratio = Math.max(bw, bh) / Math.min(bw, bh);
-    let fill = n / (bw * bh);
-    return { cx: sx / n, cy: sy / n, n, fill, ratio, side: (bw + bh) / 2 };
-}
-
-function detectPaperMarkers(imgData, w, h) {
-    const gray = new Float32Array(w * h);
-    for (let i = 0, p = 0; i < gray.length; i++, p += 4) {
-        gray[i] = (imgData[p] * 0.299 + imgData[p + 1] * 0.587 + imgData[p + 2] * 0.114);
-    }
-    const mask = buildAdaptiveMask(gray, w, h);
-    const rawBlobs = findBlobs(mask, w, h);
-    const candidates = [];
-    rawBlobs.forEach(px => {
-        const sh = analyzeBlobShape(px, w);
-        if (sh.fill > 0.65 && sh.ratio < 1.45 && sh.side > 6) candidates.push(sh);
-    });
-
     if (candidates.length < 4) return null;
 
     let tl = null, tr = null, bl = null, br = null;
@@ -501,13 +492,11 @@ function detectPaperMarkers(imgData, w, h) {
         if (dist0H < dBL) { dBL = dist0H; bl = c; }
         if (distWH < dBR) { dBR = distWH; br = c; }
     });
-
     if (!tl || !tr || !bl || !br) return null;
-    const set = new Set([tl, tr, bl, br]);
-    if (set.size < 4) return null;
+    if (new Set([tl, tr, bl, br]).size < 4) return null;
 
     return {
-        corners: [ [tl.cx, tl.cy], [tr.cx, tr.cy], [br.cx, br.cy], [bl.cx, bl.cy] ],
+        corners: [[tl.cx, tl.cy], [tr.cx, tr.cy], [br.cx, br.cy], [bl.cx, bl.cy]],
         gray
     };
 }
@@ -524,7 +513,7 @@ function sampleBilinear(gray, w, h, x, y) {
 function calculateBubbleScore(gray, w, h, H, bx, by, ox, oy) {
     let innerSum = 0, innerCount = 0;
     let haloSum = 0, haloCount = 0;
-    let rb = 6; // Bán kính ô chì trong hệ pixel chuẩn
+    let rb = 6;
 
     for (let dy = -rb; dy <= rb; dy += 1.5) {
         for (let dx = -rb; dx <= rb; dx += 1.5) {
@@ -543,316 +532,14 @@ function calculateBubbleScore(gray, w, h, H, bx, by, ox, oy) {
         haloSum += sampleBilinear(gray, w, h, pt0[0], pt0[1]) + sampleBilinear(gray, w, h, pt1[0], pt1[1]);
         haloCount += 2;
     }
-
     if (innerCount === 0 || haloCount === 0) return 0;
     let innerAvg = innerSum / innerCount;
     let haloAvg = Math.max(haloSum / haloCount, 1);
     return Math.max(0, (haloAvg - innerAvg) / haloAvg);
 }
 
-/* ==========================================================================
-   GIAO DIỆN & TƯƠNG TÁC NGƯỜI DÙNG
-   ========================================================================== */
-function syncSpeed(source) {
-    let val = source === 'cfg' ? document.getElementById('cfg-scan-speed').value : document.getElementById('cam-speed-select').value;
-    document.getElementById('cfg-scan-speed').value = val;
-    document.getElementById('cam-speed-select').value = val;
-}
-
-function drawVirtualGrid() {
-    const canvas = document.getElementById('grid-preview');
-    if(!canvas) return;
-    canvas.width = SHEET_BASE_W; canvas.height = SHEET_BASE_H;
-    const ctx = canvas.getContext('2d');
-    ctx.clearRect(0, 0, SHEET_BASE_W, SHEET_BASE_H);
-    
-    ctx.strokeStyle = "rgba(100, 149, 237, 0.4)"; 
-    ctx.lineWidth = 2;
-    const radius = 6;
-
-    let ox = parseInt(document.getElementById('cfg-offset-x')?.value) || 0;
-    let oy = parseInt(document.getElementById('cfg-offset-y')?.value) || 0;
-
-    function drawCircle(x, y) { ctx.beginPath(); ctx.arc(x + ox, y + oy, radius, 0, 2 * Math.PI); ctx.stroke(); }
-    
-    GRID_SPEC.sbd.x.forEach(x => { GRID_SPEC.sbd.y.forEach(y => drawCircle(x, y)); });
-    GRID_SPEC.made.x.forEach(x => { GRID_SPEC.made.y.forEach(y => drawCircle(x, y)); });
-    
-    GRID_SPEC.p1.blocksX.forEach(bxList => {
-        bxList.forEach(bx => {
-            GRID_SPEC.p1.y.forEach(y => drawCircle(bx, y));
-        });
-    });
-
-    GRID_SPEC.p2.colsX.forEach(cols => {
-        cols.forEach(x => {
-            GRID_SPEC.p2.y.forEach(y => drawCircle(x, y));
-        });
-    });
-
-    GRID_SPEC.p3.colsX.forEach(cols => {
-        drawCircle(cols[0], GRID_SPEC.p3.yMinus);
-        cols.forEach((x, colIdx) => {
-            if (colIdx === 1 || colIdx === 2) drawCircle(x, GRID_SPEC.p3.yComma);
-            GRID_SPEC.p3.yDigit.forEach(y => drawCircle(x, y));
-        });
-    });
-}
-
-function switchTab(tabId) {
-    if (tabId !== 'tab-config') stopQrScanner();
-    document.querySelectorAll('.tab-pane').forEach(el => el.classList.remove('active'));
-    document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
-    document.getElementById(tabId).classList.add('active');
-    const idx = ['tab-config', 'tab-scan', 'tab-results'].indexOf(tabId);
-    if (idx >= 0) document.querySelectorAll('.nav-item')[idx].classList.add('active');
-}
-
-function playBeep() {
-    try {
-        const ctx = new (window.AudioContext || window.webkitAudioContext)();
-        const osc = ctx.createOscillator(); const gain = ctx.createGain();
-        osc.type = "sine"; osc.frequency.setValueAtTime(1300, ctx.currentTime);
-        gain.gain.setValueAtTime(0.2, ctx.currentTime);
-        osc.connect(gain); gain.connect(ctx.destination);
-        osc.start(); osc.stop(ctx.currentTime + 0.12);
-    } catch (e) {}
-}
-
-function updateKeyStatusDisplay() {
-    const codes = Object.keys(answerKey).sort();
-    const box = document.getElementById('key-status-box');
-    if (codes.length === 0) { box.style.display = 'none'; return; }
-    box.style.display = 'block'; box.innerHTML = `✅ <b>Đã nạp:</b> ${codes.length} mã đề (${codes.join(', ')})`;
-}
-
-function parseNtmixQrString(rawText) {
-    try {
-        const obj = JSON.parse(rawText.trim()); const parsedKey = {};
-        for (const [k, val] of Object.entries(obj)) {
-            if (k === "success" || k === "type") continue;
-            if (typeof val !== "string" || !val.includes("#")) continue;
-            const parts = val.split("#");
-            const p1 = (parts[0] || "").trim().toUpperCase().split('').filter(c => ['A','B','C','D'].includes(c));
-            const p2 = (parts[1] || "").trim().toUpperCase().split('_').filter(s => s.length > 0).map(s => s.replace(/D/g, 'Đ'));
-            const p3 = (parts[2] || "").trim().split('_').filter(s => s.length > 0);
-            parsedKey[String(k).trim()] = { p1, p2, p3 };
-        }
-        if (Object.keys(parsedKey).length === 0) return false;
-        answerKey = parsedKey; playBeep(); updateKeyStatusDisplay(); return true;
-    } catch (err) { return false; }
-}
-
-async function toggleQrScanner() {
-    const wrapper = document.getElementById('qr-scanner-wrapper'); const video = document.getElementById('qr-video');
-    if (qrStream) { stopQrScanner(); return; }
-    try {
-        qrStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment", width: { ideal: 1280 } } });
-        video.srcObject = qrStream; wrapper.style.display = 'block'; 
-        document.getElementById('btn-qr-cam').textContent = "❌ Đóng Quét QR";
-        const qrCanvas = document.createElement('canvas'); const qrCtx = qrCanvas.getContext('2d');
-        qrScanTimer = setInterval(() => {
-            if (!qrStream || video.readyState !== video.HAVE_ENOUGH_DATA) return;
-            qrCanvas.width = video.videoWidth; qrCanvas.height = video.videoHeight;
-            qrCtx.drawImage(video, 0, 0, qrCanvas.width, qrCanvas.height);
-            const imgData = qrCtx.getImageData(0, 0, qrCanvas.width, qrCanvas.height);
-            const code = jsQR(imgData.data, imgData.width, imgData.height, { inversionAttempts: "dontInvert" });
-            if (code && code.data) { if (parseNtmixQrString(code.data)) stopQrScanner(); }
-        }, 150);
-    } catch (err) { alert("Không mở được camera: " + err.message); }
-}
-
-function stopQrScanner() {
-    if (qrScanTimer) clearInterval(qrScanTimer);
-    if (qrStream) qrStream.getTracks().forEach(t => t.stop());
-    qrStream = null; document.getElementById('qr-scanner-wrapper').style.display = 'none';
-    document.getElementById('btn-qr-cam').textContent = "📷 Quét Mã QR";
-}
-
-function handleQrImageFile(file) {
-    if (!file) return;
-    const reader = new FileReader();
-    reader.onload = e => {
-        const img = new Image();
-        img.onload = () => {
-            const cv = document.createElement('canvas');
-            cv.width = img.width; cv.height = img.height;
-            const ctx = cv.getContext('2d');
-            ctx.drawImage(img, 0, 0);
-            const imgData = ctx.getImageData(0, 0, cv.width, cv.height);
-            const code = jsQR(imgData.data, imgData.width, imgData.height);
-            if (code && code.data) {
-                if (parseNtmixQrString(code.data)) alert("Đã nạp đáp án thành công từ ảnh QR!");
-                else alert("Nội dung QR không đúng định dạng đề NTMIX!");
-            } else alert("Không tìm thấy mã QR trong ảnh!");
-        };
-        img.src = e.target.result;
-    };
-    reader.readAsDataURL(file);
-}
-
-document.getElementById('file-key').addEventListener('change', function(e) {
-    const file = e.target.files[0]; if (!file) return;
-    document.getElementById('label-file-key').innerHTML = `✅ Đã chọn: <b>${file.name}</b>`;
-    const reader = new FileReader();
-    reader.onload = function(evt) {
-        const wb = XLSX.read(new Uint8Array(evt.target.result), {type: 'array'});
-        const rows = XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]], {header: 1, defval: ""});
-        answerKey = {};
-        for (let col = 1; col < rows[0].length; col++) {
-            const code = String(rows[0][col]).trim(); if (!code) continue;
-            let p1 = [], p2 = [], p3 = [];
-            for (let r = 1; r < rows.length; r++) {
-                let val = String(rows[r][col]).trim().toUpperCase(); if (!val) continue;
-                if (val.length === 1 && ['A','B','C','D'].includes(val)) p1.push(val);
-                else if (val.length === 4 && /^[ĐDS]{4}$/.test(val.replace(/D/g,'Đ'))) p2.push(val.replace(/D/g, 'Đ'));
-                else p3.push(String(rows[r][col]).trim());
-            }
-            answerKey[code] = {p1, p2, p3};
-        }
-        updateKeyStatusDisplay();
-    };
-    reader.readAsArrayBuffer(file);
-});
-
-document.getElementById('file-dshs').addEventListener('change', function(e) {
-    const file = e.target.files[0]; if (!file) return;
-    document.getElementById('label-file-dshs').innerHTML = `✅ Đã chọn: <b>${file.name}</b>`;
-    const reader = new FileReader();
-    reader.onload = function(evt) {
-        const wb = XLSX.read(new Uint8Array(evt.target.result), {type: 'array'});
-        const rows = XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]], {header: 1, defval: ""});
-        dshsDict = {}; let count = 0;
-        for (let r = 1; r < rows.length; r++) {
-            let sbd = String(rows[r][1] || "").trim();
-            if (sbd) { dshsDict[sbd] = { name: String(rows[r][2] || "").trim(), className: String(rows[r][3] || "").trim() }; count++; }
-        }
-        document.getElementById('dshs-status').textContent = `✅ Đã nạp ${count} học sinh`;
-    };
-    reader.readAsArrayBuffer(file);
-});
-
-async function openFullscreenCamera() {
-    const ui = document.getElementById('camera-fullscreen-ui');
-    const video = document.getElementById('video');
-    if (Object.keys(answerKey).length === 0) { 
-        alert("Thầy/Cô vui lòng nạp đáp án ở Bước 1 trước khi quét!"); 
-        switchTab('tab-config'); 
-        return; 
-    }
-    
-    try {
-        videoStream = await navigator.mediaDevices.getUserMedia({ 
-            video: { facingMode: "environment", width: { ideal: 1920 }, height: { ideal: 1080 } } 
-        });
-        video.srcObject = videoStream;
-        ui.style.display = 'flex';
-        video.onloadedmetadata = () => { video.play(); startAutoScan(); };
-    } catch (err) { alert("Trình duyệt không cho phép truy cập camera, vui lòng dùng 'Chọn Từ Máy'!"); }
-}
-
-function closeFullscreenCamera() {
-    if (autoScanTimer) clearInterval(autoScanTimer);
-    if (videoStream) { videoStream.getTracks().forEach(t => t.stop()); videoStream = null; }
-    document.getElementById('camera-fullscreen-ui').style.display = 'none';
-}
-
-function startAutoScan() {
-    if (autoScanTimer) clearInterval(autoScanTimer);
-    const video = document.getElementById('video');
-    const hudText = document.getElementById('hud-text');
-    stableFrames = 0;
-
-    autoScanTimer = setInterval(() => {
-        if (!videoStream || video.readyState !== video.HAVE_ENOUGH_DATA || !video.videoWidth) return;
-        const requiredFrames = parseInt(document.getElementById('cam-speed-select').value) || 5;
-
-        const tmpCanvas = document.createElement('canvas');
-        const W = 640, H = Math.round(640 * (video.videoHeight / video.videoWidth));
-        tmpCanvas.width = W; tmpCanvas.height = H;
-        const ctx = tmpCanvas.getContext('2d');
-        ctx.drawImage(video, 0, 0, W, H);
-        const imgData = ctx.getImageData(0, 0, W, H);
-
-        const markers = detectPaperMarkers(imgData.data, W, H);
-        if (markers) {
-            stableFrames++;
-            hudText.innerHTML = `🎯 Đã bắt trọn 4 góc! Giữ yên máy (${stableFrames}/${requiredFrames})`;
-            hudText.style.color = "#00ff00";
-            ['cb-tl', 'cb-tr', 'cb-bl', 'cb-br'].forEach(id => {
-                document.getElementById(id).style.background = "rgba(0, 255, 0, 0.6)";
-            });
-
-            if (stableFrames >= requiredFrames) {
-                clearInterval(autoScanTimer);
-                playBeep();
-                const hiRes = document.createElement('canvas');
-                hiRes.width = video.videoWidth; hiRes.height = video.videoHeight;
-                hiRes.getContext('2d').drawImage(video, 0, 0);
-                closeFullscreenCamera();
-                processSingleImage(hiRes, `Live_${Date.now()}.jpg`);
-            }
-        } else {
-            stableFrames = 0;
-            hudText.innerHTML = "Căn 4 ô đen ngoài cùng vào 4 góc xanh lục";
-            hudText.style.color = "#ffffff";
-            ['cb-tl', 'cb-tr', 'cb-bl', 'cb-br'].forEach(id => {
-                document.getElementById(id).style.background = "rgba(0, 255, 0, 0.15)";
-            });
-        }
-    }, 200);
-}
-
-function manualCapture() {
-    const video = document.getElementById('video');
-    if (!videoStream || !video.videoWidth) return;
-    if (autoScanTimer) clearInterval(autoScanTimer);
-    playBeep();
-    const canvas = document.createElement('canvas');
-    canvas.width = video.videoWidth; canvas.height = video.videoHeight;
-    canvas.getContext('2d').drawImage(video, 0, 0);
-    closeFullscreenCamera();
-    processSingleImage(canvas, `Manual_${Date.now()}.jpg`);
-}
-
-async function handleImageFiles(inputElement) {
-    const files = inputElement.files;
-    if (!files || !files.length) return;
-    if (Object.keys(answerKey).length === 0) { 
-        alert("Vui lòng nạp đáp án ở Bước 1 trước khi chấm bài!"); 
-        switchTab('tab-config'); 
-        inputElement.value = ''; 
-        return; 
-    }
-    const statusBox = document.getElementById('scan-status');
-    for (let i = 0; i < files.length; i++) {
-        statusBox.textContent = `⏳ Đang xử lý bài ${i+1}/${files.length}... Vui lòng đợi!`;
-        statusBox.style.color = '#f59e0b';
-        await new Promise(r => setTimeout(r, 60));
-        await new Promise((resolve) => {
-            const img = new Image();
-            img.onload = () => {
-                const canvas = document.createElement('canvas');
-                canvas.width = img.naturalWidth || img.width;
-                canvas.height = img.naturalHeight || img.height;
-                canvas.getContext('2d').drawImage(img, 0, 0);
-                processSingleImage(canvas, files[i].name);
-                resolve();
-            };
-            img.onerror = () => {
-                alert(`Không đọc được file: ${files[i].name}`);
-                resolve();
-            };
-            img.src = URL.createObjectURL(files[i]);
-        });
-    }
-    inputElement.value = '';
-}
-
-/* ==========================================================================
-   QUY TRÌNH CHẤM BÀI CHUẨN XÁC HOMOGRAPHY
-   ========================================================================== */
-function processSingleImage(sourceCanvas, fileName) {
+// Thay thế hoàn toàn hàm processImagePureJS cũ bằng thuật toán mới
+function processImagePureJS(sourceCanvas, fileName) {
     const statusBox = document.getElementById('scan-status');
     const w = sourceCanvas.width, h = sourceCanvas.height;
     const ctx = sourceCanvas.getContext('2d');
@@ -860,25 +547,24 @@ function processSingleImage(sourceCanvas, fileName) {
 
     const markerData = detectPaperMarkers(imgData.data, w, h);
     if (!markerData) {
-        statusBox.textContent = `❌ Lỗi bài ${fileName}: Không tìm thấy đủ 4 ô vuông đen ở 4 góc!`;
+        statusBox.textContent = `❌ Lỗi: Không tìm đủ 4 ô vuông định vị góc phiếu!`;
         statusBox.style.color = 'var(--danger)';
         alert(`Không phát hiện đủ 4 ô vuông đen định vị trong ảnh: ${fileName}. Hãy kiểm tra xem ảnh có bị che góc hoặc cắt viền không!`);
         return;
     }
 
-    // Chiếu từ toạ độ gốc Paint sang toạ độ pixel thực tế của ảnh
     const H = solveHomography(CORNERS_CANONICAL, markerData.corners);
     if (!H) {
-        statusBox.textContent = `❌ Lỗi ma trận phối cảnh của ảnh!`;
+        statusBox.textContent = `❌ Lỗi giải ma trận phối cảnh 3D!`;
         return;
     }
 
     const gray = markerData.gray;
-    const ox = parseFloat(document.getElementById('cfg-offset-x').value) || 0;
-    const oy = parseFloat(document.getElementById('cfg-offset-y').value) || 0;
-    const minConf = parseFloat(document.getElementById('cfg-conf').value) || 0.18;
-    const minConfMinus = parseFloat(document.getElementById('cfg-conf-minus').value) || 0.22;
-    const fallbackCode = document.getElementById('fallback-code').value.trim();
+    const ox = parseFloat(document.getElementById('cfg-offset-x')?.value) || 0;
+    const oy = parseFloat(document.getElementById('cfg-offset-y')?.value) || 0;
+    const minConf = parseFloat(document.getElementById('cfg-conf')?.value) || 0.18;
+    const minConfMinus = parseFloat(document.getElementById('cfg-conf-minus')?.value) || 0.22;
+    const fallbackCode = document.getElementById('fallback-code')?.value.trim() || "";
 
     // 1. Quét SBD
     let sbd = "";
@@ -908,7 +594,7 @@ function processSingleImage(sourceCanvas, fileName) {
             code = fallbackCode;
             warnings.push(`Dùng mã đề dự phòng ${fallbackCode}`);
         } else {
-            warnings.push(`Chưa có đáp án Mã đề ${code}`);
+            warnings.push(`Chưa nạp đáp án Mã đề ${code}`);
         }
     }
 
@@ -930,7 +616,6 @@ function processSingleImage(sourceCanvas, fileName) {
         else if (type === 'id') { oCtx.fillStyle = "rgba(59, 130, 246, 0.85)"; oCtx.fill(); }
     }
 
-    // Vẽ đánh dấu SBD & Mã đề
     for (let c = 0; c < GRID_SPEC.sbd.x.length; c++) drawMappedMarker(GRID_SPEC.sbd.x[c], GRID_SPEC.sbd.y[parseInt(sbd[c])], 'id');
     for (let c = 0; c < GRID_SPEC.made.x.length; c++) drawMappedMarker(GRID_SPEC.made.x[c], GRID_SPEC.made.y[parseInt(code[c])], 'id');
 
@@ -953,16 +638,16 @@ function processSingleImage(sourceCanvas, fileName) {
             else { drawMappedMarker(xList[maxIdx], y, 'wrong'); if (corrIdx >= 0) drawMappedMarker(xList[corrIdx], y, 'key'); }
         } else if (corrIdx >= 0) drawMappedMarker(xList[corrIdx], y, 'key');
     }
-    const diemP1 = parseFloat(document.getElementById('cfg-p1').value) || 0.25;
+    const diemP1 = parseFloat(document.getElementById('cfg-p1')?.value) || 0.25;
     const scoreP1 = +(right1 * diemP1).toFixed(2);
 
     // 4. Chấm Phần II
     let scoreP2 = 0, right2Details = 0;
     const diemP2 = [
-        parseFloat(document.getElementById('cfg-p2-1').value) || 0.1,
-        parseFloat(document.getElementById('cfg-p2-2').value) || 0.25,
-        parseFloat(document.getElementById('cfg-p2-3').value) || 0.5,
-        parseFloat(document.getElementById('cfg-p2-4').value) || 1.0
+        parseFloat(document.getElementById('cfg-p2-1')?.value) || 0.1,
+        parseFloat(document.getElementById('cfg-p2-2')?.value) || 0.25,
+        parseFloat(document.getElementById('cfg-p2-3')?.value) || 0.5,
+        parseFloat(document.getElementById('cfg-p2-4')?.value) || 1.0
     ];
     for (let q = 0; q < key.p2.length; q++) {
         let correctCount = 0;
@@ -988,7 +673,7 @@ function processSingleImage(sourceCanvas, fileName) {
 
     // 5. Chấm Phần III
     let scoreP3 = 0, right3 = 0;
-    const diemP3 = parseFloat(document.getElementById('cfg-p3').value) || 0.5;
+    const diemP3 = parseFloat(document.getElementById('cfg-p3')?.value) || 0.5;
     for (let q = 0; q < key.p3.length; q++) {
         let expectedAns = String(key.p3[q] || '').trim().replace(/\./g, ',');
         if (!expectedAns) continue;
@@ -1024,7 +709,7 @@ function processSingleImage(sourceCanvas, fileName) {
     scoreP3 = +scoreP3.toFixed(2);
     const totalScore = +(scoreP1 + scoreP2 + scoreP3).toFixed(2);
 
-    // Bảng điểm in trực tiếp lên ảnh
+    // Vẽ điểm lên ảnh kết quả
     oCtx.fillStyle = "rgba(255, 255, 255, 0.95)";
     oCtx.fillRect(20, 20, 360, 210);
     oCtx.lineWidth = 3; oCtx.strokeStyle = "#dc2626";
