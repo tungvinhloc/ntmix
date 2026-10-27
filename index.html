@@ -830,7 +830,7 @@ function calculateBubbleScore(gray, w, h, H, bx, by, ox, oy) {
 }
 
 /* ==========================================================================
-   4. QUY TRÌNH CHẤM BÀI & ĐỒ HỌA VIỀN RỖNG (NTMARK STYLE)
+   4. QUY TRÌNH CHẤM BÀI & ĐỒ HỌA VIỀN RỖNG (NTMARK STYLE - BẢN NẮN PHẲNG)
    ========================================================================== */
 function processImagePureJS(sourceCanvas, fileName) {
     const statusBox = document.getElementById('scan-status');
@@ -894,42 +894,72 @@ function processImagePureJS(sourceCanvas, fileName) {
     const key = answerKey[code] || { p1: [], p2: [], p3: [] };
     const stuInfo = dshsDict[sbd] || { name: "", className: "" };
 
-    // Canvas vẽ ảnh kết quả
+    // --- THUẬT TOÁN NẮN PHẲNG ẢNH NHƯ MÁY SCAN (EXTRACT FLAT SHEET) ---
+    function extractFlatSheet() {
+        const outW = 800; // Độ phân giải xuất ra
+        const sheetW = 718 - 24; // Chiều rộng gốc chuẩn mm (CORNERS_CANONICAL)
+        const sheetH = 1054 - 29; // Chiều cao gốc chuẩn mm
+        const margin = sheetW * 0.05; // Viền lề 5%
+        
+        const K = outW / (sheetW + 2 * margin);
+        const outH = Math.round((sheetH + 2 * margin) * K);
+        
+        const flatCanvas = document.createElement('canvas');
+        flatCanvas.width = outW; flatCanvas.height = outH;
+        const flatCtx = flatCanvas.getContext('2d');
+        
+        const srcData = sourceCanvas.getContext('2d').getImageData(0, 0, w, h).data;
+        const outDataObj = flatCtx.createImageData(outW, outH);
+        const od = outDataObj.data;
+        
+        for (let y = 0; y < outH; y++) {
+            const mappedY = y / K - margin + 29; 
+            for (let x = 0; x < outW; x++) {
+                const mappedX = x / K - margin + 24; 
+                
+                const d = H[6] * mappedX + H[7] * mappedY + 1;
+                const u = (H[0] * mappedX + H[1] * mappedY + H[2]) / d;
+                const v = (H[3] * mappedX + H[4] * mappedY + H[5]) / d;
+                
+                const o = (y * outW + x) * 4;
+                if (u >= 0 && v >= 0 && u <= w - 1 && v <= h - 1) {
+                    const x0 = u | 0, y0 = v | 0;
+                    const x1 = Math.min(x0 + 1, w - 1), y1 = Math.min(y0 + 1, h - 1);
+                    const fx = u - x0, fy = v - y0;
+                    
+                    const i00 = (y0 * w + x0) * 4, i10 = (y0 * w + x1) * 4;
+                    const i01 = (y1 * w + x0) * 4, i11 = (y1 * w + x1) * 4;
+                    
+                    for (let k = 0; k < 3; k++) {
+                        od[o + k] = (srcData[i00 + k] * (1 - fx) + srcData[i10 + k] * fx) * (1 - fy) +
+                                    (srcData[i01 + k] * (1 - fx) + srcData[i11 + k] * fx) * fy;
+                    }
+                    od[o + 3] = 255;
+                } else {
+                    od[o] = od[o + 1] = od[o + 2] = 235; // Màu nền xám ngoài rìa
+                    od[o + 3] = 255;
+                }
+            }
+        }
+        flatCtx.putImageData(outDataObj, 0, 0);
+        return { canvas: flatCanvas, ctx: flatCtx, K: K, margin: margin };
+    }
+
+    const flat = extractFlatSheet();
     const outCanvas = document.getElementById('result-canvas');
-    outCanvas.width = w; outCanvas.height = h;
+    outCanvas.width = flat.canvas.width; outCanvas.height = flat.canvas.height;
     const oCtx = outCanvas.getContext('2d');
-    oCtx.drawImage(sourceCanvas, 0, 0);
+    oCtx.drawImage(flat.canvas, 0, 0);
 
-    const ppm = Math.hypot(markerData.corners[1][0] - markerData.corners[0][0], markerData.corners[1][1] - markerData.corners[0][1]) / (718 - 24);
-    const lw = Math.max(2, ppm * 0.45);
-    const rBubble = Math.max(6, 6.5 * ppm);
+    const lw = Math.max(1.8, 2.5); // Độ dày nét vẽ viền
+    const rBubble = 6 * flat.K; // Bán kính vòng tròn bọt
 
-    // Vẽ khung định vị màu xanh dương nối 4 góc phiếu
-    oCtx.strokeStyle = 'rgba(60, 130, 255, 0.9)';
-    oCtx.lineWidth = Math.max(2.5, lw * 1.1);
-    oCtx.setLineDash([]);
-    oCtx.beginPath();
-    markerData.corners.forEach((p, i) => {
-        if (i === 0) oCtx.moveTo(p[0], p[1]);
-        else oCtx.lineTo(p[0], p[1]);
-    });
-    oCtx.closePath();
-    oCtx.stroke();
-
-    // Vẽ vòng tròn xanh quanh 4 mắt neo ở góc
-    markerData.corners.forEach(p => {
-        oCtx.beginPath();
-        oCtx.arc(p[0], p[1], Math.max(6, 10 * ppm), 0, Math.PI * 2);
-        oCtx.strokeStyle = 'rgba(31, 184, 106, 0.95)';
-        oCtx.lineWidth = lw;
-        oCtx.stroke();
-    });
-
-    // Hàm vẽ vòng tròn viền rỗng (Hollow Ring) theo phong cách ntmark
+    // Hàm vẽ vòng tròn lên ảnh đã nắn phẳng
     function drawRing(bx, by, color, isDashed = false) {
-        let pt = applyHomography(H, bx + ox, by + oy);
+        let cx = (bx + ox - 24 + flat.margin) * flat.K;
+        let cy = (by + oy - 29 + flat.margin) * flat.K;
         oCtx.beginPath();
-        oCtx.arc(pt[0], pt[1], rBubble, 0, 2 * Math.PI);
+        oCtx.arc(cx, cy, rBubble, 0, 2 * Math.PI);
         oCtx.strokeStyle = color;
         oCtx.lineWidth = lw;
         if (isDashed) oCtx.setLineDash([lw * 1.5, lw * 1.2]);
@@ -1005,7 +1035,7 @@ function processImagePureJS(sourceCanvas, fileName) {
                     if (expVal) drawRing(xList[expVal === 'Đ' ? 0 : 1], y, COLOR_KEY); 
                 }
             } else if (expVal) {
-                drawRing(xList[expVal === 'Đ' ? 0 : 1], y, COLOR_KEY, true); 
+                drawRing(xList[expVal === 'Đ' ? 0 : 1], y, COLOR_KEY, true);
             }
         }
         right2Details += correctCount;
@@ -1061,13 +1091,26 @@ function processImagePureJS(sourceCanvas, fileName) {
     outCanvas.style.display = 'block';
     lastGradedSbd = `${sbd}_${code}`;
 
-    // Lưu ảnh vào danh sách nén ZIP
+    // Lưu ảnh vào danh sách nén ZIP kèm thanh tiêu đề mỏng
     try {
-        let b64 = outCanvas.toDataURL('image/jpeg', 0.85).split(',')[1];
+        const bh = Math.max(34, Math.round(outW * 0.05));
+        const finalCanvas = document.createElement('canvas');
+        finalCanvas.width = outCanvas.width;
+        finalCanvas.height = outCanvas.height + bh;
+        const fCtx = finalCanvas.getContext('2d');
+        fCtx.fillStyle = '#111';
+        fCtx.fillRect(0, 0, finalCanvas.width, bh);
+        fCtx.drawImage(outCanvas, 0, bh);
+        fCtx.fillStyle = '#fff';
+        fCtx.font = `600 ${Math.round(bh * 0.45)}px sans-serif`;
+        fCtx.textBaseline = 'middle';
+        fCtx.fillText(`SBD: ${sbd} · Mã đề: ${code} · Điểm: ${totalScore}`, 16, bh / 2);
+        
+        let b64 = finalCanvas.toDataURL('image/jpeg', 0.85).split(',')[1];
         gradedImagesData.push({ filename: `${sbd}_${code}_${Date.now()}.jpg`, base64: b64 });
     } catch(e) {}
 
-    // Cập nhật giao diện Dashboard
+    // Cập nhật giao diện Dashboard (không vẽ ô trắng to lên ảnh nữa)
     document.getElementById('score-dashboard').style.display = 'block';
     document.getElementById('ui-total').textContent = `${totalScore}đ`;
     document.getElementById('ui-stu-name').textContent = stuInfo.name ? `${stuInfo.name} (${stuInfo.className})` : "Học sinh: (Chưa nạp DSHS)";
