@@ -111,6 +111,7 @@
         .nav-item.active { color: var(--primary); border-top: 3px solid var(--primary); background: #eff6ff; }
         .tab-pane { display: none; }
         .tab-pane.active { display: block; }
+        
         /* ========== UI CAMERA MỚI TÍCH HỢP 3 NÚT ========== */
         .cam-top-bar { position: absolute; top: 15px; left: 15px; right: 15px; display: flex; justify-content: space-between; align-items: flex-start; z-index: 50; pointer-events: none; }
         .cam-top-left { display: flex; align-items: center; gap: 12px; pointer-events: auto; }
@@ -125,7 +126,7 @@
 
 <header>
     <h1>App chấm trắc nghiệm NTMIX</h1>
-    <p>Tác giả: Nguyễn Thanh Tùng - AI Precision Core v1.2</p>
+    <p>Tác giả: Nguyễn Thanh Tùng - AI Precision Core v1.3</p>
     <span class="badge-cv">NTMIX - Homography 2025</span>
 </header>
 
@@ -470,7 +471,7 @@ function switchTab(tabId) {
 
 function playBeep() {
     const soundOpt = document.getElementById('opt-sound');
-    if (soundOpt && !soundOpt.checked) return; // Đã chặn âm báo nếu không tích
+    if (soundOpt && !soundOpt.checked) return;
     try {
         const ctx = new (window.AudioContext || window.webkitAudioContext)();
         const osc = ctx.createOscillator(); const gain = ctx.createGain();
@@ -481,6 +482,119 @@ function playBeep() {
     } catch (e) {}
 }
 
+function updateKeyStatusDisplay() {
+    const codes = Object.keys(answerKey).sort();
+    const box = document.getElementById('key-status-box');
+    if (codes.length === 0) { box.style.display = 'none'; return; }
+    box.style.display = 'block'; box.innerHTML = `✅ <b>Đã nạp:</b> ${codes.length} mã đề (${codes.join(', ')})`;
+}
+
+function parseNtmixQrString(rawText) {
+    try {
+        const obj = JSON.parse(rawText.trim()); const parsedKey = {};
+        for (const [k, val] of Object.entries(obj)) {
+            if (k === "success" || k === "type") continue;
+            if (typeof val !== "string" || !val.includes("#")) continue;
+            const parts = val.split("#");
+            const p1 = (parts[0] || "").trim().toUpperCase().split('').filter(c => ['A','B','C','D'].includes(c));
+            const p2 = (parts[1] || "").trim().toUpperCase().split('_').filter(s => s.length > 0).map(s => s.replace(/D/g, 'Đ'));
+            const p3 = (parts[2] || "").trim().split('_').filter(s => s.length > 0);
+            parsedKey[String(k).trim()] = { p1, p2, p3 };
+        }
+        if (Object.keys(parsedKey).length === 0) return false;
+        answerKey = parsedKey; playBeep(); updateKeyStatusDisplay(); return true;
+    } catch (err) { return false; }
+}
+
+async function toggleQrScanner() {
+    const wrapper = document.getElementById('qr-scanner-wrapper'); const video = document.getElementById('qr-video');
+    if (qrStream) { stopQrScanner(); return; }
+    try {
+        qrStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment", width: { ideal: 1280 } } });
+        video.srcObject = qrStream; wrapper.style.display = 'block'; 
+        document.getElementById('btn-qr-cam').textContent = "❌ Đóng Quét QR";
+        const qrCanvas = document.createElement('canvas'); const qrCtx = qrCanvas.getContext('2d');
+        qrScanTimer = setInterval(() => {
+            if (!qrStream || video.readyState !== video.HAVE_ENOUGH_DATA) return;
+            qrCanvas.width = video.videoWidth; qrCanvas.height = video.videoHeight;
+            qrCtx.drawImage(video, 0, 0, qrCanvas.width, qrCanvas.height);
+            const imgData = qrCtx.getImageData(0, 0, qrCanvas.width, qrCanvas.height);
+            const code = jsQR(imgData.data, imgData.width, imgData.height, { inversionAttempts: "dontInvert" });
+            if (code && code.data) { if (parseNtmixQrString(code.data)) stopQrScanner(); }
+        }, 150);
+    } catch (err) { alert("Không mở được camera: " + err.message); }
+}
+
+function stopQrScanner() {
+    if (qrScanTimer) clearInterval(qrScanTimer);
+    if (qrStream) qrStream.getTracks().forEach(t => t.stop());
+    qrStream = null; document.getElementById('qr-scanner-wrapper').style.display = 'none';
+    document.getElementById('btn-qr-cam').textContent = "📷 Quét Mã QR";
+}
+
+function handleQrImageFile(file) {
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = e => {
+        const img = new Image();
+        img.onload = () => {
+            const cv = document.createElement('canvas');
+            cv.width = img.width; cv.height = img.height;
+            const ctx = cv.getContext('2d');
+            ctx.drawImage(img, 0, 0);
+            const imgData = ctx.getImageData(0, 0, cv.width, cv.height);
+            const code = jsQR(imgData.data, imgData.width, imgData.height);
+            if (code && code.data) {
+                if (parseNtmixQrString(code.data)) alert("Đã nạp đáp án thành công từ ảnh QR!");
+                else alert("Nội dung QR không đúng định dạng đề NTMIX!");
+            } else alert("Không tìm thấy mã QR trong ảnh!");
+        };
+        img.src = e.target.result;
+    };
+    reader.readAsDataURL(file);
+}
+
+document.getElementById('file-key').addEventListener('change', function(e) {
+    const file = e.target.files[0]; if (!file) return;
+    document.getElementById('label-file-key').innerHTML = `✅ Đã chọn: <b>${file.name}</b>`;
+    const reader = new FileReader();
+    reader.onload = function(evt) {
+        const wb = XLSX.read(new Uint8Array(evt.target.result), {type: 'array'});
+        const rows = XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]], {header: 1, defval: ""});
+        answerKey = {};
+        for (let col = 1; col < rows[0].length; col++) {
+            const code = String(rows[0][col]).trim(); if (!code) continue;
+            let p1 = [], p2 = [], p3 = [];
+            for (let r = 1; r < rows.length; r++) {
+                let val = String(rows[r][col]).trim().toUpperCase(); if (!val) continue;
+                if (val.length === 1 && ['A','B','C','D'].includes(val)) p1.push(val);
+                else if (val.length === 4 && /^[ĐDS]{4}$/.test(val.replace(/D/g,'Đ'))) p2.push(val.replace(/D/g, 'Đ'));
+                else p3.push(String(rows[r][col]).trim());
+            }
+            answerKey[code] = {p1, p2, p3};
+        }
+        updateKeyStatusDisplay();
+    };
+    reader.readAsArrayBuffer(file);
+});
+
+document.getElementById('file-dshs').addEventListener('change', function(e) {
+    const file = e.target.files[0]; if (!file) return;
+    document.getElementById('label-file-dshs').innerHTML = `✅ Đã chọn: <b>${file.name}</b>`;
+    const reader = new FileReader();
+    reader.onload = function(evt) {
+        const wb = XLSX.read(new Uint8Array(evt.target.result), {type: 'array'});
+        const rows = XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]], {header: 1, defval: ""});
+        dshsDict = {}; let count = 0;
+        for (let r = 1; r < rows.length; r++) {
+            let sbd = String(rows[r][1] || "").trim();
+            if (sbd) { dshsDict[sbd] = { name: String(rows[r][2] || "").trim(), className: String(rows[r][3] || "").trim() }; count++; }
+        }
+        document.getElementById('dshs-status').textContent = `✅ Đã nạp ${count} học sinh`;
+    };
+    reader.readAsArrayBuffer(file);
+});
+
 async function openFullscreenCamera() {
     const ui = document.getElementById('camera-fullscreen-ui');
     const video = document.getElementById('video');
@@ -489,7 +603,6 @@ async function openFullscreenCamera() {
         switchTab('tab-config'); return; 
     }
     
-    // Cập nhật số tờ đã quét
     const camScanCount = document.getElementById('cam-scan-count');
     if (camScanCount) camScanCount.textContent = gradedRows.length ? `Đã chấm ${gradedRows.length} tờ` : "Chưa chấm tờ nào";
 
@@ -542,7 +655,6 @@ function startAutoScan() {
                 hiRes.width = video.videoWidth; hiRes.height = video.videoHeight;
                 hiRes.getContext('2d').drawImage(video, 0, 0);
                 
-                // MÓC NỐI CHECKBOX "CHẤM LIÊN TIẾP"
                 const isContinuous = document.getElementById('opt-continuous') && document.getElementById('opt-continuous').checked;
                 if (!isContinuous) closeFullscreenCamera(); 
                 processImagePureJS(hiRes, `Live_${Date.now()}.jpg`, isContinuous);
@@ -751,7 +863,7 @@ function calculateBubbleScore(gray, w, h, H, bx, by, ox, oy) {
 }
 
 /* ==========================================================================
-   HÀM CHẤM VÀ ĐIỀU PHỐI OVERLAY CAMERA
+   4. QUY TRÌNH CHẤM BÀI & ĐIỀU PHỐI OVERLAY CAMERA
    ========================================================================== */
 function processImagePureJS(sourceCanvas, fileName, isContinuous = false) {
     const statusBox = document.getElementById('scan-status');
@@ -936,7 +1048,6 @@ function processImagePureJS(sourceCanvas, fileName, isContinuous = false) {
 
     lastGradedSbd = `${sbd}_${code}`;
 
-    // Lưu ảnh vào danh sách nén ZIP kèm thanh tiêu đề mỏng
     try {
         const bh = Math.max(34, Math.round(outCanvas.width * 0.05));
         const finalCanvas = document.createElement('canvas');
@@ -949,7 +1060,6 @@ function processImagePureJS(sourceCanvas, fileName, isContinuous = false) {
         gradedImagesData.push({ filename: `${sbd}_${code}_${Date.now()}.jpg`, base64: finalCanvas.toDataURL('image/jpeg', 0.85).split(',')[1] });
     } catch(e) {}
 
-    // Lưu bảng điểm ngầm (Hoạt động cho cả chấm liên tiếp và chấm đơn)
     document.getElementById('score-dashboard').style.display = 'block';
     document.getElementById('ui-total').textContent = `${totalScore}đ`;
     document.getElementById('ui-stu-name').textContent = stuInfo.name ? `${stuInfo.name} (${stuInfo.className})` : "Học sinh: (Chưa nạp DSHS)";
@@ -969,14 +1079,12 @@ function processImagePureJS(sourceCanvas, fileName, isContinuous = false) {
     gradedRows.push({ sbd, name: stuInfo.name, className: stuInfo.className, code, scoreP1, scoreP2, scoreP3, totalScore, warnings: warnings.join('; '), file: fileName });
     updateResultsTable();
 
-    // ================================= XỬ LÝ 3 NÚT TÍCH CAMERA =================================
     const camScanCount = document.getElementById('cam-scan-count');
     if (camScanCount) camScanCount.textContent = `Đã chấm ${gradedRows.length} tờ`;
 
     if (isContinuous) {
         const showRes = document.getElementById('opt-show-res').checked;
         if (showRes) {
-            // HIỆN KẾT QUẢ NGAY: Mở popup lớn giữa màn hình camera trong 2 giây
             document.getElementById('cam-res-score').textContent = `${totalScore}đ`;
             let stuStr = stuInfo.name ? ` - ${stuInfo.name}` : '';
             document.getElementById('cam-res-info').textContent = `SBD: ${sbd}${stuStr} | Mã đề: ${code}`;
@@ -985,17 +1093,15 @@ function processImagePureJS(sourceCanvas, fileName, isContinuous = false) {
             
             setTimeout(() => {
                 document.getElementById('cam-result-overlay').style.display = 'none';
-                startAutoScan(); // Sau 2 giây tự động quét tiếp
+                startAutoScan(); 
             }, 2000); 
         } else {
-            // Tắt "Hiện kết quả ngay": Chỉ thông báo chữ xanh nhỏ trên Camera
             const hudText = document.getElementById('hud-text');
             hudText.innerHTML = `✅ Đã chấm xong SBD: ${sbd} (${totalScore}đ). Chuyển tờ khác...`;
             hudText.style.color = "#00ff00";
-            setTimeout(() => { startAutoScan(); }, 1200); // Quét lại thật nhanh
+            setTimeout(() => { startAutoScan(); }, 1200); 
         }
     } else {
-        // Tắt "Chấm liên tiếp": Camera đã tắt -> Hiển thị thẳng kết quả ra Dashboard ngoài cùng
         outCanvas.style.display = 'block';
     }
 }
