@@ -286,22 +286,44 @@
     </div>
 </div>
 
-<div id="camera-fullscreen-ui">
-    <div id="video-container">
-        <video id="video" autoplay playsinline muted></video>
-        
-        <!-- Thanh điều khiển trên cùng (Giao diện mới giống ntmark) -->
-        <div class="cam-top-bar">
-            <div class="cam-top-left">
-                <button class="btn-cam-close" onclick="closeFullscreenCamera()">✕</button>
-                <div class="cam-count-text" id="cam-scan-count">Chưa chấm tờ nào</div>
-            </div>
-            <div class="cam-top-opts">
-                <label class="cam-opt"><input type="checkbox" id="opt-show-res" checked> Hiện kết quả ngay</label>
-                <label class="cam-opt"><input type="checkbox" id="opt-continuous"> Chấm liên tiếp</label>
-                <label class="cam-opt"><input type="checkbox" id="opt-sound" checked> Âm báo</label>
-            </div>
-        </div>
+<!-- ========== GIAO DIỆN CAMERA CHUẨN NTMARK ========== -->
+<div id="camera-fullscreen-ui" style="display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: #000; z-index: 9999; flex-direction: column; overflow: hidden;">
+    <!-- Lớp Video & Canvas hiển thị góc -->
+    <video id="video" autoplay playsinline muted style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover;"></video>
+    <canvas id="live-overlay-canvas" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 10;"></canvas>
+
+    <!-- Header: Đóng & Bộ đếm -->
+    <div style="position: absolute; top: max(20px, env(safe-area-inset-top)); left: 15px; display: flex; align-items: center; gap: 15px; z-index: 50;">
+        <button onclick="closeFullscreenCamera()" style="width: 42px; height: 42px; border-radius: 50%; background: rgba(0,0,0,0.5); color: white; border: 1.5px solid rgba(255,255,255,0.6); font-size: 18px; font-weight: bold; cursor: pointer; display: flex; justify-content: center; align-items: center;">✕</button>
+        <span id="cam-scan-count" style="color: white; font-weight: 600; font-size: 16px; text-shadow: 0 1px 3px rgba(0,0,0,0.9);">Chưa chấm tờ nào</span>
+    </div>
+
+    <!-- 3 Nút tùy chọn (Hiện kết quả, Liên tiếp, Âm báo) -->
+    <div style="position: absolute; top: max(20px, env(safe-area-inset-top)); right: 15px; background: rgba(0,0,0,0.55); padding: 12px 16px; border-radius: 12px; z-index: 50; display: flex; flex-direction: column; gap: 12px; border: 1px solid rgba(255,255,255,0.2);">
+        <label style="color: white; font-size: 14px; font-weight: 600; display: flex; align-items: center; gap: 8px; cursor: pointer; text-shadow: 0 1px 2px #000;">
+            <input type="checkbox" id="opt-show-res" checked style="width: 20px; height: 20px; accent-color: #1a73e8; margin: 0;"> Hiện kết quả ngay
+        </label>
+        <label style="color: white; font-size: 14px; font-weight: 600; display: flex; align-items: center; gap: 8px; cursor: pointer; text-shadow: 0 1px 2px #000;">
+            <input type="checkbox" id="opt-continuous" style="width: 20px; height: 20px; accent-color: #1a73e8; margin: 0;"> Chấm liên tiếp
+        </label>
+        <label style="color: white; font-size: 14px; font-weight: 600; display: flex; align-items: center; gap: 8px; cursor: pointer; text-shadow: 0 1px 2px #000;">
+            <input type="checkbox" id="opt-sound" checked style="width: 20px; height: 20px; accent-color: #1a73e8; margin: 0;"> Âm báo
+        </label>
+    </div>
+
+    <!-- Màn hình kết quả chớp nhoáng -->
+    <div id="cam-result-overlay" style="display: none; position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 100; flex-direction: column; align-items: center; justify-content: center; padding: 15px;">
+        <h2 id="cam-res-score" style="color: #3ddc84; font-size: 56px; margin-bottom: 5px; font-weight: 900;"></h2>
+        <p id="cam-res-info" style="color: white; font-size: 16px; margin-bottom: 20px; opacity: 0.9; text-align: center; font-weight: 600;"></p>
+        <img id="cam-res-img" style="max-width: 100%; max-height: 60vh; border-radius: 12px; border: 2px solid #555;">
+    </div>
+
+    <!-- Footer: Nút Chụp ngay màu trắng -->
+    <div style="position: absolute; bottom: 35px; left: 0; width: 100%; display: flex; flex-direction: column; align-items: center; z-index: 50;">
+        <p id="hud-text" style="color: white; font-size: 16px; font-weight: 600; margin-bottom: 20px; text-shadow: 0 2px 4px rgba(0,0,0,0.9);">Đặt 4 ô vuông đen của phiếu vào 4 ô sáng ở góc</p>
+        <button onclick="manualCapture()" style="background: white; color: black; border: none; border-radius: 30px; font-size: 16px; font-weight: 700; padding: 16px 40px; width: 85%; max-width: 320px; box-shadow: 0 4px 12px rgba(0,0,0,0.4); cursor: pointer;">Chụp ngay</button>
+    </div>
+</div>
 
         <div id="cam-overlay">
             <div class="corner-box tl" id="cb-tl"></div>
@@ -603,6 +625,9 @@ document.getElementById('file-dshs').addEventListener('change', function(e) {
     reader.readAsArrayBuffer(file);
 });
 
+/* ==========================================================================
+   ĐIỀU KHIỂN CAMERA & VẼ LỚP ĐỒ HỌA VIỀN XANH
+   ========================================================================== */
 async function openFullscreenCamera() {
     const ui = document.getElementById('camera-fullscreen-ui');
     const video = document.getElementById('video');
@@ -618,7 +643,7 @@ async function openFullscreenCamera() {
         videoStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment", width: { ideal: 1920 }, height: { ideal: 1080 } } });
         video.srcObject = videoStream; ui.style.display = 'flex';
         video.onloadedmetadata = () => { video.play(); startAutoScan(); };
-    } catch (err) { alert("Trình duyệt không cho phép truy cập camera, vui lòng dùng 'Chọn Từ Máy'!"); }
+    } catch (err) { alert("Trình duyệt không cho phép truy cập camera, vui lòng dùng nút 'Chọn Từ Máy'!"); }
 }
 
 function closeFullscreenCamera() {
@@ -633,19 +658,80 @@ function closeFullscreenCamera() {
     }
 }
 
+// Hàm vẽ khung xanh lục / xám lên màn hình dựa trên tọa độ AI
+function drawLiveOverlay(corners, state) {
+    const canvas = document.getElementById('live-overlay-canvas');
+    const video = document.getElementById('video');
+    if (!canvas || !video || !video.videoWidth) return;
+    
+    canvas.width = video.clientWidth; canvas.height = video.clientHeight;
+    const ctx = canvas.getContext('2d');
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    // Tính toán tỷ lệ lệch do object-fit: cover của Video
+    const videoRatio = video.videoWidth / video.videoHeight;
+    const elementRatio = canvas.width / canvas.height;
+    let scale, dx = 0, dy = 0;
+    if (videoRatio > elementRatio) {
+        scale = canvas.height / video.videoHeight;
+        dx = (canvas.width - video.videoWidth * scale) / 2;
+    } else {
+        scale = canvas.width / video.videoWidth;
+        dy = (canvas.height - video.videoHeight * scale) / 2;
+    }
+
+    if (state === 'wait' || !corners) {
+        // Vẽ 4 góc chữ L mờ (Xám trắng) để canh góc
+        ctx.strokeStyle = 'rgba(255, 255, 255, 0.4)'; 
+        ctx.lineWidth = 2.5;
+        const marginX = canvas.width * 0.1, marginY = canvas.height * 0.15, size = 45;
+        function drawL(x, y, dirX, dirY) {
+            ctx.beginPath(); ctx.moveTo(x + dirX * size, y); ctx.lineTo(x, y); ctx.lineTo(x, y + dirY * size); ctx.stroke();
+        }
+        drawL(marginX, marginY, 1, 1);
+        drawL(canvas.width - marginX, marginY, -1, 1);
+        drawL(marginX, canvas.height - marginY, 1, -1);
+        drawL(canvas.width - marginX, canvas.height - marginY, -1, -1);
+    } else {
+        // Vẽ viền liền Xanh Lục bám khít góc phiếu và 4 cục vuông ở mắt neo
+        const scaleToVideo = video.videoWidth / 640; // Vì AI phân tích trên khung 640
+        ctx.strokeStyle = '#3ddc84';
+        ctx.lineWidth = 3;
+        ctx.fillStyle = 'rgba(61, 220, 132, 0.15)'; 
+        
+        ctx.beginPath();
+        corners.forEach((p, i) => {
+            const screenX = (p[0] * scaleToVideo) * scale + dx;
+            const screenY = (p[1] * scaleToVideo) * scale + dy;
+            if (i === 0) ctx.moveTo(screenX, screenY); else ctx.lineTo(screenX, screenY);
+        });
+        ctx.closePath();
+        ctx.stroke(); ctx.fill();
+
+        ctx.fillStyle = '#3ddc84';
+        corners.forEach(p => {
+            const screenX = (p[0] * scaleToVideo) * scale + dx;
+            const screenY = (p[1] * scaleToVideo) * scale + dy;
+            ctx.fillRect(screenX - 10, screenY - 10, 20, 20); // 4 cục vuông
+        });
+    }
+}
+
 function startAutoScan() {
     if (autoScanTimer) clearInterval(autoScanTimer);
     const video = document.getElementById('video');
     const hudText = document.getElementById('hud-text');
-    stableFrames = 0; 
-    hudText.innerHTML = "Đưa 4 ô đen ngoài cùng vào 4 góc"; 
-    hudText.style.color = "#ff9800"; // Chữ vàng lúc chưa bắt được
-    ['cb-tl', 'cb-tr', 'cb-bl', 'cb-br'].forEach(id => document.getElementById(id).classList.remove('locked'));
+    stableFrames = 0; hudText.innerHTML = "Đặt 4 ô vuông đen của phiếu vào 4 ô sáng ở góc"; hudText.style.color = "#ffffff";
+    drawLiveOverlay(null, 'wait');
 
     autoScanTimer = setInterval(() => {
         if (!videoStream || video.readyState !== video.HAVE_ENOUGH_DATA || !video.videoWidth) return;
-        const requiredFrames = parseInt(document.getElementById('cam-speed-select').value) || 5;
+        
+        // Tùy chỉnh độ nhạy lấy nét
+        const cfgSpeed = document.getElementById('cfg-scan-speed');
+        const requiredFrames = cfgSpeed ? parseInt(cfgSpeed.value) : 5;
 
+        // Xử lý thu nhỏ frame để AI tách biên chạy cực mượt
         const tmpCanvas = document.createElement('canvas');
         const W = 640, H = Math.round(640 * (video.videoHeight / video.videoWidth));
         tmpCanvas.width = W; tmpCanvas.height = H;
@@ -656,15 +742,12 @@ function startAutoScan() {
         const markers = detectPaperMarkers(imgData.data, W, H);
         if (markers) {
             stableFrames++;
-            hudText.innerHTML = `🎯 Đã bắt trọn 4 góc! Giữ yên máy (${stableFrames}/${requiredFrames})`;
-            hudText.style.color = "#3ddc84"; // Chữ xanh
-            
-            // Đổi viền 4 góc sang NÉT LIỀN XANH LỤC
-            ['cb-tl', 'cb-tr', 'cb-bl', 'cb-br'].forEach(id => document.getElementById(id).classList.add('locked'));
+            hudText.innerHTML = `🎯 Giữ yên máy (${stableFrames}/${requiredFrames})`;
+            hudText.style.color = "#3ddc84";
+            drawLiveOverlay(markers.corners, 'ok'); // Bật viền xanh lục
 
             if (stableFrames >= requiredFrames) {
-                clearInterval(autoScanTimer); 
-                playBeep();
+                clearInterval(autoScanTimer); playBeep();
                 const hiRes = document.createElement('canvas');
                 hiRes.width = video.videoWidth; hiRes.height = video.videoHeight;
                 hiRes.getContext('2d').drawImage(video, 0, 0);
@@ -674,11 +757,8 @@ function startAutoScan() {
                 processImagePureJS(hiRes, `Live_${Date.now()}.jpg`, isContinuous);
             }
         } else {
-            stableFrames = 0; 
-            hudText.innerHTML = "Đưa 4 ô đen ngoài cùng vào 4 góc"; 
-            hudText.style.color = "#ff9800";
-            // Trả về viền NÉT ĐỨT VÀNG GẠCH
-            ['cb-tl', 'cb-tr', 'cb-bl', 'cb-br'].forEach(id => document.getElementById(id).classList.remove('locked'));
+            stableFrames = 0; hudText.innerHTML = "Đặt 4 ô vuông đen của phiếu vào 4 ô sáng ở góc"; hudText.style.color = "#ffffff";
+            drawLiveOverlay(null, 'wait'); // Trả về viền góc xám
         }
     }, 200);
 }
@@ -691,6 +771,7 @@ function manualCapture() {
     const canvas = document.createElement('canvas');
     canvas.width = video.videoWidth; canvas.height = video.videoHeight;
     canvas.getContext('2d').drawImage(video, 0, 0);
+    
     const isContinuous = document.getElementById('opt-continuous') && document.getElementById('opt-continuous').checked;
     if (!isContinuous) closeFullscreenCamera();
     processImagePureJS(canvas, `Manual_${Date.now()}.jpg`, isContinuous);
