@@ -1,909 +1,1064 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="vi">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>App chấm trắc nghiệm NTMIX - AI Core v1.4</title>
-    <!-- Thư viện cơ bản -->
-    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
-    
-    <style>
-        :root { --primary: #1a73e8; --success: #0f9d58; --danger: #d93025; --purple: #7c3aed; --dark: #1e293b; --bg: #f1f5f9; }
-        * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
-        body { background: var(--bg); color: var(--dark); padding-bottom: 75px; }
-        header { background: linear-gradient(135deg, #1e3a8a, #2563eb); color: white; padding: 12px 16px; text-align: center; position: sticky; top: 0; z-index: 10; box-shadow: 0 2px 8px rgba(0,0,0,0.15); }
-        header h1 { font-size: 18px; font-weight: 800; }
-        header p { font-size: 13px; font-weight: 600; opacity: 0.95; margin-top: 4px; color: #fbbf24; }
-        .badge-cv { display: inline-block; padding: 4px 12px; border-radius: 12px; font-size: 11px; font-weight: bold; background: rgba(255,255,255,0.2); color: #fff; margin-top: 6px; border: 1px solid rgba(255,255,255,0.4); }
+<meta charset="utf8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>NTMIX v1.5 - AI Precision Core</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800&family=Itim&display=swap">
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.min.js"></script>
+<style>
+:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}
+:root { --bg: #f1f5f9; --grid: rgba(36, 72, 168, 0.065); --card: #ffffff; --fg: #1e293b; --muted: #64748b; --line: #cbd5e1; --ink: #1a73e8; --ink-fg: #ffffff; --ink-soft: #eff6ff; --red: #dc2626; --red-soft: #fef2f2; --ok: #0f9d58; --ok-soft: #ecfdf5; --warn: #f59e0b; --warn-soft: #fffbeb; --f-body: 'Be Vietnam Pro', system-ui, sans-serif; --f-hand: 'Itim', cursive; }
+* { box-sizing: border-box; } html, body { min-height: 100%; }
+body { font: 500 14px/1.5 var(--f-body); color: var(--fg); background-color: var(--bg); background-image: linear-gradient(var(--grid) 1px, transparent 1px), linear-gradient(90deg, var(--grid) 1px, transparent 1px); background-size: 24px 24px; padding-block: 14px 96px; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+.wrap { max-width: 640px; margin: 0 auto; display: flex; flex-direction: column; gap: 14px; }
+h1, h2, h3, p { margin: 0; } h2 { font-size: 16px; font-weight: 700; color: #1e3a8a; } button, input, select, textarea { font: inherit; color: inherit; }
+.vh { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+.top { display: flex; align-items: center; justify-content: space-between; gap: 12px; background: linear-gradient(135deg, #1e3a8a, #2563eb); padding: 16px; border-radius: 12px; color: white; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+.brand { display: flex; align-items: center; gap: 10px; } .brand h1 { font-size: 20px; font-weight: 800; letter-spacing: -0.01em; }
+.pill { font-size: 12px; font-weight: 700; padding: 4px 12px; border-radius: 999px; background: rgba(255,255,255,0.2); color: #fff; border: 1px solid rgba(255,255,255,0.4); }
+.card { background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 16px; display: flex; flex-direction: column; gap: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
+.row { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+.lbl { font-size: 13px; font-weight: 600; color: var(--muted); }
+.btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-height: 44px; padding: 0 16px; border: none; border-radius: 10px; background: var(--card); color: var(--fg); font-weight: 700; font-size: 14px; cursor: pointer; text-align: center; border: 1px solid var(--line); transition: 0.2s; }
+.btn:active { transform: scale(0.98); } .btn.primary { background: var(--ink); color: var(--ink-fg); border-color: var(--ink); } .btn.big { min-height: 52px; font-size: 16px; flex: 1 1 100%; } .btn.ghost { background: transparent; } .btn.danger { color: var(--red); border-color: #fca5a5; background: var(--red-soft); } .btn.success { background: var(--ok); color: white; border-color: var(--ok); } .btn.warning { background: var(--warn); color: white; border-color: var(--warn); }
+.actions { display: flex; flex-wrap: wrap; gap: 10px; } .actions .btn:not(.big) { flex: 1 1 140px; }
+.hint { font-size: 13px; color: var(--muted); }
+.note { font-size: 13px; font-weight: 600; padding: 12px; border-radius: 10px; background: var(--warn-soft); color: var(--warn); border: 1px solid #fde68a; } .note.err { background: var(--red-soft); color: var(--red); border-color: #fecaca; } .note.ok { background: var(--ok-soft); color: var(--ok); border-color: #a7f3d0; }
+.gradebox { display: flex; align-items: center; gap: 16px; flex-wrap: wrap; background: #fff; border: 2px solid var(--red); border-radius: 12px; padding: 12px; box-shadow: 0 4px 12px rgba(220,38,38,0.1); }
+.grade { position: relative; display: inline-flex; align-items: baseline; gap: 2px; padding: 8px 22px 6px; color: var(--red); font-family: var(--f-hand); line-height: 1; transform: rotate(-3deg); }
+.grade .num { font-size: 64px; font-variant-numeric: tabular-nums; } .grade .of { font-size: 24px; opacity: 0.85; } .grade svg { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; }
+.sum { display: flex; flex-direction: column; gap: 6px; min-width: 0; } .sum strong { font-size: 17px; }
+.chips { display: flex; flex-wrap: wrap; gap: 6px; } .chip { font-size: 12px; font-weight: 700; padding: 4px 10px; border-radius: 8px; background: var(--ink-soft); color: var(--ink); border: 1px solid #bfdbfe; }
+.field { display: flex; flex-direction: column; gap: 6px; } .field input, .field textarea { min-height: 44px; padding: 8px 12px; border: 2px solid var(--line); border-radius: 8px; background: #f8fafc; width: 100%; font-weight: 600; font-size: 15px; } .field input:focus { border-color: var(--ink); outline: none; }
+.fields { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; } .fields.one { grid-template-columns: 1fr; }
+.stepper { display: inline-flex; align-items: center; border: 1px solid var(--line); border-radius: 10px; overflow: hidden; background: #f8fafc; } .stepper button { width: 44px; height: 42px; border: 0; background: transparent; font-size: 20px; font-weight: bold; cursor: pointer; color: var(--ink); } .stepper output { min-width: 48px; text-align: center; font-weight: 700; }
+.num-in { width: 84px; min-height: 42px; padding: 0 10px; border: 1px solid var(--line); border-radius: 8px; background: #f8fafc; text-align: center; font-weight: 700; }
+.range-row { display: flex; flex-direction: column; gap: 6px; background: #f8fafc; padding: 12px; border-radius: 10px; border: 1px dashed var(--line); } .range-lbls { display: flex; justify-content: space-between; font-size: 12px; font-weight: 600; color: var(--muted); }
+.qgrid { display: flex; flex-wrap: wrap; gap: 10px 14px; --chip: 28px; } .q { display: flex; align-items: center; gap: 6px; padding: 2px 6px 2px 0; border-radius: 8px; } .q.bad { background: var(--red-soft); } .q.mid { background: var(--warn-soft); }
+.qn { width: 22px; text-align: right; font-size: 12px; font-weight: 700; color: var(--muted); } .opts { display: flex; gap: 4px; }
+.o { width: var(--chip); height: var(--chip); border-radius: 50%; border: 1.5px solid var(--line); background: var(--card); font-size: 12px; font-weight: 700; cursor: pointer; display: grid; place-items: center; color: var(--muted); }
+.o.sel { background: var(--ink); border-color: var(--ink); color: var(--ink-fg); } .o.sel.ok { background: var(--ok); border-color: var(--ok); color: var(--card); } .o.sel.bad { background: var(--red); border-color: var(--red); color: var(--card); } .o.key { border: 2.5px dashed var(--warn); color: var(--warn); }
+.vchips { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; } .vchip { min-height: 38px; padding: 0 16px; border-radius: 999px; border: 1.5px solid var(--line); background: var(--bg); font-weight: 700; font-size: 13px; cursor: pointer; color: var(--muted); transition: 0.2s; } .vchip[aria-pressed='true'] { background: var(--ink); color: var(--ink-fg); border-color: var(--ink); box-shadow: 0 2px 6px rgba(26,115,232,0.3); }
+canvas.photo { display: block; width: 100%; height: auto; border-radius: 8px; background: #222; border: 1px solid var(--line); margin-top: 10px; }
+.stats { display: flex; gap: 16px; flex-wrap: wrap; font-size: 13px; font-weight: 600; color: var(--muted); background: #f8fafc; padding: 12px; border-radius: 10px; border: 1px dashed var(--line); } .stats b { color: var(--ink); font-size: 16px; }
+.list { display: flex; flex-direction: column; } .item { display: grid; grid-template-columns: 1fr auto auto; gap: 10px; align-items: center; padding: 12px 0; border-top: 1px solid var(--line); } .item:first-child { border-top: 0; } .item .who { font-weight: 700; font-size: 14px; color: #1e3a8a; } .item .meta { font-size: 12px; font-weight: 600; color: var(--muted); margin-top: 4px; } .item .sc { font-family: var(--f-hand); font-size: 26px; font-weight: bold; color: var(--red); }
+.item button { width: 36px; height: 36px; border: 1px solid var(--line); background: #f8fafc; border-radius: 8px; color: var(--muted); cursor: pointer; font-weight: bold; }
+.tabs { position: fixed; left: 0; right: 0; bottom: 0; z-index: 5; display: flex; justify-content: center; background: rgba(255,255,255,0.95); backdrop-filter: blur(10px); border-top: 1px solid var(--line); padding: 8px 12px calc(8px + env(safe-area-inset-bottom)); box-shadow: 0 -2px 10px rgba(0,0,0,0.05); } .tabs > div { display: flex; width: 100%; max-width: 640px; gap: 8px; }
+.tab { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 8px 4px; border: 0; background: transparent; color: var(--muted); font-size: 12px; font-weight: 700; border-radius: 10px; cursor: pointer; position: relative; transition: 0.2s; } .tab[aria-current='page'] { color: var(--ink); background: var(--ink-soft); } .tab svg { width: 24px; height: 24px; } .tab .bd { position: absolute; top: 4px; left: calc(50% + 8px); min-width: 18px; padding: 0 5px; height: 18px; border-radius: 9px; background: var(--red); color: white; font-size: 11px; line-height: 18px; text-align: center; }
+.prow { display: grid; grid-template-columns: 1fr auto 84px; gap: 8px; align-items: center; background: #f8fafc; padding: 10px; border-radius: 8px; } .prow.head { background: transparent; padding: 0 10px; font-size: 12px; color: var(--muted); } .pl { display: flex; flex-direction: column; } .pl small { color: var(--muted); font-size: 12px; font-weight: 600; }
+.tflist { display: flex; flex-direction: column; gap: 8px; } .tfq { display: grid; grid-template-columns: 1fr auto; grid-template-areas: 'q t' 's s'; gap: 6px 8px; padding: 8px; border-radius: 8px; background: #f8fafc; border: 1px solid #e2e8f0; } .tfq.bad { background: var(--red-soft); border-color: #fecaca; } .tfq.mid { background: var(--warn-soft); border-color: #fde68a; } .tqn { grid-area: q; font-size: 13px; font-weight: 700; color: var(--muted); } .sts { grid-area: s; display: flex; justify-content: space-between; gap: 6px; } .st { display: inline-flex; align-items: center; gap: 4px; } .st i { font-style: normal; font-size: 12px; font-weight: bold; color: var(--muted); width: 12px; text-align: center; } .o.tf { width: 30px; height: 30px; font-size: 13px; }
+.numlist { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; } .numq { display: grid; grid-template-columns: auto 1fr; gap: 6px 10px; align-items: center; padding: 10px; border-radius: 10px; border: 1px solid var(--line); background: #f8fafc; } .numq.bad { background: var(--red-soft); border-color: #fecaca; } .numq.good { background: var(--ok-soft); border-color: #a7f3d0; } .numin { min-height: 40px; padding: 6px 10px; border: 2px solid var(--line); border-radius: 8px; text-align: center; font-size: 16px; font-weight: bold; width: 100%; } .keyv { grid-column: 1 / -1; font-size: 12px; font-weight: 600; color: var(--muted); text-align: center; } .keyv b { color: var(--ink); font-size: 14px; }
 
-        .container { max-width: 600px; margin: 0 auto; padding: 10px; }
-        .card { background: white; border-radius: 12px; padding: 14px; margin-bottom: 12px; box-shadow: 0 1px 4px rgba(0,0,0,0.08); }
-        .card-title { font-size: 15px; font-weight: 700; color: #1e3a8a; margin-bottom: 10px; display: flex; align-items: center; justify-content: space-between; }
-        .form-group { margin-bottom: 10px; }
-        .form-group label { display: block; font-size: 13px; font-weight: 600; margin-bottom: 4px; color: #475569; }
-        input[type="number"], input[type="text"], select { width: 100%; padding: 9px 10px; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 14px; background: #f8fafc; font-weight: bold;}
-        .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
-        .grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; }
+/* ========== GIAO DIỆN CAMERA & HIỂN THỊ ========== */
+.live { position: fixed; inset: 0; z-index: 9999; background: #000; color: #fff; display: flex; flex-direction: column; overflow: hidden; } .live[hidden] { display: none; }
+.live video { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+.live canvas { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; }
+.lv-top { position: relative; z-index: 7; display: flex; align-items: flex-start; justify-content: space-between; padding: max(20px, env(safe-area-inset-top)) 16px 12px; background: linear-gradient(#000a, transparent); }
+.lv-bottom { position: relative; z-index: 7; margin-top: auto; display: flex; flex-direction: column; align-items: center; padding-bottom: max(24px, env(safe-area-inset-bottom)); background: linear-gradient(transparent, #000c); gap: 16px; }
+.btn-cam-close { width: 42px; height: 42px; border-radius: 50%; background: rgba(0,0,0,0.6); color: white; border: 1.5px solid rgba(255,255,255,0.6); font-size: 18px; font-weight: bold; cursor: pointer; display: flex; justify-content: center; align-items: center; }
+.cam-count-text { color: white; font-weight: 700; font-size: 15px; text-shadow: 0 2px 4px rgba(0,0,0,0.9); margin-left: 12px; margin-top: 10px;}
+.cam-top-opts { display: flex; flex-direction: column; gap: 12px; background: rgba(0,0,0,0.5); padding: 12px 16px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.2); }
+.cam-opt { color: #fff; font-size: 14px; font-weight: 600; display: flex; align-items: center; gap: 10px; cursor: pointer; } .cam-opt input { margin: 0; width: 20px; height: 20px; accent-color: #1a73e8; cursor: pointer; }
+.lv-msg { text-align: center; font-size: 16px; font-weight: 700; text-shadow: 0 2px 5px rgba(0,0,0,0.9); color: #fff; }
+.lv-btn.wide { background: white; color: black; border: none; border-radius: 30px; font-size: 16px; font-weight: 800; padding: 16px 40px; width: 85%; max-width: 320px; box-shadow: 0 4px 12px rgba(0,0,0,0.4); cursor: pointer; }
+.lv-res { position: absolute; inset: 0; z-index: 100; background: rgba(0,0,0,0.9); display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 20px; } .lv-res[hidden] { display: none; }
+.lv-res-score b { font: 900 56px var(--f-body); color: #3ddc84; } .lv-res-info { font-size: 16px; font-weight: 700; color: white; opacity: 0.9; text-align: center; margin: 10px 0 20px; }
+.lv-res-img canvas { max-width: 100%; max-height: 60vh; border-radius: 12px; border: 2px solid #555; box-shadow: 0 10px 20px rgba(0,0,0,0.5); }
+.lv-res-cd { text-align: center; font-size: 14px; font-weight: 600; color: #aaa; margin-top: 20px; }
 
-        .btn { display: inline-flex; align-items: center; justify-content: center; width: 100%; padding: 12px; border: none; border-radius: 10px; font-size: 14px; font-weight: 700; color: white; cursor: pointer; transition: 0.2s; gap: 6px; }
-        .btn:active { transform: scale(0.98); }
-        .btn-primary { background: var(--primary); }
-        .btn-success { background: var(--success); }
-        .btn-danger { background: var(--danger); }
-        .btn-warning { background: #f59e0b; color: white; }
-        .btn-purple { background: var(--purple); }
-        .btn-secondary { background: #64748b; }
-        .btn-upload { background: #f1f5f9; color: #334155; border: 2px dashed #cbd5e1; cursor: pointer; text-align: center; display: block; padding: 14px; border-radius: 10px; transition: 0.2s; }
-
-        #qr-scanner-wrapper { display: none; position: relative; width: 100%; background: #000; border-radius: 12px; overflow: hidden; margin-top: 8px; margin-bottom: 10px; }
-        #qr-video { width: 100%; display: block; }
-
-        #scan-status { font-size: 14px; font-weight: 700; color: #64748b; text-align: center; margin-bottom: 12px; padding: 16px 10px; border: 2px dashed #cbd5e1; border-radius: 8px; background: #f8fafc; transition: 0.3s; }
-
-        .score-dashboard { display: none; background: #fff; border: 2px solid #dc2626; border-radius: 12px; padding: 12px; margin-top: 10px; box-shadow: 0 4px 10px rgba(220,38,38,0.12); }
-        .score-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px dashed #fca5a5; padding-bottom: 8px; margin-bottom: 10px; }
-        .score-total-box { font-size: 24px; font-weight: 900; color: #dc2626; }
-        .score-meta { font-size: 13px; font-weight: 700; color: #1e3a8a; text-align: right; }
-        .score-parts-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; text-align: center; }
-        .part-box { background: #fef2f2; border: 1px solid #fecaca; border-radius: 8px; padding: 8px 4px; }
-        .part-box .p-title { font-size: 12px; font-weight: 700; color: #991b1b; }
-        .part-box .p-val { font-size: 18px; font-weight: 800; color: #dc2626; margin-top: 2px; }
-        .part-box .p-sub { font-size: 11px; color: #64748b; margin-top: 2px; }
-        .key-summary-box { background: #ecfdf5; border: 1px solid #6ee7b7; color: #065f46; padding: 8px 10px; border-radius: 8px; font-size: 12.5px; font-weight: 600; margin-top: 6px; display: none; }
-        #result-canvas { width: 100%; border-radius: 8px; border: 1px solid #cbd5e1; display: none; margin-top: 10px; }
-        .table-wrap { overflow-x: auto; }
-        table { width: 100%; border-collapse: collapse; font-size: 13px; }
-        th, td { padding: 8px 6px; border-bottom: 1px solid #e2e8f0; text-align: center; }
-        th { background: #1e3a8a; color: white; white-space: nowrap; }
-
-        .bottom-nav { position: fixed; bottom: 0; left: 0; right: 0; background: white; display: flex; border-top: 1px solid #e2e8f0; z-index: 50; }
-        .nav-item { flex: 1; padding: 10px 4px; text-align: center; font-size: 12px; font-weight: 600; color: #64748b; cursor: pointer; }
-        .nav-item.active { color: var(--primary); border-top: 3px solid var(--primary); background: #eff6ff; }
-        .tab-pane { display: none; }
-        .tab-pane.active { display: block; }
-        
-        /* ========== UI CAMERA CHUẨN NTMARK (VÀNG GẠCH ĐỨT / XANH NÉT LIỀN) ========== */
-        .cam-top-bar { position: absolute; top: max(16px, env(safe-area-inset-top)); left: 16px; right: 16px; display: flex; justify-content: space-between; align-items: flex-start; z-index: 9999; pointer-events: none; }
-        .cam-top-left { display: flex; align-items: center; gap: 12px; pointer-events: auto; }
-        .btn-cam-close { width: 38px; height: 38px; border-radius: 50%; background: rgba(0,0,0,0.65); color: white; border: 1.5px solid rgba(255,255,255,0.5); font-size: 16px; font-weight: bold; cursor: pointer; display: flex; justify-content: center; align-items: center; box-shadow: 0 2px 5px rgba(0,0,0,0.3); }
-        .cam-count-text { color: white; font-weight: 600; font-size: 15px; text-shadow: 0 1px 4px rgba(0,0,0,0.9); }
-        .cam-top-opts { display: flex; flex-direction: column; gap: 10px; pointer-events: auto; background: rgba(0,0,0,0.45); padding: 10px 14px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.15); box-shadow: 0 4px 10px rgba(0,0,0,0.2); }
-        .cam-opt { color: #fff; font-size: 13.5px; font-weight: 600; display: flex; align-items: center; gap: 8px; cursor: pointer; text-shadow: 0 1px 3px #000; }
-        .cam-opt input { margin: 0; width: 19px; height: 19px; accent-color: #007aff; cursor: pointer; }
-
-        /* 4 góc ngắm chữ L đổi màu */
-        .corner-box { position: absolute; width: 44px; height: 44px; border: 3.5px dashed #ff9800; transition: border-color 0.1s, border-style 0.1s; }
-        .corner-box.tl { top: 12%; left: 5%; border-right: none; border-bottom: none; }
-        .corner-box.tr { top: 12%; right: 5%; border-left: none; border-bottom: none; }
-        .corner-box.bl { bottom: 18%; left: 5%; border-right: none; border-top: none; }
-        .corner-box.br { bottom: 18%; right: 5%; border-left: none; border-top: none; }
-        .corner-box.locked { border-color: #3ddc84 !important; border-style: solid !important; }
-    </style>
+/* Excel Upload Area */
+.excel-upload-zone { background: #e0f2fe; border: 2px dashed #38bdf8; border-radius: 12px; padding: 16px; text-align: center; margin-top: 12px; cursor: pointer; transition: 0.2s; }
+.excel-upload-zone:hover { background: #bae6fd; } .excel-upload-zone span { font-weight: 700; color: #0284c7; display: block; font-size: 15px; } .excel-upload-zone small { font-weight: 600; color: #0ea5e9; font-size: 12px; margin-top: 4px; display: block; }
+</style>
 </head>
 <body>
-
-<header>
-    <h1>App chấm trắc nghiệm NTMIX</h1>
-    <p>Tác giả: Nguyễn Thanh Tùng - AI Precision Core v1.4</p>
-    <span class="badge-cv">NTMIX - Homography 2025</span>
-</header>
-
-<div class="container">
-    <div id="tab-config" class="tab-pane active">
-        <div class="card">
-            <div class="card-title">1. Nạp Đáp Án (Mã QR / Excel)</div>
-            <div class="form-group">
-                <div class="grid-2">
-                    <button class="btn btn-purple" id="btn-qr-cam" onclick="toggleQrScanner()">📷 Quét Mã QR</button>
-                    <div class="btn btn-success" style="margin: 0; cursor: pointer;" onclick="document.getElementById('file-qr-img').click()">🖼️ Chọn Ảnh QR</div>
-                    <input type="file" id="file-qr-img" accept="image/*" style="display: none;" onchange="handleQrImageFile(this.files[0])">
-                </div>
-                <div id="qr-scanner-wrapper"><video id="qr-video" autoplay playsinline muted></video></div>
-            </div>
-            <div class="form-group">
-                <label>📄 Hoặc chọn file Excel Đáp án:</label>
-                <div class="btn-upload" onclick="document.getElementById('file-key').click()">
-                    <span id="label-file-key">📁 Bấm vào đây để chọn File Excel</span>
-                </div>
-                <input type="file" id="file-key" accept=".xlsx, .xls" style="display: none;">
-            </div>
-            <div id="key-status-box" class="key-summary-box"></div>
-            
-            <div class="form-group" style="margin-top: 10px;">
-                <label>👥 File Danh sách Học sinh (Tùy chọn):</label>
-                <div class="btn-upload" onclick="document.getElementById('file-dshs').click()">
-                    <span id="label-file-dshs">📁 Bấm vào đây để chọn DSHS</span>
-                </div>
-                <input type="file" id="file-dshs" accept=".xlsx, .xls" style="display: none;">
-                <small id="dshs-status" style="color: var(--primary); font-weight: 600; display: block; margin-top: 6px; text-align: center;"></small>
-            </div>
-        </div>
-
-        <div class="card">
-            <div class="card-title">2. Cấu hình Máy Quét & Chấm</div>
-            <div class="form-group" style="background: #ecfdf5; padding: 10px; border-radius: 8px; border: 1px dashed #10b981; margin-bottom: 12px;">
-                <label style="color: #047857;">📷 Tốc độ Bắt nét tự động (Auto-Scan):</label>
-                <select id="cfg-scan-speed" style="border-color: #34d399; font-weight: bold; color: #047857;">
-                    <option value="3">⚡ Bắt nét: Nhanh (0.3s)</option>
-                    <option value="5" selected>🎯 Bắt nét: Tiêu chuẩn (0.5s)</option>
-                    <option value="8">🐢 Bắt nét: Chắc chắn (0.8s)</option>
-                </select>
-            </div>
-            <div class="grid-2">
-                <div class="form-group"><label>Điểm Phần I:</label><input type="number" id="cfg-p1" step="0.05" value="0.25"></div>
-                <div class="form-group"><label>Điểm Phần III:</label><input type="number" id="cfg-p3" step="0.05" value="0.5"></div>
-            </div>
-            <div class="form-group">
-                <label>Điểm Phần II (1 | 2 | 3 | 4 ý đúng):</label>
-                <div class="grid-4">
-                    <input type="number" id="cfg-p2-1" step="0.05" value="0.1">
-                    <input type="number" id="cfg-p2-2" step="0.05" value="0.25">
-                    <input type="number" id="cfg-p2-3" step="0.05" value="0.5">
-                    <input type="number" id="cfg-p2-4" step="0.05" value="1.0">
-                </div>
-            </div>
-            <div class="form-group" style="margin-top: 12px;"><label>🔧 Mã đề dự phòng (Khi HS quên tô):</label><input type="text" id="fallback-code" placeholder="VD: 101"></div>
-            <button class="btn btn-primary" onclick="switchTab('tab-scan')" style="margin-top: 10px;">Lưu & Mở Giao Diện Chấm ➔</button>
-        </div>
+<div class="wrap">
+  <header class="top">
+    <div class="brand">
+      <img src="https://upload.wikimedia.org/wikipedia/commons/e/e4/Google_Earth_icon.svg" width="36" height="36" alt="Logo" style="filter: drop-shadow(0 2px 4px rgba(0,0,0,0.2));">
+      <div>
+          <h1>NTMIX Pro</h1>
+          <p style="margin:0; font-size:12px; opacity:0.9;">Tác giả: Nguyễn Thanh Tùng</p>
+      </div>
     </div>
+    <span class="pill" id="cfgChip"></span>
+  </header>
 
-    <div id="tab-scan" class="tab-pane">
-        <div class="card">
-            <div class="card-title">Chấm Phiếu Trực Tiếp</div>
-            <div class="grid-2" style="margin-bottom: 10px;">
-                <button class="btn btn-primary" onclick="openFullscreenCamera()">📷 Mở Máy Quét</button>
-                <div class="btn btn-success" style="margin: 0; cursor: pointer; display: flex; align-items: center; justify-content: center;" onclick="document.getElementById('file-images').click()">🖼️ Chọn Từ Máy</div>
-                <input type="file" id="file-images" accept="image/*" capture="environment" multiple style="display: none;" onchange="handleImageFiles(this)">
-            </div>
-            
-            <div id="scan-status">👋 Sẵn sàng! Hãy Mở máy quét hoặc Chọn ảnh từ máy.</div>
-
-            <div id="score-dashboard" class="score-dashboard">
-                <div class="score-header">
-                    <div>
-                        <div style="font-size: 11px; font-weight: 700; color: #64748b;">TỔNG ĐIỂM BÀI LÀM</div>
-                        <div class="score-total-box" id="ui-total">0.00đ</div>
-                    </div>
-                    <div class="score-meta">
-                        <div id="ui-stu-name">Học sinh: ---</div>
-                        <div id="ui-sbd-made">SBD: --- | Mã đề: ---</div>
-                    </div>
-                </div>
-                <div class="score-parts-grid">
-                    <div class="part-box"><div class="p-title">PHẦN I</div><div class="p-val" id="ui-p1-score">0.00đ</div><div class="p-sub" id="ui-p1-detail">0/0 câu</div></div>
-                    <div class="part-box"><div class="p-title">PHẦN II</div><div class="p-val" id="ui-p2-score">0.00đ</div><div class="p-sub" id="ui-p2-detail">0/0 ý đúng</div></div>
-                    <div class="part-box"><div class="p-title">PHẦN III</div><div class="p-val" id="ui-p3-score">0.00đ</div><div class="p-sub" id="ui-p3-detail">0/0 câu</div></div>
-                </div>
-                <div id="ui-warnings" style="margin-top: 8px; font-size: 12px; color: #d93025; font-weight: 600; text-align: center;"></div>
-                <div class="grid-2" style="margin-top: 10px;">
-                    <button class="btn btn-primary" onclick="openFullscreenCamera()">🔄 Quét Tờ Khác</button>
-                    <button class="btn btn-secondary" onclick="downloadResultImage()">⬇️ Lưu Ảnh Đang Hiện</button>
-                </div>
-            </div>
-            <canvas id="result-canvas" style="width: 100%; border-radius: 8px; border: 1px solid #cbd5e1; display: none; margin-top: 10px;"></canvas>
+  <main>
+    <section id="v-scan" class="view" aria-label="Chấm bài">
+      <div class="card">
+        <div id="sheetSel" class="sheetsel"></div>
+        <div class="actions">
+          <button class="btn primary big" type="button" id="btnLive">📷 Chấm Bằng Camera</button>
+          <label class="btn" for="pick">🖼️ Chọn ảnh có sẵn</label>
+          <input class="vh" type="file" id="pick" accept="image/*" multiple>
         </div>
-    </div>
+        <p class="hint" style="margin-top: 8px;">Đặt phiếu phẳng, đủ sáng. Viền ngắm sẽ tự động bắt 4 ô vuông đen và khóa nét (chuyển xanh lục) để chấm.</p>
+        
+        <label class="excel-upload-zone" for="studentPickScan">
+            <span>👥 Nạp Danh Sách Học Sinh (Tùy chọn)</span>
+            <small id="dshs-status-scan">Bấm để chọn file Excel (.xlsx)</small>
+        </label>
+        <input class="vh" type="file" id="studentPickScan" accept=".xlsx, .xls, .csv">
+      </div>
+      <div id="scanOut" aria-live="polite"></div>
+    </section>
 
-    <div id="tab-results" class="tab-pane">
-        <div class="card">
-            <div class="card-title"><span>Danh sách đã chấm (<span id="count-graded">0</span>)</span></div>
-            <div class="grid-2" style="margin-bottom: 12px;">
-                <button class="btn btn-success" onclick="exportResultsExcel()">📥 Xuất Excel Điểm</button>
-                <button class="btn btn-warning" onclick="downloadAllImagesZip()">📦 Tải Tất Cả Ảnh (ZIP)</button>
-            </div>
-            <div class="table-wrap">
-                <table>
-                    <thead><tr><th>STT</th><th>SBD</th><th>Tên</th><th>Mã</th><th>TỔNG</th></tr></thead>
-                    <tbody id="results-tbody"></tbody>
-                </table>
-            </div>
-        </div>
-    </div>
-</div>
-
-<!-- ======================= MÀN HÌNH CAMERA GIAO DIỆN NTMARK ======================= -->
-<div id="camera-fullscreen-ui" style="display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: #000; z-index: 9999; flex-direction: column; overflow: hidden;">
-    <video id="video" autoplay playsinline muted style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover;"></video>
-    <canvas id="live-overlay-canvas" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 10;"></canvas>
-
-    <div class="cam-top-bar">
+    <!-- MÀN HÌNH CAMERA CHUẨN NTMARK -->
+    <div id="live" class="live" hidden role="dialog">
+      <video id="lvVideo" playsinline muted autoplay></video>
+      <canvas id="lvOv"></canvas>
+      
+      <div class="lv-top">
         <div class="cam-top-left">
-            <button class="btn-cam-close" onclick="closeFullscreenCamera()">✕</button>
-            <span class="cam-count-text" id="cam-scan-count">Chưa chấm tờ nào</span>
+            <button class="btn-cam-close" type="button" id="lvClose">✕</button>
+            <span class="cam-count-text" id="lvChip">Chưa chấm tờ nào</span>
         </div>
         <div class="cam-top-opts">
-            <label class="cam-opt"><input type="checkbox" id="opt-show-res" checked> Hiện kết quả ngay</label>
-            <label class="cam-opt"><input type="checkbox" id="opt-continuous"> Chấm liên tiếp</label>
-            <label class="cam-opt"><input type="checkbox" id="opt-sound" checked> Âm báo</label>
+            <label class="cam-opt"><input type="checkbox" id="lvLive" checked> Hiện kết quả ngay</label>
+            <label class="cam-opt"><input type="checkbox" id="lvCont"> Chấm liên tiếp</label>
+            <label class="cam-opt"><input type="checkbox" id="lvSnd" checked> Âm báo</label>
         </div>
+      </div>
+
+      <div class="lv-res" id="lvRes" hidden>
+        <div class="lv-res-score" id="lvResScore"></div>
+        <div class="lv-res-info" id="lvResInfo"></div>
+        <div class="lv-res-img"><canvas id="lvResCv"></canvas></div>
+        <div id="lvResCd" class="lv-res-cd"></div>
+      </div>
+
+      <div class="lv-bottom">
+        <div class="lv-msg" id="lvMsg">Đặt 4 ô vuông đen vào 4 góc ngắm</div>
+        <button class="lv-btn wide" type="button" id="lvShot">Chụp ngay</button>
+      </div>
     </div>
 
-    <!-- 4 Góc ngắm Cứng bằng CSS, đổi viền vàng/xanh -->
-    <div id="cam-overlay">
-        <div class="corner-box tl" id="cb-tl"></div>
-        <div class="corner-box tr" id="cb-tr"></div>
-        <div class="corner-box bl" id="cb-bl"></div>
-        <div class="corner-box br" id="cb-br"></div>
-    </div>
+    <section id="v-key" class="view" hidden aria-label="Đáp án">
+      <div class="card">
+        <h2>Nhập Đáp Án Tự Động</h2>
+        <p class="hint">Nạp file Excel hoặc quét mã QR. Tất cả mã đề sẽ được tạo và cập nhật tự động.</p>
+        <div class="actions" style="margin-top: 10px;">
+          <label class="btn success" for="excelPickKey" style="flex:1">📄 Nạp File Excel</label>
+          <button type="button" class="btn purple" id="qrLiveBtn" style="flex:1">📷 Quét Mã QR</button>
+          <button type="button" class="btn danger" id="qrClearAll" style="width: 100%; margin-top: 5px;">🗑️ Xóa Toàn Bộ Mã Đề</button>
+        </div>
+        <input class="vh" type="file" id="excelPickKey" accept=".xlsx, .xls, .csv">
+        <div id="key-upload-status" class="note ok" style="display: none; margin-top: 10px;"></div>
+      </div>
+      
+      <div id="qrLive" class="live" hidden role="dialog">
+        <video id="qrVideo" playsinline muted autoplay></video>
+        <div class="lv-top"><button class="btn-cam-close" type="button" id="qrClose">✕</button></div>
+        <div class="lv-bottom"><div class="lv-msg">Đưa mã QR vào giữa khung hình</div></div>
+      </div>
 
-    <div id="cam-result-overlay" style="display: none; position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 100; flex-direction: column; align-items: center; justify-content: center; padding: 15px;">
-        <h2 id="cam-res-score" style="color: #3ddc84; font-size: 56px; margin-bottom: 5px; font-weight: 900;"></h2>
-        <p id="cam-res-info" style="color: white; font-size: 16px; margin-bottom: 20px; opacity: 0.9; text-align: center; font-weight: 600;"></p>
-        <img id="cam-res-img" style="max-width: 100%; max-height: 60vh; border-radius: 12px; border: 2px solid #555;">
-    </div>
+      <div class="card" id="cfgCard"></div>
+      <div class="card" id="keyCard"></div>
+    </section>
 
-    <div style="position: absolute; bottom: 35px; left: 0; width: 100%; display: flex; flex-direction: column; align-items: center; z-index: 50;">
-        <p id="hud-text" style="color: white; font-size: 16px; font-weight: 600; margin-bottom: 20px; text-shadow: 0 2px 4px rgba(0,0,0,0.9);">Đặt 4 ô vuông đen của phiếu vào 4 góc</p>
-        <button onclick="manualCapture()" style="background: white; color: black; border: none; border-radius: 30px; font-size: 16px; font-weight: 700; padding: 16px 40px; width: 85%; max-width: 320px; box-shadow: 0 4px 12px rgba(0,0,0,0.4); cursor: pointer;">Chụp ngay</button>
-    </div>
+    <section id="v-res" class="view" hidden aria-label="Kết quả">
+      <div class="card" id="resCard"></div>
+    </section>
+  </main>
 </div>
 
-<div class="bottom-nav">
-    <div class="nav-item active" onclick="switchTab('tab-config')">⚙️ Cấu hình</div>
-    <div class="nav-item" onclick="switchTab('tab-scan')">📷 Máy Quét</div>
-    <div class="nav-item" onclick="switchTab('tab-results')">📊 Bảng điểm (<span id="nav-count">0</span>)</div>
-</div>
+<nav class="tabs">
+  <div>
+    <button class="tab" type="button" data-tab="scan" aria-current="page">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4 8V6a2 2 0 0 1 2-2h2M16 4h2a2 2 0 0 1 2 2v2M20 16v2a2 2 0 0 1-2 2h-2M8 20H6a2 2 0 0 1-2-2v-2"/><rect x="9" y="9" width="6" height="6" rx="1"/></svg>
+      Chấm bài
+    </button>
+    <button class="tab" type="button" data-tab="key">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6.5l1.8 1.8L9 5M4 12.5l1.8 1.8L9 11M4 18.5l1.8 1.8L9 17"/><path d="M13 7h7M13 13h7M13 19h7"/></svg>
+      Đáp án & Điểm
+    </button>
+    <button class="tab" type="button" data-tab="res">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 20V11M12 20V4M19 20v-6"/></svg>
+      Bảng điểm <span class="bd" id="resBadge" hidden>0</span>
+    </button>
+  </div>
+</nav>
 
 <script>
-let answerKey = {}; let dshsDict = {}; let gradedRows = []; let gradedImagesData = [];
-let videoStream = null; let qrStream = null; let qrScanTimer = null;
-let autoScanTimer = null; let stableFrames = 0; let lastGradedSbd = "Phieu";
-
 /* ==========================================================================
-   TỌA ĐỘ CHUẨN (TÂM Ô VUÔNG) - BẢN FIX KHÔNG LỆCH CỦA NTMARK
+   TỌA ĐỘ CHUẨN ĐO TỪ PAINT (ĐÃ BÙ TRỪ VÀO CHÍNH TÂM Ô ĐEN 12px)
    ========================================================================== */
-const CORNERS_CANONICAL = [
-    [24, 29],     // TL (Nút trên trái)
-    [718, 29],    // TR (Nút trên phải)
-    [718, 1054],  // BR (Nút đáy phải)
-    [24, 1054]    // BL (Nút đáy trái)
-];
-
-const GRID_SPEC = {
-    sbd: { x: [510, 525, 541, 556, 571, 586, 601, 616], y: [106, 128, 149, 171, 193, 215, 237, 258, 280, 302] },
-    made: { x: [654, 669, 684, 699], y: [106, 128, 149, 171, 193, 215, 237, 258, 280, 302] },
-    p1: { blocksX: [[86, 118, 151, 183], [248, 281, 314, 346], [412, 444, 477, 509], [575, 608, 640, 672]], y: [410, 426, 443, 460, 476, 494, 511, 527, 543, 561] },
-    p2: { colsX: [[85, 118], [152, 183], [249, 282], [314, 347], [412, 445], [478, 511], [578, 608], [641, 674]], y: [653, 670, 687, 704] },
-    p3: { 
-        colsX: [[80, 103, 125, 148], [184, 207, 229, 252], [289, 311, 333, 356], [393, 416, 439, 461], [498, 520, 542, 565], [602, 625, 647, 670]], 
-        yMinus: 803, yComma: 820, yDigit: [839, 855, 873, 891, 907, 924, 942, 959, 976, 994], digitChars: ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9'] 
-    }
+const SHEET_BGD25 = {
+  id: 'bgd25',
+  name: 'Phiếu BGD 2025 (4MĐ)',
+  PW: 210, PH: 297, RB: 1.45,
+  CORNERS: [ [24+12, 29+12], [718+12, 29+12], [718+12, 1054+12], [24+12, 1054+12] ],
+  MARK_ROWS: [ [[36, 41], [730, 41]], [[36, 1066], [730, 1066]] ], // Giả lập dải neo
+  BAND_Y: [1066], bands: false,
+  
+  SBD_X: [510, 525, 541, 556, 571, 586, 601, 616],
+  MD_X: [654, 669, 684, 699],
+  ID_Y: [106, 128, 149, 171, 193, 215, 237, 258, 280, 302],
+  
+  P1_X: [
+    [86, 118, 151, 183], [248, 281, 314, 346], [412, 444, 477, 509], [575, 608, 640, 672]
+  ],
+  P1_Y: [410, 426, 443, 460, 476, 494, 511, 527, 543, 561],
+  
+  P2_X: [
+    [85, 118], [152, 183], [249, 282], [314, 347], [412, 445], [478, 511], [578, 608], [641, 674]
+  ],
+  P2_Y: [653, 670, 687, 704],
+  
+  P3_X: [
+    [80, 103, 125, 148], [184, 207, 229, 252], [289, 311, 333, 356], [393, 416, 439, 461], [498, 520, 542, 565], [602, 625, 647, 670]
+  ],
+  P3_DASH: 803, P3_COMMA: 820,
+  P3_D: [839, 855, 873, 891, 907, 924, 942, 959, 976, 994],
+  
+  MAX1: 40, MAX2: 8, MAX3: 6
 };
+const SHEETS = { bgd25: SHEET_BGD25 };
 
-function switchTab(tabId) {
-    if (tabId !== 'tab-config') stopQrScanner();
-    document.querySelectorAll('.tab-pane').forEach(el => el.classList.remove('active'));
-    document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
-    document.getElementById(tabId).classList.add('active');
-    const idx = ['tab-config', 'tab-scan', 'tab-results'].indexOf(tabId);
-    if (idx >= 0) document.querySelectorAll('.nav-item')[idx].classList.add('active');
+let SHEET = SHEET_BGD25, K = 1, MS = 24, P1N = 10, PW, PH, RB, CORNERS, MARK_ROWS, BAND_Y, SBD_X, MD_X, ID_Y, P1_X, P1_Y, P2_X, P2_Y, P3_X, P3_DASH, P3_COMMA, P3_D, MAX1, MAX2, MAX3;
+function setSheet(id) {
+  SHEET = SHEETS[id] || SHEET_BGD25; PW = SHEET.PW; PH = SHEET.PH; RB = SHEET.RB; CORNERS = SHEET.CORNERS; MARK_ROWS = SHEET.MARK_ROWS; BAND_Y = SHEET.BAND_Y;
+  SBD_X = SHEET.SBD_X; MD_X = SHEET.MD_X; ID_Y = SHEET.ID_Y; P1_X = SHEET.P1_X; P1_Y = SHEET.P1_Y; P2_X = SHEET.P2_X; P2_Y = SHEET.P2_Y; P3_X = SHEET.P3_X; P3_DASH = SHEET.P3_DASH; P3_COMMA = SHEET.P3_COMMA; P3_D = SHEET.P3_D; MAX1 = SHEET.MAX1; MAX2 = SHEET.MAX2; MAX3 = SHEET.MAX3;
+}
+setSheet('bgd25');
+
+function makeLayout(cfg) {
+  const L = { p1: [], p2: [], p3: [], sbd: [], md: [] };
+  for (let q = 0; q < cfg.n1; q++) for (let o = 0; o < 4; o++) L.p1.push({ blk: 'p1-' + Math.floor(q / P1N), q: q, o: o, x: P1_X[Math.floor(q / P1N)][o], y: P1_Y[q % P1N] });
+  for (let q = 0; q < cfg.n2; q++) for (let r = 0; r < 4; r++) for (let s = 0; s < 2; s++) L.p2.push({ blk: 'p2-' + q, q: q, r: r, s: s, x: P2_X[q][s], y: Array.isArray(P2_Y[0]) ? P2_Y[q][r] : P2_Y[r] });
+  for (let q = 0; q < cfg.n3; q++) {
+    L.p3.push({ blk: 'p3-' + q, q: q, c: 0, k: '-', x: P3_X[q][0], y: P3_DASH }); L.p3.push({ blk: 'p3-' + q, q: q, c: 1, k: ',', x: P3_X[q][1], y: P3_COMMA }); L.p3.push({ blk: 'p3-' + q, q: q, c: 2, k: ',', x: P3_X[q][2], y: P3_COMMA });
+    for (let c = 0; c < 4; c++) for (let d = 0; d < 10; d++) L.p3.push({ blk: 'p3-' + q, q: q, c: c, k: String(d), x: P3_X[q][c], y: P3_D[d] });
+  }
+  L.sbdN = SBD_X.length; L.mdN = MD_X.length;
+  for (let c = 0; c < SBD_X.length; c++) for (let d = 0; d < 10; d++) L.sbd.push({ blk: 'sbd', c: c, d: d, x: SBD_X[c], y: ID_Y[d] });
+  for (let c = 0; c < MD_X.length; c++) for (let d = 0; d < 10; d++) L.md.push({ blk: 'md', c: c, d: d, x: MD_X[c], y: ID_Y[d] });
+  return L;
 }
 
-function playBeep() {
-    const soundOpt = document.getElementById('opt-sound');
-    if (soundOpt && !soundOpt.checked) return;
+function solveHomography(S, D) {
+  const A = [];
+  for (let i = 0; i < 4; i++) { const x = S[i][0], y = S[i][1], u = D[i][0], v = D[i][1]; A.push([x, y, 1, 0, 0, 0, -u * x, -u * y, u]); A.push([0, 0, 0, x, y, 1, -v * x, -v * y, v]); }
+  for (let c = 0; c < 8; c++) {
+    let p = c; for (let r = c + 1; r < 8; r++) if (Math.abs(A[r][c]) > Math.abs(A[p][c])) p = r;
+    if (Math.abs(A[p][c]) < 1e-12) return null;
+    const tmp = A[c]; A[c] = A[p]; A[p] = tmp;
+    for (let r = 0; r < 8; r++) { if (r === c) continue; const f = A[r][c] / A[c][c]; for (let k = c; k < 9; k++) A[r][k] -= f * A[c][k]; }
+  }
+  return A.map(row => row[8] / row[i]);
+}
+function applyH(H, x, y) { const d = H[6] * x + H[7] * y + 1; return [(H[0] * x + H[1] * y + H[2]) / d, (H[3] * x + H[4] * y + H[5]) / d]; }
+function lumAt(g, w, h, u, v) {
+  if (!(u >= 0 && v >= 0 && u <= w - 1 && v <= h - 1)) return NaN;
+  const x0 = u | 0, y0 = v | 0, x1 = Math.min(x0 + 1, w - 1), y1 = Math.min(y0 + 1, h - 1), fx = u - x0, fy = v - y0;
+  return (g[y0 * w + x0] * (1 - fx) + g[y0 * w + x1] * fx) * (1 - fy) + (g[y1 * w + x0] * (1 - fx) + g[y1 * w + x1] * fx) * fy;
+}
+function sampleMM(g, w, h, H, x, y) { const p = applyH(H, x, y); return lumAt(g, w, h, p[0], p[1]); }
+function redOf(d, n) { const g = new Float32Array(n); for (let i = 0, p = 0; i < n; i++, p += 4) g[i] = d[p]; return g; }
+function markGray(d, n) { const g = new Float32Array(n); for (let i = 0, p = 0; i < n; i++, p += 4) g[i] = (d[p] + d[p + 1] + d[p + 2]) / 3; return g; }
+function adaptiveMask(g, w, h) {
+  const R = Math.max(12, Math.round(Math.min(w, h) / 12)); const W1 = w + 1, I = new Float64Array(W1 * (h + 1));
+  for (let y = 0; y < h; y++) { let row = 0; for (let x = 0; x < w; x++) { row += g[y * w + x]; I[(y + 1) * W1 + x + 1] = I[y * W1 + x + 1] + row; } }
+  const m = new Uint8Array(w * h);
+  for (let y = 0; y < h; y++) {
+    const y0 = Math.max(0, y - R), y1 = Math.min(h, y + R + 1);
+    for (let x = 0; x < w; x++) {
+      const x0 = Math.max(0, x - R), x1 = Math.min(w, x + R + 1);
+      const sum = I[y1 * W1 + x1] - I[y0 * W1 + x1] - I[y1 * W1 + x0] + I[y0 * W1 + x0];
+      const mean = sum / ((x1 - x0) * (y1 - y0)), v = g[y * w + x];
+      if (v < mean * 0.65 && mean - v > 20) m[y * w + x] = 1;
+    }
+  }
+  return m;
+}
+function findBlobs(mask, w, h) {
+  const N = w * h, seen = new Uint8Array(N), stack = new Int32Array(N), buf = new Int32Array(N), minA = Math.max(20, N / 60000), maxA = N / 100, out = [];
+  for (let s = 0; s < N; s++) {
+    if (!mask[s] || seen[s]) continue;
+    let sp = 0, cnt = 0; stack[sp++] = s; seen[s] = 1;
+    while (sp) {
+      const p = stack[--sp]; buf[cnt++] = p; const x = p % w, y = (p - x) / w;
+      if (x > 0 && mask[p - 1] && !seen[p - 1]) { seen[p - 1] = 1; stack[sp++] = p - 1; }
+      if (x < w - 1 && mask[p + 1] && !seen[p + 1]) { seen[p + 1] = 1; stack[sp++] = p + 1; }
+      if (y > 0 && mask[p - w] && !seen[p - w]) { seen[p - w] = 1; stack[sp++] = p - w; }
+      if (y < h - 1 && mask[p + w] && !seen[p + w]) { seen[p + w] = 1; stack[sp++] = p + w; }
+    }
+    if (cnt >= minA && cnt <= maxA) out.push(Int32Array.from(buf.subarray(0, cnt)));
+  }
+  return out;
+}
+function blobShape(px, w) {
+  let sx = 0, sy = 0, n = px.length, xs = new Float32Array(n), ys = new Float32Array(n);
+  for (let i = 0; i < n; i++) { const x = px[i] % w, y = (px[i] - x) / w; xs[i] = x; ys[i] = y; sx += x; sy += y; }
+  let best = Infinity, ratio = 9;
+  for (let a = 0; a < 90; a += 5) {
+    const r = (a * Math.PI) / 180, c = Math.cos(r), s = Math.sin(r);
+    let u0 = 1e9, u1 = -1e9, v0 = 1e9, v1 = -1e9;
+    for (let i = 0; i < n; i++) {
+      const u = xs[i] * c + ys[i] * s, v = -xs[i] * s + ys[i] * c;
+      if (u < u0) u0 = u; if (u > u1) u1 = u; if (v < v0) v0 = v; if (v > v1) v1 = v;
+    }
+    const area = (u1 - u0 + 1) * (v1 - v0 + 1);
+    if (area < best) { best = area; ratio = Math.max(u1 - u0 + 1, v1 - v0 + 1) / Math.min(u1 - u0 + 1, v1 - v0 + 1); }
+  }
+  return { cx: sx / n, cy: sy / n, n: n, fill: n / best, ratio: ratio, side: Math.sqrt(best) };
+}
+function findMarkers(d, w, h) {
+  const g = new Float32Array(w * h); for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) g[y * w + x] = d[(y * w + x) * 4];
+  const mk = adaptiveMask(g, w, h), out = [];
+  findBlobs(mk, w, h).forEach(px => {
+    const sh = blobShape(px, w); if (sh.fill < 0.65 || sh.ratio > 1.5 || sh.side < 6) return;
+    out.push(sh);
+  });
+  return out;
+}
+function orderQuad(q) {
+  const mxc = (q[0].cx + q[1].cx + q[2].cx + q[3].cx) / 4, myc = (q[0].cy + q[1].cy + q[2].cy + q[3].cy) / 4;
+  return q.slice().sort((p1, p2) => Math.atan2(p1.cy - myc, p1.cx - mxc) - Math.atan2(p2.cy - myc, p2.cx - mxc));
+}
+function dist(a, b) { return Math.hypot(a[0] - b[0], a[1] - b[1]); }
+function orient(pts) {
+  for (let r = 0; r < 4; r++) {
+    const P = [pts[r % 4], pts[(r + 1) % 4], pts[(r + 2) % 4], pts[(r + 3) % 4]];
+    const ratio = (dist(P[0], P[1]) + dist(P[3], P[2])) / 2 / ((dist(P[0], P[3]) + dist(P[1], P[2])) / 2);
+    const asp = (CORNERS[1][0] - CORNERS[0][0]) / (CORNERS[3][1] - CORNERS[0][1]);
+    if (ratio >= asp * 0.65 && ratio <= asp * 1.4) {
+      const H = solveHomography(CORNERS, P.map(p => [p.cx, p.cy]));
+      if (H) return { H: H, P: P.map(p => [p.cx, p.cy]) };
+    }
+  }
+  return null;
+}
+function detectCorners(imgData, w, h, wins) {
+  const pts = [];
+  for (let k = 0; k < 4; k++) {
+    const x0 = Math.max(0, Math.floor(wins[k][0])), y0 = Math.max(0, Math.floor(wins[k][1]));
+    const cw = Math.min(w, Math.ceil(wins[k][2])) - x0, ch = Math.min(h, Math.ceil(wins[k][3])) - y0;
+    if (cw < 16 || ch < 16) return { found: 0 };
+    const chan = new Float32Array(cw * ch);
+    for (let y = 0; y < ch; y++) for (let x = 0; x < cw; x++) chan[y * cw + x] = imgData.data[((y0 + y) * w + x0 + x) * 4];
+    const mk = adaptiveMask(chan, cw, ch);
+    let best = null;
+    findBlobs(mk, cw, ch).forEach(px => {
+      const sh = blobShape(px, cw);
+      if (sh.fill > 0.65 && sh.ratio < 1.5 && sh.side > 6 && (!best || sh.n > best.n)) { sh.cx += x0; sh.cy += y0; best = sh; }
+    });
+    if (!best) return { found: 0 };
+    pts.push(best);
+  }
+  const fit = orient(pts);
+  return { found: fit ? 2 : 1, pts: fit ? fit.P : pts.map(p => [p.cx, p.cy]) };
+}
+function bubbleScore(g, w, h, H, b, inOff, a0, a1) {
+  let s = 0, c = 0;
+  for (let i = 0; i < inOff.length; i++) {
+    const l = sampleMM(g, w, h, H, b.x + inOff[i][0], b.y + inOff[i][1]); if (l === l) { s += l; c++; }
+  }
+  if (c < inOff.length * 0.6) return 0;
+  const mIn = s / c, arr = [];
+  [a0, a1].forEach((rr, k) => {
+    for (let a = 0; a < 12; a++) {
+      const l = sampleMM(g, w, h, H, b.x + rr * Math.cos(a * Math.PI / 6.0 + (k ? 0.26 : 0)), b.y + rr * Math.sin(a * Math.PI / 6.0 + (k ? 0.26 : 0)));
+      if (l === l) arr.push(l);
+    }
+  });
+  if (!arr.length) return 0;
+  arr.sort((p, q) => p - q);
+  const ref = Math.max(arr[Math.floor(arr.length * 0.75)], 1);
+  return Math.max(0, Math.min(1, 1 - mIn / ref));
+}
+function discOffsets(rad, step) {
+  const o = []; for (let y = -rad; y <= rad + 1e-9; y += step) for (let x = -rad; x <= rad + 1e-9; x += step) if (x * x + y * y <= rad * rad) o.push([x, y]); return o;
+}
+function scanSheet(g, w, h, L, cfg, H, thr) {
+  const inOff = discOffsets(6, 1.5), A0 = 8.5, A1 = 12.5;
+  const raw = b => bubbleScore(g, w, h, H, b, inOff, A0, A1);
+  const allB = [].concat(L.p1, L.p2, L.p3, L.sbd, L.md), sv = allB.map(raw).sort((p, q) => p - q);
+  const base = sv.length ? Math.min(sv[Math.floor(sv.length * 0.5)], 0.25) : 0;
+  const idB = [].concat(L.sbd, L.md), dBase = [];
+  for (let d = 0; d < 10; d++) {
+    const v = idB.filter(b => String(b.k || b.d) === String(d)).map(raw).sort((p, q) => p - q);
+    dBase.push(v.length >= 3 ? v[Math.floor(0.3 * (v.length - 1))] : 0);
+  }
+  const rd = b => Math.max(0, raw(b) - (b.blk === 'sbd' || b.blk === 'md' ? Math.max(base, dBase[b.d]) : base));
+  
+  const second = [], grp = {};
+  allB.forEach(b => {
+    if (b.blk === 'sbd' || b.blk === 'md') return; // Không trừ nhiễu chéo ở vùng in số
+    const k = b.blk.charAt(1) === '1' ? 'p1-' + b.q : b.blk.charAt(0) === 'p' ? 'p3-' + b.q + '-' + b.c : b.blk + '-' + b.c;
+    (grp[k] = grp[k] || []).push(rd(b));
+  });
+  Object.keys(grp).forEach(k => {
+    const a = grp[k].slice().sort((p, q) => q - p); if (a.length >= 3) second.push(a[1]);
+  });
+  second.sort((p, q) => p - q);
+  const noise = second.length ? second[Math.floor(second.length / 2)] : 0;
+  thr = Math.max(thr, 2.2 * noise);
+
+  const decideMarks = scores => {
+    let mx = 0, out = []; scores.forEach(s => { if (s > mx) mx = s; });
+    if (mx < thr) return [];
+    scores.forEach((s, i) => { if (s >= thr && s >= 0.55 * mx) out.push(i); });
+    return out;
+  };
+
+  let p1 = [], p1s = [];
+  for (let q = 0; q < cfg.n1; q++) { p1.push([]); p1s.push([]); }
+  L.p1.forEach(b => p1s[b.q][b.o] = rd(b));
+  for (let q = 0; q < cfg.n1; q++) p1[q] = decideMarks(p1s[q]);
+
+  let p2 = [], p2s = [];
+  for (let q = 0; q < cfg.n2; q++) { p2.push(['', '', '', '']); p2s.push([[0, 0], [0, 0], [0, 0], [0, 0]]); }
+  L.p2.forEach(b => p2s[b.q][b.r][b.s] = rd(b));
+  for (let q = 0; q < cfg.n2; q++) for (let r = 0; r < 4; r++) {
+    const m = decideMarks(p2s[q][r]); p2[q][r] = m.length === 2 ? 'X' : m.length === 1 ? (m[0] === 0 ? 'D' : 'S') : '';
+  }
+
+  let p3c = []; for (let q = 0; q < cfg.n3; q++) p3c.push([[], [], [], []]);
+  L.p3.forEach(b => p3c[b.q][b.c].push({ k: b.k, s: rd(b) }));
+  let p3 = [];
+  for (let q = 0; q < cfg.n3; q++) {
+    let str = '';
+    for (let c = 0; c < 4; c++) {
+      const cell = p3c[q][c], m = decideMarks(cell.map(e => e.s));
+      if (m.length === 1) str += cell[m[0]].k; else if (m.length > 1) str += '?';
+    }
+    p3.push(str);
+  }
+
+  const readId = (cells, cols) => {
+    const sc = [], out = []; for (let c = 0; c < cols; c++) sc.push([]);
+    cells.forEach(b => sc[b.c][b.d] = rd(b));
+    for (let c = 0; c < cols; c++) {
+      const m = decideMarks(sc[c]); out.push(m.length === 1 ? String(m[0]) : m.length === 0 ? '_' : '?');
+    }
+    return out;
+  };
+  return { p1: p1, p2: p2, p3: p3, sbd: readId(L.sbd, L.sbdN), md: readId(L.md, L.mdN) };
+}
+
+/* ==========================================================================
+   APP & UI LOGIC
+   ========================================================================== */
+const $ = (s, r) => (r || document).querySelector(s);
+const $$ = (s, r) => Array.from((r || document).querySelectorAll(s));
+const LS = { get: (k, d) => { try { const v = localStorage.getItem(k); return v ? JSON.parse(v) : d; } catch(e){return d;} }, set: (k, v) => { try { localStorage.setItem(k, JSON.stringify(v)); } catch(e){} } };
+const fmt = x => String(Math.round(x * 100) / 100).replace('.', ',');
+const esc = s => String(s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+
+function defaultCfg() {
+  const v = { code: '', mcq: new Array(40).fill(null), tf: Array.from({length: 8}, () => new Array(4).fill(null)), num: new Array(6).fill('') };
+  return { sheet: 'bgd25', n1: 40, n2: 8, n3: 6, p1: 0.25, p2: 1, p3: 0.5, thr: 0.12, active: 0, versions: [v] };
+}
+let cfg = LS.get('omr.cfg.ntmix', null) || defaultCfg();
+let results = LS.get('omr.results.ntmix', []) || [];
+let students = LS.get('omr.students', {});
+
+function saveCfg() { LS.set('omr.cfg.ntmix', cfg); }
+function saveResults() { LS.set('omr.results.ntmix', results); renderBadge(); }
+function renderBadge() { const b = $('#resBadge'); if(b) { b.hidden = !results.length; b.textContent = results.length; } }
+function curVer() { return cfg.versions[cfg.active] || cfg.versions[0]; }
+function maxTotal() { return cfg.n1 * cfg.p1 + cfg.n2 * cfg.p2 + cfg.n3 * cfg.p3; }
+
+function switchTab(t) {
+  $$('.view').forEach(v => v.hidden = v.id !== 'v-' + t);
+  $$('.tab').forEach(b => b.dataset.tab === t ? b.setAttribute('aria-current', 'page') : b.removeAttribute('aria-current'));
+  if (t === 'key') renderKey(); if (t === 'res') renderRes();
+  window.scrollTo(0, 0);
+}
+$$('.tab').forEach(b => b.addEventListener('click', () => switchTab(b.dataset.tab)));
+
+function gradeAll(st, ver) {
+  const out = { p1: { pts: 0 }, p2: { pts: 0, per: [] }, p3: { pts: 0 }, total: 0, max: maxTotal() };
+  for (let q = 0; q < cfg.n1; q++) {
+    const kq = ver.mcq[q] !== null ? (Array.isArray(ver.mcq[q]) ? ver.mcq[q] : [ver.mcq[q]]) : [];
+    if (!kq.length) continue;
+    if (kq.length === 4) { out.p1.pts += cfg.p1; continue; }
+    if (st.p1[q] && st.p1[q].length === 1 && kq.includes(st.p1[q][0])) out.p1.pts += cfg.p1;
+  }
+  const TF_PTS = [0, 0.1, 0.25, 0.5, 1];
+  for (let q = 0; q < cfg.n2; q++) {
+    let cnt = 0, graded = 0, items = [];
+    for (let r = 0; r < 4; r++) {
+      const kv = ver.tf[q][r], sv = st.p2[q][r];
+      if (kv === null || kv === undefined) { items.push('skip'); continue; }
+      graded++;
+      if (sv && sv !== 'X' && kv.includes(sv)) { cnt++; items.push('ok'); } else items.push(sv === '' ? 'blank' : 'wrong');
+    }
+    const pts = graded === 4 ? TF_PTS[cnt] * cfg.p2 : (graded ? (cnt / graded) * cfg.p2 : 0);
+    out.p2.pts += pts; out.p2.per.push({ cnt, pts, items });
+  }
+  for (let q = 0; q < cfg.n3; q++) {
+    const kq = ver.num[q], s = st.p3[q];
+    if (!kq) continue;
+    if (kq === '*') out.p3.pts += cfg.p3;
+    else if (s && String(s).replace(/\s+/g,'').replace(/[−–]/g,'-').replace(/\./g,',') === kq) out.p3.pts += cfg.p3;
+  }
+  out.total = out.p1.pts + out.p2.pts + out.p3.pts; return out;
+}
+
+// ---------------- EXCEL & QR CỦA NTMIX ----------------
+$('#excelPickKey').addEventListener('change', function() {
+    const f = this.files[0]; this.value = ''; if (!f) return;
+    const r = new FileReader();
+    r.onload = e => {
+        try {
+            const data = new Uint8Array(e.target.result);
+            const wb = XLSX.read(data, { type: 'array' });
+            const rows = XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]], { header: 1, defval: '' });
+            let added = 0;
+            let header = rows[0];
+            for (let c = 1; c < header.length; c++) {
+                let code = String(header[c]).trim().replace(/\D/g, ''); if (!code) continue;
+                let v = { code, mcq: new Array(40).fill(null), tf: Array.from({length:8}, ()=>new Array(4).fill(null)), num: new Array(6).fill('') };
+                let p = 1, q1 = 0, q2 = 0, q3 = 0, lastQ = 0;
+                for (let r = 1; r < rows.length; r++) {
+                    let qNum = parseInt(rows[r][0]); if (isNaN(qNum)) continue;
+                    if (qNum <= lastQ && qNum === 1) p++; lastQ = qNum;
+                    let val = String(rows[r][c]).trim().toUpperCase();
+                    if (p === 1 && q1 < 40) { v.mcq[q1++] = ['A','B','C','D'].includes(val) ? ['A','B','C','D'].indexOf(val) : null; }
+                    else if (p === 2 && q2 < 8) {
+                        let tf = (val.replace(/Đ/g,'D').replace(/[^DS]/g,'') + '----').slice(0,4);
+                        for(let i=0; i<4; i++) v.tf[q2][i] = ['D','S'].includes(tf[i]) ? tf[i] : null;
+                        q2++;
+                    } else if (p === 3 && q3 < 6) { v.num[q3++] = val.replace(/\./g, ','); }
+                }
+                const existing = cfg.versions.findIndex(x => x.code === code);
+                if (existing >= 0) cfg.versions[existing] = v; else cfg.versions.push(v);
+                added++;
+            }
+            if (added) {
+                if (cfg.versions.length > 1 && !cfg.versions[0].code) cfg.versions.shift();
+                saveCfg(); renderKey();
+                $('#key-upload-status').style.display = 'block'; $('#key-upload-status').textContent = `✅ Đã nạp thành công ${added} mã đề từ Excel.`;
+            } else throw new Error();
+        } catch(err) { alert("Lỗi đọc file Excel hoặc file không đúng định dạng!"); }
+    };
+    r.readAsArrayBuffer(f);
+});
+
+$('#studentPickScan').addEventListener('change', function() {
+    const f = this.files[0]; this.value = ''; if (!f) return;
+    const r = new FileReader();
+    r.onload = e => {
+        try {
+            const wb = XLSX.read(new Uint8Array(e.target.result), { type: 'array' });
+            const rows = XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]]);
+            let added = 0;
+            rows.forEach(row => {
+                let sbd = row['SBD'] || row['Số báo danh'] || row['sbd'];
+                let name = row['HỌ VÀ TÊN'] || row['Họ và tên'] || row['Họ tên'] || row['Tên'];
+                let cls = row['Lớp'] || row['LỚP'] || row['Class'] || '';
+                if (sbd && name) { students[String(sbd).trim()] = { name: String(name).trim(), cls: String(cls).trim() }; added++; }
+            });
+            LS.set('omr.students', students);
+            $('#dshs-status-scan').textContent = `✅ Đã nạp ${added} học sinh`;
+            $('#dshs-status-scan').style.color = 'var(--ok)';
+        } catch(err) { alert("Lỗi file Excel học sinh!"); }
+    };
+    r.readAsArrayBuffer(f);
+});
+
+$('#qrClearAll').addEventListener('click', function() {
+    if (confirm("Chắc chắn xóa toàn bộ mã đề đã nạp?")) {
+        cfg.versions = [ { code: '', mcq: new Array(40).fill(null), tf: Array.from({length:8}, ()=>new Array(4).fill(null)), num: new Array(6).fill('') } ];
+        cfg.active = 0; saveCfg(); renderKey();
+        $('#key-upload-status').style.display = 'block'; $('#key-upload-status').textContent = `✅ Đã xóa toàn bộ mã đề.`;
+    }
+});
+
+function renderKey() {
+    const v = curVer();
+    let h = '<div class="row"><h2>Danh sách Mã đề</h2></div><div class="vchips">';
+    cfg.versions.forEach((ver, i) => { h += `<button class="vchip" data-v="${i}" aria-pressed="${i===cfg.active}">Đề ${ver.code||(i+1)}</button>`; });
+    h += '</div><div class="fields one"><div class="field"><label class="lbl">Sửa mã đề đang chọn</label><input id="codeIn" class="mono" maxlength="4" value="' + esc(v.code) + '"></div></div>';
+    
+    h += '<h3 style="margin-top:16px; color:var(--ink);">Cấu trúc Điểm</h3><div class="grid-2">';
+    h += `<div class="field"><label class="lbl">Điểm P.I (mỗi câu)</label><input type="number" id="pts-p1" step="0.05" value="${cfg.p1}"></div>`;
+    h += `<div class="field"><label class="lbl">Điểm P.III (mỗi câu)</label><input type="number" id="pts-p3" step="0.05" value="${cfg.p3}"></div></div>`;
+    h += `<div class="field"><label class="lbl">Điểm P.II (tối đa mỗi câu)</label><input type="number" id="pts-p2" step="0.05" value="${cfg.p2}"></div>`;
+    h += `<p class="hint">Điểm P.II tính theo số ý đúng: 1 ý (10%), 2 ý (25%), 3 ý (50%), 4 ý (100%).</p>`;
+    
+    $('#keyCard').innerHTML = h;
+    $$('.vchip', $('#keyCard')).forEach(b => b.onclick = () => { cfg.active = +b.dataset.v; saveCfg(); renderKey(); });
+    $('#codeIn').onchange = function() { v.code = this.value.replace(/\D/g,'').slice(0,4); saveCfg(); renderKey(); };
+    $('#pts-p1').onchange = function() { cfg.p1 = parseFloat(this.value)||0.25; saveCfg(); };
+    $('#pts-p2').onchange = function() { cfg.p2 = parseFloat(this.value)||1.0; saveCfg(); };
+    $('#pts-p3').onchange = function() { cfg.p3 = parseFloat(this.value)||0.5; saveCfg(); };
+}
+
+// ---------------- XUẤT ĐIỂM & BẢNG KẾT QUẢ ----------------
+function renderRes() {
+    const host = $('#resCard');
+    if (!results.length) {
+        host.innerHTML = '<h2>Kết quả chấm</h2><div class="empty">Chưa có bài nào. Chấm một phiếu, điểm sẽ tự lưu vào đây.</div>'; return;
+    }
+    let h = '<div class="row"><h2>Kết quả chấm</h2><span class="hint">' + results.length + ' bài</span></div>';
+    h += '<div class="actions" style="margin-bottom:12px;"><button class="btn success" id="btnCsv">📥 Xuất Excel Điểm</button><button class="btn warning" id="btnZip">📦 Tải ZIP Tất Cả Ảnh</button><button class="btn danger ghost" id="btnClr" style="flex: 0 0 100px;">Xóa hết</button></div>';
+    h += '<div class="table-wrap"><table><thead><tr><th>STT</th><th>SBD</th><th>Họ & Tên</th><th>Mã</th><th>Tổng</th><th>Chi tiết</th></tr></thead><tbody>';
+    
+    results.forEach((r, i) => {
+        let stu = students[r.sbd] || {name: '---'};
+        h += `<tr><td>${results.length - i}</td><td><b>${r.sbd}</b></td><td style="text-align:left;">${esc(stu.name)}</td><td>${r.md}</td><td><b style="color:var(--red); font-size:15px;">${r.total}</b></td>
+        <td style="font-size:11px; color:var(--muted);">${r.parts[0]} | ${r.parts[1]} | ${r.parts[2]}</td></tr>`;
+    });
+    h += '</tbody></table></div>';
+    host.innerHTML = h;
+
+    $('#btnCsv').onclick = () => {
+        const rows = [ ["STT", "Họ và tên", "Lớp", "SBD", "Mã đề", "Điểm P.I", "Điểm P.II", "Điểm P.III", "Tổng điểm"] ];
+        results.slice().reverse().forEach((r, i) => {
+            let stu = students[r.sbd] || {name: '', cls: ''};
+            rows.push([i+1, stu.name, stu.cls, r.sbd, r.md, r.parts[0], r.parts[1], r.parts[2], r.total]);
+        });
+        const wb = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(rows), "BangDiem");
+        XLSX.writeFile(wb, `BangDiem_NTMIX_${Date.now()}.xlsx`);
+    };
+    $('#btnZip').onclick = () => {
+        if (!gradedImagesData.length) { alert("Dữ liệu ảnh cache đã trống. Vui lòng chấm bài mới để xuất ZIP."); return; }
+        const btn = $('#btnZip'); const o = btn.innerHTML; btn.innerHTML = "⏳ Đang tạo ZIP..."; btn.disabled = true;
+        let zip = new JSZip(); let folder = zip.folder("BaiCham_NTMIX");
+        gradedImagesData.forEach(img => folder.file(img.filename, img.base64, {base64: true}));
+        zip.generateAsync({type:"blob"}).then(c => { saveAs(c, `AnhCham_NTMIX_${Date.now()}.zip`); btn.innerHTML = o; btn.disabled = false; });
+    };
+    $('#btnClr').onclick = function() {
+        if (confirm("Chắc chắn xóa sạch bảng điểm và dữ liệu ảnh?")) { results = []; gradedImagesData = []; saveResults(); renderRes(); }
+    };
+}
+
+/* ==========================================================================
+   CAMERA & AI CORE
+   ========================================================================== */
+const LV = { stream: null, timer: 0, stable: 0, last: null, busy: false, needLeave: false, leaveMiss: 0 };
+const LVO = { cont: false, snd: true };
+const SND = { a: null };
+
+function playBeepCamera() {
+    if (!document.getElementById('opt-sound').checked) return;
     try {
         const ctx = new (window.AudioContext || window.webkitAudioContext)();
-        const osc = ctx.createOscillator(); const gain = ctx.createGain();
-        osc.type = "sine"; osc.frequency.setValueAtTime(1300, ctx.currentTime);
-        gain.gain.setValueAtTime(0.2, ctx.currentTime);
-        osc.connect(gain); gain.connect(ctx.destination);
-        osc.start(); osc.stop(ctx.currentTime + 0.12);
-    } catch (e) {}
+        const osc = ctx.createOscillator(), g = ctx.createGain();
+        osc.type = 'triangle'; osc.frequency.value = 988;
+        g.gain.setValueAtTime(0.0001, ctx.currentTime);
+        g.gain.exponentialRampToValueAtTime(0.9, ctx.currentTime + 0.01);
+        g.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + 0.3);
+        osc.connect(g); g.connect(ctx.destination);
+        osc.start(ctx.currentTime); osc.stop(ctx.currentTime + 0.35);
+    } catch(e){}
 }
 
-function parseNtmixQrString(rawText) {
-    try {
-        const obj = JSON.parse(rawText.trim()); const parsedKey = {};
-        for (const [k, val] of Object.entries(obj)) {
-            if (k === "success" || k === "type") continue;
-            if (typeof val !== "string" || !val.includes("#")) continue;
-            const parts = val.split("#");
-            const p1 = (parts[0] || "").trim().toUpperCase().split('').filter(c => ['A','B','C','D'].includes(c));
-            const p2 = (parts[1] || "").trim().toUpperCase().split('_').filter(s => s.length > 0).map(s => s.replace(/D/g, 'Đ'));
-            const p3 = (parts[2] || "").trim().split('_').filter(s => s.length > 0);
-            parsedKey[String(k).trim()] = { p1, p2, p3 };
+function lvGeom(r, v) {
+    const asp = (CORNERS_CANONICAL[1][0] - CORNERS_CANONICAL[0][0]) / (CORNERS_CANONICAL[3][1] - CORNERS_CANONICAL[0][1]);
+    const gw = Math.min(r.width * 0.9, r.height * 0.7 * asp), gh = gw / asp;
+    const cx = r.width / 2, cy = r.height * 0.5;
+    const x0 = cx - gw / 2, x1 = cx + gw / 2, y0 = cy - gh / 2, y1 = cy + gh / 2, ws = Math.min(gw * 0.28, gh * 0.5, 120);
+    return { x0, x1, y0, y1, gw, gh, ws, corners: [[x0, y0], [x1, y0], [x1, y1], [x0, y1]] };
+}
+
+function lvOverlay(pts, state) {
+    const cv = $('#lvOv'), v = $('#lvVideo'), r = cv.getBoundingClientRect();
+    if (!v.videoWidth) return;
+    cv.width = r.width; cv.height = r.height;
+    const c = cv.getContext('2d'); c.clearRect(0, 0, r.width, r.height);
+    const k = Math.max(r.width / v.videoWidth, r.height / v.videoHeight);
+    const ox = (r.width - v.videoWidth * k) / 2, oy = (r.height - v.videoHeight * k) / 2;
+    const G = lvGeom(r, v);
+
+    c.fillStyle = pts ? 'rgba(255,255,255,0.05)' : 'rgba(255,255,255,0.1)';
+    G.corners.forEach(q => c.fillRect(q[0] - G.ws / 2, q[1] - G.ws / 2, G.ws, G.ws));
+
+    if (!pts) {
+        c.strokeStyle = '#ff9800'; c.lineWidth = 3.5; c.lineCap = 'square'; c.setLineDash([Math.min(r.width, r.height)*0.1, Math.min(r.width, r.height)*0.8]);
+        G.corners.forEach((q, i) => {
+            const s = G.ws * 0.6;
+            c.beginPath();
+            if (i===0) { c.moveTo(q[0], q[1]+s); c.lineTo(q[0], q[1]); c.lineTo(q[0]+s, q[1]); }
+            if (i===1) { c.moveTo(q[0], q[1]+s); c.lineTo(q[0], q[1]); c.lineTo(q[0]-s, q[1]); }
+            if (i===2) { c.moveTo(q[0], q[1]-s); c.lineTo(q[0], q[1]); c.lineTo(q[0]-s, q[1]); }
+            if (i===3) { c.moveTo(q[0], q[1]-s); c.lineTo(q[0], q[1]); c.lineTo(q[0]+s, q[1]); }
+            c.stroke();
+        });
+        return;
+    }
+
+    const scaleToVideo = v.videoWidth / 640;
+    c.strokeStyle = '#3ddc84'; c.lineWidth = 4; c.fillStyle = 'rgba(61, 220, 132, 0.15)'; c.setLineDash([]);
+    c.beginPath();
+    pts.forEach((p, i) => {
+        const sx = (p[0] * scaleToVideo) * k + ox, sy = (p[1] * scaleToVideo) * k + oy;
+        if (i === 0) c.moveTo(sx, sy); else c.lineTo(sx, sy);
+    });
+    c.closePath(); c.stroke(); c.fill();
+    
+    c.fillStyle = '#3ddc84';
+    pts.forEach(p => {
+        const sx = (p[0] * scaleToVideo) * k + ox, sy = (p[1] * scaleToVideo) * k + oy;
+        c.fillRect(sx - 8, sy - 8, 16, 16);
+    });
+}
+
+function detectCorners(imgData, w, h, wins) {
+  const pts = [];
+  for (let k = 0; k < 4; k++) {
+    const x0 = Math.max(0, Math.floor(wins[k][0])), y0 = Math.max(0, Math.floor(wins[k][1]));
+    const cw = Math.min(w, Math.ceil(wins[k][2])) - x0, ch = Math.min(h, Math.ceil(wins[k][3])) - y0;
+    if (cw < 16 || ch < 16) return null;
+    const chan = new Float32Array(cw * ch);
+    for (let y = 0; y < ch; y++) for (let x = 0; x < cw; x++) chan[y * cw + x] = imgData.data[((y0 + y) * w + x0 + x) * 4];
+    
+    const R = 6, W1 = cw + 1, I = new Float64Array(W1 * (ch + 1));
+    for (let y = 0; y < ch; y++) { let r = 0; for (let x = 0; x < cw; x++) { r += chan[y * cw + x]; I[(y + 1) * W1 + x + 1] = I[y * W1 + x + 1] + r; } }
+    const mk = new Uint8Array(cw * ch);
+    for (let y = 0; y < ch; y++) {
+      const y0 = Math.max(0, y - R), y1 = Math.min(ch, y + R + 1);
+      for (let x = 0; x < cw; x++) {
+        const x0 = Math.max(0, x - R), x1 = Math.min(cw, x + R + 1);
+        const sum = I[y1 * W1 + x1] - I[y0 * W1 + x1] - I[y1 * W1 + x0] + I[y0 * W1 + x0];
+        const mean = sum / ((x1 - x0) * (y1 - y0));
+        if (chan[y * cw + x] < mean * 0.65 && mean - chan[y * cw + x] > 20) mk[y * cw + x] = 1;
+      }
+    }
+
+    let best = null;
+    const N = cw * ch, seen = new Uint8Array(N), stack = new Int32Array(N), buf = new Int32Array(N);
+    for (let s = 0; s < N; s++) {
+        if (!mk[s] || seen[s]) continue;
+        let sp = 0, cnt = 0; stack[sp++] = s; seen[s] = 1;
+        while(sp) {
+            let p = stack[--sp]; buf[cnt++] = p; let xx = p % cw, yy = (p - xx) / cw;
+            if (xx > 0 && mk[p - 1] && !seen[p - 1]) { seen[p - 1] = 1; stack[sp++] = p - 1; }
+            if (xx < cw - 1 && mk[p + 1] && !seen[p + 1]) { seen[p + 1] = 1; stack[sp++] = p + 1; }
+            if (yy > 0 && mk[p - cw] && !seen[p - cw]) { seen[p - cw] = 1; stack[sp++] = p - cw; }
+            if (yy < ch - 1 && mk[p + cw] && !seen[p + cw]) { seen[p + cw] = 1; stack[sp++] = p + cw; }
         }
-        if (Object.keys(parsedKey).length === 0) return false;
-        answerKey = parsedKey; playBeep(); 
-        document.getElementById('key-status-box').style.display = 'block'; 
-        document.getElementById('key-status-box').innerHTML = `✅ <b>Đã nạp:</b> ${Object.keys(answerKey).length} mã đề`; 
-        return true;
-    } catch (err) { return false; }
-}
-
-async function toggleQrScanner() {
-    const wrapper = document.getElementById('qr-scanner-wrapper'); const video = document.getElementById('qr-video');
-    if (qrStream) { stopQrScanner(); return; }
-    try {
-        qrStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment", width: { ideal: 1280 } } });
-        video.srcObject = qrStream; wrapper.style.display = 'block'; document.getElementById('btn-qr-cam').textContent = "❌ Đóng Quét QR";
-        const qrCanvas = document.createElement('canvas'); const qrCtx = qrCanvas.getContext('2d');
-        qrScanTimer = setInterval(() => {
-            if (!qrStream || video.readyState !== video.HAVE_ENOUGH_DATA) return;
-            qrCanvas.width = video.videoWidth; qrCanvas.height = video.videoHeight;
-            qrCtx.drawImage(video, 0, 0, qrCanvas.width, qrCanvas.height);
-            const imgData = qrCtx.getImageData(0, 0, qrCanvas.width, qrCanvas.height);
-            const code = jsQR(imgData.data, imgData.width, imgData.height, { inversionAttempts: "dontInvert" });
-            if (code && code.data) { if (parseNtmixQrString(code.data)) stopQrScanner(); }
-        }, 150);
-    } catch (err) { alert("Không mở được camera"); }
-}
-
-function stopQrScanner() {
-    if (qrScanTimer) clearInterval(qrScanTimer);
-    if (qrStream) qrStream.getTracks().forEach(t => t.stop());
-    qrStream = null; document.getElementById('qr-scanner-wrapper').style.display = 'none'; document.getElementById('btn-qr-cam').textContent = "📷 Quét Mã QR";
-}
-
-document.getElementById('file-key').addEventListener('change', function(e) {
-    const file = e.target.files[0]; if (!file) return;
-    const reader = new FileReader();
-    reader.onload = function(evt) {
-        const wb = XLSX.read(new Uint8Array(evt.target.result), {type: 'array'});
-        const rows = XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]], {header: 1, defval: ""});
-        answerKey = {};
-        for (let col = 1; col < rows[0].length; col++) {
-            const code = String(rows[0][col]).trim(); if (!code) continue;
-            let p1 = [], p2 = [], p3 = [];
-            for (let r = 1; r < rows.length; r++) {
-                let val = String(rows[r][col]).trim().toUpperCase(); if (!val) continue;
-                if (val.length === 1 && ['A','B','C','D'].includes(val)) p1.push(val);
-                else if (val.length === 4 && /^[ĐDS]{4}$/.test(val.replace(/D/g,'Đ'))) p2.push(val.replace(/D/g, 'Đ'));
-                else p3.push(String(rows[r][col]).trim());
+        if (cnt > 20) {
+            let sx=0, sy=0, mnx=1e9, mxx=-1e9, mny=1e9, mxy=-1e9;
+            for(let i=0; i<cnt; i++) { let px=buf[i]%cw, py=(buf[i]-px)/cw; sx+=px; sy+=py; if(px<mnx)mnx=px; if(px>mxx)mxx=px; if(py<mny)mny=py; if(py>mxy)mxy=py; }
+            let bw = mxx-mnx+1, bh = mxy-mny+1;
+            if ((cnt/(bw*bh)) > 0.6 && (Math.max(bw,bh)/Math.min(bw,bh)) < 1.5 && (bw+bh)/2 > 6) {
+                let sh = { cx: sx/cnt + x0, cy: sy/cnt + y0, n: cnt };
+                if (!best || sh.n > best.n) best = sh;
             }
-            answerKey[code] = {p1, p2, p3};
         }
-        document.getElementById('key-status-box').style.display = 'block'; 
-        document.getElementById('key-status-box').innerHTML = `✅ <b>Đã nạp:</b> ${Object.keys(answerKey).length} mã đề`; 
-    };
-    reader.readAsArrayBuffer(file);
+    }
+    if (!best) return null;
+    pts.push([best.cx, best.cy]);
+  }
+  
+  for (let r = 0; r < 4; r++) {
+    const P = [pts[r % 4], pts[(r + 1) % 4], pts[(r + 2) % 4], pts[(r + 3) % 4]];
+    const ratio = (Math.hypot(P[0][0]-P[1][0], P[0][1]-P[1][1]) + Math.hypot(P[3][0]-P[2][0], P[3][1]-P[2][1])) / 2 / ((Math.hypot(P[0][0]-P[3][0], P[0][1]-P[3][1]) + Math.hypot(P[1][0]-P[2][0], P[1][1]-P[2][1])) / 2);
+    const asp = (CORNERS_CANONICAL[1][0] - CORNERS_CANONICAL[0][0]) / (CORNERS_CANONICAL[3][1] - CORNERS_CANONICAL[0][1]);
+    if (ratio >= asp * 0.65 && ratio <= asp * 1.4) {
+      if (solveHomography(CORNERS_CANONICAL, P)) return P;
+    }
+  }
+  return null;
+}
+
+function lvTick() {
+    if (!LV.stream) return;
+    const v = $('#lvVideo');
+    if (LV.busy || v.readyState < 2 || !v.videoWidth) { LV.timer = setTimeout(lvTick, 120); return; }
+    
+    const RG = lvGeom($('#lvOv').getBoundingClientRect(), v);
+    const kc = Math.max($('#lvOv').getBoundingClientRect().width / v.videoWidth, $('#lvOv').getBoundingClientRect().height / v.videoHeight);
+    const ox = ($('#lvOv').getBoundingClientRect().width - v.videoWidth * kc) / 2, oy = ($('#lvOv').getBoundingClientRect().height - v.videoHeight * kc) / 2;
+    const rx0 = Math.max(0, Math.floor((RG.x0 - RG.ws/2 - ox)/kc)), ry0 = Math.max(0, Math.floor((RG.y0 - RG.ws/2 - oy)/kc));
+    const rx1 = Math.min(v.videoWidth, Math.ceil((RG.x1 + RG.ws/2 - ox)/kc)), ry1 = Math.min(v.videoHeight, Math.ceil((RG.y1 + RG.ws/2 - oy)/kc));
+    const k = Math.min(1, 800 / Math.max(rx1-rx0, ry1-ry0));
+    
+    const cv = document.createElement('canvas'); cv.width = Math.round((rx1-rx0)*k); cv.height = Math.round((ry1-ry0)*k);
+    const c = cv.getContext('2d', { willReadFrequently: true });
+    c.drawImage(v, rx0, ry0, rx1-rx0, ry1-ry0, 0, 0, cv.width, cv.height);
+    
+    const wins = RG.corners.map(q => {
+      const ax = ((q[0] - ox)/kc - rx0)*k, ay = ((q[1] - oy)/kc - ry0)*k, hs = (RG.ws/2/kc)*k;
+      return [ax - hs, ay - hs, ax + hs, ay + hs];
+    });
+
+    const pts = detectCorners(c.getImageData(0, 0, cv.width, cv.height), cv.width, cv.height, wins);
+    const hud = $('#lvMsg');
+    
+    if (LV.needLeave) {
+      if (pts) LV.leaveMiss = 0; else LV.leaveMiss++;
+    }
+    if (Date.now() < LV.cool || (LV.needLeave && LV.leaveMiss < 4)) {
+      if (Date.now() >= LV.cool && LV.needLeave) { hud.textContent = 'Đã chấm xong. Lấy phiếu ra để chấm tờ tiếp theo.'; hud.style.color = '#fff'; }
+      lvOverlay(pts ? pts.map(p => [(p[0]/k + rx0), (p[1]/k + ry0)]) : null, 'ok');
+      LV.timer = setTimeout(lvTick, 120); return;
+    }
+    LV.needLeave = false;
+
+    if (pts) {
+        LV.stable++;
+        hud.textContent = `🎯 Đã bắt trọn 4 góc! Giữ yên máy (${LV.stable}/5)`; hud.style.color = '#3ddc84';
+        lvOverlay(pts.map(p => [(p[0]/k + rx0), (p[1]/k + ry0)]), 'ok');
+        if (LV.stable >= 5) {
+            clearTimeout(LV.timer);
+            const hiRes = document.createElement('canvas'); hiRes.width = v.videoWidth; hiRes.height = v.videoHeight;
+            hiRes.getContext('2d').drawImage(v, 0, 0);
+            processImagePureJS(hiRes, true);
+            return;
+        }
+    } else {
+        LV.stable = 0;
+        hud.textContent = 'Đặt 4 ô vuông đen vào 4 góc ngắm'; hud.style.color = '#ff9800';
+        lvOverlay(null, 'wait');
+    }
+    LV.timer = setTimeout(lvTick, 150);
+}
+
+$('#btnLive').addEventListener('click', async () => {
+    if (Object.keys(answerKey).length === 0) { alert("Thầy/Cô nạp đáp án trước khi quét nhé!"); switchTab('tab-key'); return; }
+    $('#lvChip').textContent = `Đã chấm ${results.length} tờ`;
+    $('#live').hidden = false; document.body.style.overflow = 'hidden';
+    LV.stable = 0; LV.busy = false; LV.needLeave = false; LV.cool = 0;
+    try {
+        let st = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment', width: {ideal:1920}, height: {ideal:1080} } });
+        LV.stream = st; $('#lvVideo').srcObject = st; $('#lvVideo').play();
+        LV.timer = setTimeout(lvTick, 300);
+    } catch (e) { $('#live').hidden = true; alert("Không mở được camera. Dùng 'Chọn ảnh' nhé."); }
 });
 
-document.getElementById('file-dshs').addEventListener('change', function(e) {
-    const file = e.target.files[0]; if (!file) return;
-    const reader = new FileReader();
-    reader.onload = function(evt) {
-        const wb = XLSX.read(new Uint8Array(evt.target.result), {type: 'array'});
-        const rows = XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]], {header: 1, defval: ""});
-        dshsDict = {}; let count = 0;
-        for (let r = 1; r < rows.length; r++) {
-            let sbd = String(rows[r][1] || "").trim();
-            if (sbd) { dshsDict[sbd] = { name: String(rows[r][2] || "").trim(), className: String(rows[r][3] || "").trim() }; count++; }
-        }
-        document.getElementById('dshs-status').textContent = `✅ Đã nạp ${count} học sinh`;
-    };
-    reader.readAsArrayBuffer(file);
+$('#lvClose').addEventListener('click', () => {
+    clearTimeout(LV.timer); if (LV.stream) { LV.stream.getTracks().forEach(t => t.stop()); LV.stream = null; }
+    $('#lvVideo').srcObject = null; $('#live').hidden = true; document.body.style.overflow = '';
+    renderRes(); if (results.length > 0) switchTab('res');
+});
+
+$('#lvShot').addEventListener('click', () => {
+    if (!LV.stream) return; clearTimeout(LV.timer);
+    const v = $('#lvVideo'); const hiRes = document.createElement('canvas'); hiRes.width = v.videoWidth; hiRes.height = v.videoHeight;
+    hiRes.getContext('2d').drawImage(v, 0, 0); processImagePureJS(hiRes, $('#lvCont').checked);
 });
 
 /* ==========================================================================
-   CAMERA & AI CORE LÕI NTMARK
+   XỬ LÝ ẢNH & ĐỒ HỌA VIỀN NTMARK (HOLLOW RING)
    ========================================================================== */
-function solveHomography(S, D) {
-    const A = [];
-    for (let i = 0; i < 4; i++) {
-        const x = S[i][0], y = S[i][1], u = D[i][0], v = D[i][1];
-        A.push([x, y, 1, 0, 0, 0, -u * x, -u * y, u]);
-        A.push([0, 0, 0, x, y, 1, -v * x, -v * y, v]);
-    }
-    for (let c = 0; c < 8; c++) {
-        let p = c;
-        for (let r = c + 1; r < 8; r++) if (Math.abs(A[r][c]) > Math.abs(A[p][c])) p = r;
-        if (Math.abs(A[p][c]) < 1e-12) return null;
-        const tmp = A[c]; A[c] = A[p]; A[p] = tmp;
-        for (let r = 0; r < 8; r++) {
-            if (r === c) continue;
-            const f = A[r][c] / A[c][c];
-            for (let k = c; k < 9; k++) A[r][k] -= f * A[c][k];
-        }
-    }
-    return A.map((row, i) => row[8] / row[i]);
-}
-
-function applyHomography(H, x, y) {
-    const d = H[6] * x + H[7] * y + 1;
-    return [(H[0] * x + H[1] * y + H[2]) / d, (H[3] * x + H[4] * y + H[5]) / d];
-}
-
-function detectPaperMarkers(imgData, w, h) {
-    const gray = new Float32Array(w * h);
-    for (let i = 0, p = 0; i < gray.length; i++, p += 4) {
-        gray[i] = imgData[p] * 0.299 + imgData[p + 1] * 0.587 + imgData[p + 2] * 0.114;
-    }
-    const R = Math.max(12, Math.round(Math.min(w, h) / 14));
-    const W1 = w + 1, I = new Float64Array(W1 * (h + 1));
-    for (let y = 0; y < h; y++) {
-        let rowSum = 0;
-        for (let x = 0; x < w; x++) { rowSum += gray[y * w + x]; I[(y + 1) * W1 + x + 1] = I[y * W1 + x + 1] + rowSum; }
-    }
-    const mask = new Uint8Array(w * h);
-    for (let y = 0; y < h; y++) {
-        const y0 = Math.max(0, y - R), y1 = Math.min(h, y + R + 1);
-        for (let x = 0; x < w; x++) {
-            const x0 = Math.max(0, x - R), x1 = Math.min(w, x + R + 1);
-            const sum = I[y1 * W1 + x1] - I[y0 * W1 + x1] - I[y1 * W1 + x0] + I[y0 * W1 + x0];
-            const mean = sum / ((x1 - x0) * (y1 - y0));
-            if (gray[y * w + x] < mean * 0.65 && (mean - gray[y * w + x]) > 20) mask[y * w + x] = 1;
-        }
-    }
-    const N = w * h, seen = new Uint8Array(N), stack = new Int32Array(N), buf = new Int32Array(N);
-    const minA = Math.max(20, N / 50000), maxA = N / 80;
-    const candidates = [];
-    for (let s = 0; s < N; s++) {
-        if (!mask[s] || seen[s]) continue;
-        let sp = 0, cnt = 0; stack[sp++] = s; seen[s] = 1;
-        while (sp) {
-            const p = stack[--sp]; buf[cnt++] = p;
-            const x = p % w, y = (p - x) / w;
-            if (x > 0 && mask[p - 1] && !seen[p - 1]) { seen[p - 1] = 1; stack[sp++] = p - 1; }
-            if (x < w - 1 && mask[p + 1] && !seen[p + 1]) { seen[p + 1] = 1; stack[sp++] = p + 1; }
-            if (y > 0 && mask[p - w] && !seen[p - w]) { seen[p - w] = 1; stack[sp++] = p - w; }
-            if (y < h - 1 && mask[p + w] && !seen[p + w]) { seen[p + w] = 1; stack[sp++] = p + w; }
-        }
-        if (cnt >= minA && cnt <= maxA) {
-            let sx = 0, sy = 0, minX = 1e9, maxX = -1e9, minY = 1e9, maxY = -1e9;
-            for (let i = 0; i < cnt; i++) {
-                let px = buf[i] % w, py = (buf[i] - px) / w;
-                sx += px; sy += py;
-                if (px < minX) minX = px; if (px > maxX) maxX = px;
-                if (py < minY) minY = py; if (py > maxY) maxY = py;
-            }
-            let bw = maxX - minX + 1, bh = maxY - minY + 1;
-            if ((cnt / (bw * bh)) > 0.65 && (Math.max(bw, bh) / Math.min(bw, bh)) < 1.45 && (bw + bh) / 2 > 6) {
-                candidates.push({ cx: sx / cnt, cy: sy / cnt });
-            }
-        }
-    }
-    if (candidates.length < 4) return null;
-    let tl = null, tr = null, bl = null, br = null;
-    let dTL = 1e9, dTR = 1e9, dBL = 1e9, dBR = 1e9;
-    candidates.forEach(c => {
-        let dist00 = Math.hypot(c.cx, c.cy), distW0 = Math.hypot(c.cx - w, c.cy);
-        let dist0H = Math.hypot(c.cx, c.cy - h), distWH = Math.hypot(c.cx - w, c.cy - h);
-        if (dist00 < dTL) { dTL = dist00; tl = c; }
-        if (distW0 < dTR) { dTR = distW0; tr = c; }
-        if (dist0H < dBL) { dBL = dist0H; bl = c; }
-        if (distWH < dBR) { dBR = distWH; br = c; }
-    });
-    if (!tl || !tr || !bl || !br) return null;
-    if (new Set([tl, tr, bl, br]).size < 4) return null;
-    return { corners: [[tl.cx, tl.cy], [tr.cx, tr.cy], [br.cx, br.cy], [bl.cx, bl.cy]] };
-}
-
-function sampleBilinear(ch, w, h, x, y) {
-    if (x < 0 || y < 0 || x >= w - 1 || y >= h - 1) return 255;
-    let x0 = x | 0, y0 = y | 0; let fx = x - x0, fy = y - y0;
-    let p00 = ch[y0 * w + x0], p10 = ch[y0 * w + x0 + 1];
-    let p01 = ch[(y0 + 1) * w + x0], p11 = ch[(y0 + 1) * w + x0 + 1];
-    return (p00 * (1 - fx) + p10 * fx) * (1 - fy) + (p01 * (1 - fx) + p11 * fx) * fy;
-}
-
-function calculateBubbleScore(redChannel, w, h, H, bx, by, ox, oy) {
-    let s = 0, c = 0;
-    for (let dy = -4.2; dy <= 4.2; dy += 1.2) {
-        for (let dx = -4.2; dx <= 4.2; dx += 1.2) {
-            if (dx * dx + dy * dy <= 4.2 * 4.2) {
-                let pt = applyHomography(H, bx + dx + ox, by + dy + oy);
-                s += sampleBilinear(redChannel, w, h, pt[0], pt[1]); c++;
-            }
-        }
-    }
-    if (c === 0) return 0;
-    let mIn = s / c;
-    let arr = [], rOut = 8.0;
-    for (let a = 0; a < 12; a++) {
-        let ang = (a * Math.PI) / 6.0;
-        let pt = applyHomography(H, bx + rOut * Math.cos(ang) + ox, by + rOut * Math.sin(ang) + oy);
-        arr.push(sampleBilinear(redChannel, w, h, pt[0], pt[1]));
-    }
-    arr.sort((p, q) => p - q);
-    let ref = Math.max(arr[Math.floor(arr.length * 0.75)], 1);
-    return Math.max(0, Math.min(1, 1 - mIn / ref));
-}
-
-async function openFullscreenCamera() {
-    if (Object.keys(answerKey).length === 0) { alert("Thầy/Cô vui lòng nạp đáp án ở Bước 1 trước khi quét!"); switchTab('tab-config'); return; }
-    document.getElementById('cam-scan-count').textContent = gradedRows.length ? `Đã chấm ${gradedRows.length} tờ` : "Chưa chấm tờ nào";
-    try {
-        videoStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment", width: { ideal: 1920 }, height: { ideal: 1080 } } });
-        const video = document.getElementById('video');
-        video.srcObject = videoStream; document.getElementById('camera-fullscreen-ui').style.display = 'flex';
-        video.onloadedmetadata = () => { video.play(); startAutoScan(); };
-    } catch (err) { alert("Trình duyệt không cho phép truy cập camera, vui lòng dùng 'Chọn Từ Máy'!"); }
-}
-
-function closeFullscreenCamera() {
-    if (autoScanTimer) clearInterval(autoScanTimer);
-    if (videoStream) { videoStream.getTracks().forEach(t => t.stop()); videoStream = null; }
-    document.getElementById('camera-fullscreen-ui').style.display = 'none';
-    if (document.getElementById('cam-result-overlay')) document.getElementById('cam-result-overlay').style.display = 'none';
-    if (gradedRows.length > 0) {
-        document.getElementById('score-dashboard').style.display = 'block';
-        document.getElementById('result-canvas').style.display = 'block';
-    }
-}
-
-function drawLiveOverlay(corners, state) {
-    const canvas = document.getElementById('live-overlay-canvas');
-    const video = document.getElementById('video');
-    if (!canvas || !video || !video.videoWidth) return;
+function processImagePureJS(sourceCanvas, isContinuous) {
+    LV.busy = true; $('#lvMsg').textContent = 'Đang chấm...';
     
-    canvas.width = video.clientWidth; canvas.height = video.clientHeight;
-    const ctx = canvas.getContext('2d');
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-    const videoRatio = video.videoWidth / video.videoHeight;
-    const elementRatio = canvas.width / canvas.height;
-    let scale, dx = 0, dy = 0;
-    if (videoRatio > elementRatio) {
-        scale = canvas.height / video.videoHeight; dx = (canvas.width - video.videoWidth * scale) / 2;
-    } else {
-        scale = canvas.width / video.videoWidth; dy = (canvas.height - video.videoHeight * scale) / 2;
-    }
-
-    if (state === 'ok' && corners) {
-        const scaleToVideo = video.videoWidth / 640;
-        ctx.strokeStyle = '#3ddc84'; ctx.lineWidth = 3; ctx.fillStyle = 'rgba(61, 220, 132, 0.15)'; 
-        ctx.beginPath();
-        corners.forEach((p, i) => {
-            const screenX = (p[0] * scaleToVideo) * scale + dx, screenY = (p[1] * scaleToVideo) * scale + dy;
-            if (i === 0) ctx.moveTo(screenX, screenY); else ctx.lineTo(screenX, screenY);
-        });
-        ctx.closePath(); ctx.stroke(); ctx.fill();
-        ctx.fillStyle = '#3ddc84';
-        corners.forEach(p => {
-            const screenX = (p[0] * scaleToVideo) * scale + dx, screenY = (p[1] * scaleToVideo) * scale + dy;
-            ctx.fillRect(screenX - 8, screenY - 8, 16, 16); 
-        });
-    }
-}
-
-function startAutoScan() {
-    if (autoScanTimer) clearInterval(autoScanTimer);
-    const video = document.getElementById('video');
-    const hudText = document.getElementById('hud-text');
-    stableFrames = 0; hudText.innerHTML = "Đặt 4 ô vuông đen của phiếu vào 4 ô sáng ở góc"; hudText.style.color = "#ff9800";
-    ['cb-tl', 'cb-tr', 'cb-bl', 'cb-br'].forEach(id => document.getElementById(id).classList.remove('locked'));
-    drawLiveOverlay(null, 'wait');
-
-    autoScanTimer = setInterval(() => {
-        if (!videoStream || video.readyState !== video.HAVE_ENOUGH_DATA || !video.videoWidth) return;
-        const requiredFrames = parseInt(document.getElementById('cfg-scan-speed')?.value) || 5;
-
-        const tmpCanvas = document.createElement('canvas');
-        const W = 640, H = Math.round(640 * (video.videoHeight / video.videoWidth));
-        tmpCanvas.width = W; tmpCanvas.height = H;
-        const ctx = tmpCanvas.getContext('2d');
-        ctx.drawImage(video, 0, 0, W, H);
-        const imgData = ctx.getImageData(0, 0, W, H);
-
-        const markers = detectPaperMarkers(imgData.data, W, H);
-        if (markers) {
-            stableFrames++;
-            hudText.innerHTML = `🎯 Đã bắt trọn 4 góc! Giữ yên máy (${stableFrames}/${requiredFrames})`;
-            hudText.style.color = "#3ddc84";
-            ['cb-tl', 'cb-tr', 'cb-bl', 'cb-br'].forEach(id => document.getElementById(id).classList.add('locked'));
-            drawLiveOverlay(markers.corners, 'ok');
-
-            if (stableFrames >= requiredFrames) {
-                clearInterval(autoScanTimer); playBeep();
-                const hiRes = document.createElement('canvas');
-                hiRes.width = video.videoWidth; hiRes.height = video.videoHeight;
-                hiRes.getContext('2d').drawImage(video, 0, 0);
-                
-                const isContinuous = document.getElementById('opt-continuous') && document.getElementById('opt-continuous').checked;
-                if (!isContinuous) closeFullscreenCamera(); 
-                processImagePureJS(hiRes, `Live_${Date.now()}.jpg`, isContinuous);
-            }
-        } else {
-            stableFrames = 0; hudText.innerHTML = "Đặt 4 ô vuông đen của phiếu vào 4 ô sáng ở góc"; hudText.style.color = "#ff9800";
-            ['cb-tl', 'cb-tr', 'cb-bl', 'cb-br'].forEach(id => document.getElementById(id).classList.remove('locked'));
-            drawLiveOverlay(null, 'wait');
-        }
-    }, 200);
-}
-
-function manualCapture() {
-    const video = document.getElementById('video');
-    if (!videoStream || !video.videoWidth) return;
-    if (autoScanTimer) clearInterval(autoScanTimer);
-    playBeep();
-    const canvas = document.createElement('canvas');
-    canvas.width = video.videoWidth; canvas.height = video.videoHeight;
-    canvas.getContext('2d').drawImage(video, 0, 0);
-    const isContinuous = document.getElementById('opt-continuous') && document.getElementById('opt-continuous').checked;
-    if (!isContinuous) closeFullscreenCamera();
-    processImagePureJS(canvas, `Manual_${Date.now()}.jpg`, isContinuous);
-}
-
-async function handleImageFiles(inputElement) {
-    const files = inputElement.files;
-    if (!files || !files.length) return;
-    if (Object.keys(answerKey).length === 0) { alert("Vui lòng nạp đáp án ở Bước 1 trước khi chấm!"); switchTab('tab-config'); inputElement.value = ''; return; }
-    const statusBox = document.getElementById('scan-status');
-    for (let i = 0; i < files.length; i++) {
-        statusBox.textContent = `⏳ Đang xử lý bài ${i+1}/${files.length}... Vui lòng đợi!`; statusBox.style.color = '#f59e0b';
-        await new Promise(r => setTimeout(r, 60));
-        await new Promise((resolve) => {
-            const img = new Image();
-            img.onload = () => {
-                const canvas = document.createElement('canvas');
-                canvas.width = img.naturalWidth || img.width; canvas.height = img.naturalHeight || img.height;
-                canvas.getContext('2d').drawImage(img, 0, 0);
-                processImagePureJS(canvas, files[i].name); resolve();
-            };
-            img.onerror = () => { alert(`Không đọc được file: ${files[i].name}`); resolve(); };
-            img.src = URL.createObjectURL(files[i]);
-        });
-    }
-    inputElement.value = '';
-}
-
-function processImagePureJS(sourceCanvas, fileName, isContinuous = false) {
-    const statusBox = document.getElementById('scan-status');
-    const w = sourceCanvas.width, h = sourceCanvas.height;
-    const imgData = sourceCanvas.getContext('2d').getImageData(0, 0, w, h);
-
-    const markerData = detectPaperMarkers(imgData.data, w, h);
-    if (!markerData) {
-        statusBox.textContent = `❌ Lỗi: Không tìm đủ 4 ô vuông đen!`; statusBox.style.color = 'var(--danger)';
-        if (isContinuous) setTimeout(startAutoScan, 1000);
-        return;
-    }
-
-    const H = solveHomography(CORNERS_CANONICAL, markerData.corners);
-    if (!H) {
-        statusBox.textContent = `❌ Lỗi giải ma trận phối cảnh!`;
-        if (isContinuous) setTimeout(startAutoScan, 1000);
-        return;
-    }
-
-    const redChannel = new Float32Array(w * h);
-    for (let i = 0, p = 0; i < redChannel.length; i++, p += 4) redChannel[i] = imgData.data[p];
-
-    const ox = parseFloat(document.getElementById('cfg-offset-x')?.value) || 0;
-    const oy = parseFloat(document.getElementById('cfg-offset-y')?.value) || 0;
-    const fallbackCode = document.getElementById('fallback-code')?.value.trim() || "";
-
-    let sbd = "";
-    for (let c = 0; c < GRID_SPEC.sbd.x.length; c++) {
-        let x = GRID_SPEC.sbd.x[c];
-        let scores = GRID_SPEC.sbd.y.map(y => calculateBubbleScore(redChannel, w, h, H, x, y, ox, oy));
-        let maxScore = Math.max(...scores), maxIdx = scores.indexOf(maxScore), sorted = [...scores].sort((a,b)=>a-b);
-        if (maxScore > 0.12 && (maxScore - sorted[4]) > 0.05) sbd += String(maxIdx); else sbd += "0";
-    }
-
-    let code = "";
-    for (let c = 0; c < GRID_SPEC.made.x.length; c++) {
-        let x = GRID_SPEC.made.x[c];
-        let scores = GRID_SPEC.made.y.map(y => calculateBubbleScore(redChannel, w, h, H, x, y, ox, oy));
-        let maxScore = Math.max(...scores), maxIdx = scores.indexOf(maxScore), sorted = [...scores].sort((a,b)=>a-b);
-        if (maxScore > 0.12 && (maxScore - sorted[4]) > 0.05) code += String(maxIdx); else code += "0";
-    }
-
-    let warnings = [];
-    if (!answerKey[code]) {
-        if (fallbackCode && answerKey[fallbackCode]) { code = fallbackCode; warnings.push(`Dùng mã đề dự phòng ${fallbackCode}`); } 
-        else { warnings.push(`Chưa nạp đáp án Mã đề ${code}`); }
-    }
-
-    const key = answerKey[code] || { p1: [], p2: [], p3: [] };
-    const stuInfo = dshsDict[sbd] || { name: "", className: "" };
-
-    let right1 = 0; const labels1 = ['A', 'B', 'C', 'D'];
-    const p1Result = [];
-    for (let q = 0; q < (key.p1.length || 40); q++) {
-        let col = Math.floor(q / 10), row = q % 10;
-        if (col >= 4) break;
-        let y = GRID_SPEC.p1.y[row], xList = GRID_SPEC.p1.blocksX[col];
-        let scores = xList.map(x => calculateBubbleScore(redChannel, w, h, H, x, y, ox, oy));
-        let maxScore = Math.max(...scores), maxIdx = scores.indexOf(maxScore), sorted = [...scores].sort((a,b)=>a-b);
+    setTimeout(() => {
+        const w = sourceCanvas.width, h = sourceCanvas.height;
+        const ctx = sourceCanvas.getContext('2d');
+        const imgData = ctx.getImageData(0, 0, w, h);
         
-        let isFilled = (maxScore > 0.12) && (maxScore - sorted[1] > 0.04);
-        let corrLabel = key.p1[q], corrIdx = labels1.indexOf(corrLabel);
-        p1Result.push({ col, y, xList, maxIdx, isFilled, corrIdx, corrLabel });
-        if (isFilled && labels1[maxIdx] === corrLabel) right1++;
-    }
-    const scoreP1 = +(right1 * (parseFloat(document.getElementById('cfg-p1')?.value) || 0.25)).toFixed(2);
-
-    let scoreP2 = 0, right2Details = 0;
-    const diemP2 = [parseFloat(document.getElementById('cfg-p2-1')?.value) || 0.1, parseFloat(document.getElementById('cfg-p2-2')?.value) || 0.25, parseFloat(document.getElementById('cfg-p2-3')?.value) || 0.5, parseFloat(document.getElementById('cfg-p2-4')?.value) || 1.0];
-    const p2Result = [];
-    for (let q = 0; q < key.p2.length; q++) {
-        let correctCount = 0;
-        let qDetail = [];
-        for (let r = 0; r < 4; r++) {
-            let y = GRID_SPEC.p2.y[r], xList = GRID_SPEC.p2.colsX[q];
-            let scores = xList.map(x => calculateBubbleScore(redChannel, w, h, H, x, y, ox, oy));
-            let maxScore = Math.max(...scores), maxIdx = scores.indexOf(maxScore);
-            let isFilled = maxScore > 0.12 && Math.abs(scores[0] - scores[1]) > 0.04;
-            let val = isFilled ? (maxIdx === 0 ? 'Đ' : 'S') : 'X', expVal = key.p2[q] ? key.p2[q][r] : '';
-            if (isFilled && val === expVal) correctCount++;
-            qDetail.push({ y, xList, isFilled, maxIdx, val, expVal });
-        }
-        right2Details += correctCount;
-        if (correctCount >= 1 && correctCount <= 4) scoreP2 += diemP2[correctCount - 1];
-        p2Result.push(qDetail);
-    }
-    scoreP2 = +scoreP2.toFixed(2);
-
-    let scoreP3 = 0, right3 = 0;
-    const diemP3 = parseFloat(document.getElementById('cfg-p3')?.value) || 0.5;
-    const p3Result = [];
-    for (let q = 0; q < key.p3.length; q++) {
-        let expectedAns = String(key.p3[q] || '').trim().replace(/\./g, ',');
-        if (!expectedAns) continue;
-        let stuAns = "", qDetail = { marks: [] };
-
-        let minusScore = calculateBubbleScore(redChannel, w, h, H, GRID_SPEC.p3.colsX[q][0], GRID_SPEC.p3.yMinus, ox, oy);
-        let hasMinus = minusScore > 0.14;
-        if (hasMinus) stuAns += "-";
-        qDetail.marks.push({ x: GRID_SPEC.p3.colsX[q][0], y: GRID_SPEC.p3.yMinus, type: hasMinus ? (expectedAns.startsWith('-') ? 'good' : 'bad') : (expectedAns.startsWith('-') ? 'key' : 'none') });
-
-        let digitsExpected = expectedAns.replace(/^-/, '').split('');
-        for (let col = 0; col < 4; col++) {
-            let x = GRID_SPEC.p3.colsX[q][col];
-            let scores = GRID_SPEC.p3.yDigit.map(y => calculateBubbleScore(redChannel, w, h, H, x, y, ox, oy));
-            let commaScore = (col === 1 || col === 2) ? calculateBubbleScore(redChannel, w, h, H, x, GRID_SPEC.p3.yComma, ox, oy) : 0;
-            let maxDigit = Math.max(...scores), maxIdx = scores.indexOf(maxDigit), sorted = [...scores].sort((a,b)=>a-b);
-            let expChar = col < digitsExpected.length ? digitsExpected[col] : '';
-
-            if (commaScore > maxDigit && commaScore > 0.12) {
-                stuAns += ","; qDetail.marks.push({ x, y: GRID_SPEC.p3.yComma, type: expChar === ',' ? 'good' : 'bad' });
-            } else if (maxDigit > 0.11 && (maxDigit - sorted[5]) > 0.035) {
-                stuAns += String(maxIdx); qDetail.marks.push({ x, y: GRID_SPEC.p3.yDigit[maxIdx], type: String(maxIdx) === expChar ? 'good' : 'bad' });
-            } else if (expChar && GRID_SPEC.p3.digitChars.includes(expChar)) {
-                qDetail.marks.push({ x, y: GRID_SPEC.p3.yDigit[GRID_SPEC.p3.digitChars.indexOf(expChar)], type: 'key' });
+        let gray = new Float32Array(w * h);
+        for (let i = 0, p = 0; i < gray.length; i++, p += 4) gray[i] = imgData.data[p] * 0.299 + imgData.data[p+1] * 0.587 + imgData.data[p+2] * 0.114;
+        
+        // 1. Tách biên O(N) tìm góc trên toàn ảnh
+        const R = Math.max(12, Math.round(Math.min(w, h) / 14)), W1 = w + 1, I = new Float64Array(W1 * (h + 1));
+        for (let y = 0; y < h; y++) { let row = 0; for (let x = 0; x < w; x++) { row += gray[y * w + x]; I[(y + 1) * W1 + x + 1] = I[y * W1 + x + 1] + row; } }
+        const mk = new Uint8Array(w * h);
+        for (let y = 0; y < h; y++) {
+            const y0 = Math.max(0, y - R), y1 = Math.min(h, y + R + 1);
+            for (let x = 0; x < w; x++) {
+                const x0 = Math.max(0, x - R), x1 = Math.min(w, x + R + 1);
+                const sum = I[y1 * W1 + x1] - I[y0 * W1 + x1] - I[y1 * W1 + x0] + I[y0 * W1 + x0];
+                if (gray[y * w + x] < (sum / ((x1 - x0) * (y1 - y0))) * 0.65 && (sum / ((x1 - x0) * (y1 - y0))) - gray[y * w + x] > 20) mk[y * w + x] = 1;
             }
         }
-        if (stuAns === expectedAns) { right3++; scoreP3 += diemP3; }
-        p3Result.push(qDetail);
-    }
-    scoreP3 = +scoreP3.toFixed(2);
-    const totalScore = +(scoreP1 + scoreP2 + scoreP3).toFixed(2);
-
-    const outW = 800, sheetW = 718 - 24, sheetH = 1054 - 29, margin = sheetW * 0.05;
-    const K = outW / (sheetW + 2 * margin), outH = Math.round((sheetH + 2 * margin) * K);
-    const outCanvas = document.getElementById('result-canvas');
-    outCanvas.width = outW; outCanvas.height = outH;
-    const oCtx = outCanvas.getContext('2d');
-
-    const outDataObj = oCtx.createImageData(outW, outH), od = outDataObj.data;
-    for (let y = 0; y < outH; y++) {
-        const mappedY = y / K - margin + 29; 
-        for (let x = 0; x < outW; x++) {
-            const mappedX = x / K - margin + 24; 
-            const d = H[6] * mappedX + H[7] * mappedY + 1;
-            const u = (H[0] * mappedX + H[1] * mappedY + H[2]) / d, v = (H[3] * mappedX + H[4] * mappedY + H[5]) / d;
-            const o = (y * outW + x) * 4;
-            if (u >= 0 && v >= 0 && u <= w - 1 && v <= h - 1) {
-                const x0 = u | 0, y0 = v | 0, fx = u - x0, fy = v - y0;
-                const i00 = (y0 * w + x0) * 4, i10 = (y0 * w + x1) * 4, i01 = (y1 * w + x0) * 4, i11 = (y1 * w + x1) * 4;
-                for (let k = 0; k < 3; k++) od[o + k] = (imgData.data[i00 + k] * (1 - fx) + imgData.data[i10 + k] * fx) * (1 - fy) + (imgData.data[i01 + k] * (1 - fx) + imgData.data[i11 + k] * fx) * fy;
-                od[o + 3] = 255;
-            } else { od[o] = od[o + 1] = od[o + 2] = 235; od[o + 3] = 255; }
+        
+        const N = w * h, seen = new Uint8Array(N), stack = new Int32Array(N), buf = new Int32Array(N), cands = [];
+        for (let s = 0; s < N; s++) {
+            if (!mk[s] || seen[s]) continue;
+            let sp = 0, cnt = 0; stack[sp++] = s; seen[s] = 1;
+            while (sp) {
+                const p = stack[--sp]; buf[cnt++] = p; const xx = p % w, yy = (p - xx) / w;
+                if (xx > 0 && mk[p - 1] && !seen[p - 1]) { seen[p - 1] = 1; stack[sp++] = p - 1; }
+                if (xx < w - 1 && mk[p + 1] && !seen[p + 1]) { seen[p + 1] = 1; stack[sp++] = p + 1; }
+                if (yy > 0 && mk[p - w] && !seen[p - w]) { seen[p - w] = 1; stack[sp++] = p - w; }
+                if (yy < h - 1 && mk[p + w] && !seen[p + w]) { seen[p + w] = 1; stack[sp++] = p + w; }
+            }
+            if (cnt > 25) {
+                let sx = 0, sy = 0, mnx = 1e9, mxx = -1e9, mny = 1e9, mxy = -1e9;
+                for (let i = 0; i < cnt; i++) { let px = buf[i] % w, py = (buf[i] - px) / w; sx += px; sy += py; if (px < mnx) mnx = px; if (px > mxx) mxx = px; if (py < mny) mny = py; if (py > mxy) mxy = py; }
+                let bw = mxx - mnx + 1, bh = mxy - mny + 1;
+                if (cnt / (bw * bh) > 0.65 && Math.max(bw, bh) / Math.min(bw, bh) < 1.45 && (bw + bh) / 2 > 6) cands.push({ cx: sx / cnt, cy: sy / cnt });
+            }
         }
-    }
-    oCtx.putImageData(outDataObj, 0, 0);
+        
+        let tl = null, tr = null, bl = null, br = null, dTL = 1e9, dTR = 1e9, dBL = 1e9, dBR = 1e9;
+        cands.forEach(c => {
+            let dist00 = Math.hypot(c.cx, c.cy), distW0 = Math.hypot(c.cx - w, c.cy), dist0H = Math.hypot(c.cx, c.cy - h), distWH = Math.hypot(c.cx - w, c.cy - h);
+            if (dist00 < dTL) { dTL = dist00; tl = c; }
+            if (distW0 < dTR) { dTR = distW0; tr = c; }
+            if (dist0H < dBL) { dBL = dist0H; bl = c; }
+            if (distWH < dBR) { dBR = distWH; br = c; }
+        });
+        
+        if (!tl || !tr || !bl || !br || new Set([tl, tr, bl, br]).size < 4) {
+            $('#lvMsg').textContent = "Không tìm đủ 4 ô đen góc! Vui lòng giữ thẳng máy.";
+            LV.busy = false; if (isContinuous) { LV.cool = Date.now() + 1000; LV.timer = setTimeout(lvTick, 1000); }
+            return;
+        }
+        
+        const H = solveHomography(CORNERS_CANONICAL, [[tl.cx, tl.cy], [tr.cx, tr.cy], [br.cx, br.cy], [bl.cx, bl.cy]]);
+        if (!H) { LV.busy = false; if (isContinuous) LV.timer = setTimeout(lvTick, 1000); return; }
 
-    const lw = 2.2, rBubble = 6 * K;
-    function drawRing(bx, by, color, isDashed = false) {
-        let cx = (bx + ox - 24 + margin) * K, cy = (by + oy - 29 + margin) * K;
-        oCtx.beginPath(); oCtx.arc(cx, cy, rBubble, 0, 2 * Math.PI);
-        oCtx.strokeStyle = color; oCtx.lineWidth = lw;
-        if (isDashed) oCtx.setLineDash([lw * 1.5, lw * 1.2]); else oCtx.setLineDash([]);
-        oCtx.stroke(); oCtx.setLineDash([]);
-    }
+        let L = makeLayout(cfg);
+        const redChan = new Float32Array(w * h);
+        for (let i = 0, p = 0; i < redChan.length; i++, p += 4) redChan[i] = imgData.data[p];
 
-    const COLOR_GOOD = '#1fb86a', COLOR_BAD = '#ff4b3e', COLOR_KEY = '#ffb300', COLOR_ID = 'rgba(60, 130, 255, 0.95)';
+        const inOff = []; for(let dy=-4.2; dy<=4.2; dy+=1.2) for(let dx=-4.2; dx<=4.2; dx+=1.2) if(dx*dx+dy*dy<=4.2*4.2) inOff.push([dx,dy]);
+        const raw = b => {
+            let s = 0, c = 0;
+            for (let i = 0; i < inOff.length; i++) {
+                let pt = applyHomography(H, b.x + inOff[i][0], b.y + inOff[i][1]);
+                s += sampleBilinear(redChan, w, h, pt[0], pt[1]); c++;
+            }
+            let mIn = s / c, arr = [], rOut = 8.0;
+            for (let a = 0; a < 12; a++) {
+                let pt = applyHomography(H, b.x + rOut * Math.cos(a * Math.PI / 6.0), b.y + rOut * Math.sin(a * Math.PI / 6.0));
+                arr.push(sampleBilinear(redChan, w, h, pt[0], pt[1]));
+            }
+            arr.sort((p, q) => p - q); let ref = Math.max(arr[Math.floor(arr.length * 0.75)], 1);
+            return Math.max(0, Math.min(1, 1 - mIn / ref));
+        };
 
-    for (let c = 0; c < GRID_SPEC.sbd.x.length; c++) drawRing(GRID_SPEC.sbd.x[c], GRID_SPEC.sbd.y[parseInt(sbd[c])], COLOR_ID);
-    for (let c = 0; c < GRID_SPEC.made.x.length; c++) drawRing(GRID_SPEC.made.x[c], GRID_SPEC.made.y[parseInt(code[c])], COLOR_ID);
+        const allB = [].concat(L.p1, L.p2, L.p3, L.sbd, L.md), sv = allB.map(raw).sort((p, q) => p - q);
+        const base = sv.length ? Math.min(sv[Math.floor(sv.length * 0.5)], 0.25) : 0;
+        const rd = b => Math.max(0, raw(b) - base);
+        
+        let sbd = "", code = "";
+        for (let c = 0; c < L.sbdN; c++) {
+            let scores = []; for (let d = 0; d < 10; d++) scores.push(rd(L.sbd[c * 10 + d]));
+            let maxScore = Math.max(...scores), maxIdx = scores.indexOf(maxScore), sorted = [...scores].sort((a,b)=>a-b);
+            sbd += (maxScore > 0.12 && maxScore - sorted[8] > 0.05) ? String(maxIdx) : "0";
+        }
+        for (let c = 0; c < L.mdN; c++) {
+            let scores = []; for (let d = 0; d < 10; d++) scores.push(rd(L.md[c * 10 + d]));
+            let maxScore = Math.max(...scores), maxIdx = scores.indexOf(maxScore), sorted = [...scores].sort((a,b)=>a-b);
+            code += (maxScore > 0.12 && maxScore - sorted[8] > 0.05) ? String(maxIdx) : "0";
+        }
 
-    p1Result.forEach(r => {
-        if (r.isFilled) {
-            drawRing(r.xList[r.maxIdx], r.y, labels1[r.maxIdx] === r.corrLabel ? COLOR_GOOD : COLOR_BAD);
-            if (labels1[r.maxIdx] !== r.corrLabel && r.corrIdx >= 0) drawRing(r.xList[r.corrIdx], r.y, COLOR_KEY);
-        } else if (r.corrIdx >= 0) { drawRing(r.xList[r.corrIdx], r.y, COLOR_KEY, true); }
-    });
+        const vIdx = cfg.versions.findIndex(v => v.code === code);
+        const ver = vIdx >= 0 ? cfg.versions[vIdx] : cfg.versions[cfg.active];
 
-    p2Result.forEach(q => q.forEach(r => {
-        if (r.isFilled) {
-            drawRing(r.xList[r.maxIdx], r.y, r.val === r.expVal ? COLOR_GOOD : COLOR_BAD);
-            if (r.val !== r.expVal && r.expVal) drawRing(r.xList[r.expVal === 'Đ' ? 0 : 1], r.y, COLOR_KEY);
-        } else if (r.expVal) { drawRing(r.xList[r.expVal === 'Đ' ? 0 : 1], r.y, COLOR_KEY, true); }
-    }));
+        let p1 = [], p2 = [], p3 = [];
+        for (let q = 0; q < cfg.n1; q++) {
+            let scores = []; for (let o = 0; o < 4; o++) scores.push(rd(L.p1[q * 4 + o]));
+            let maxScore = Math.max(...scores), maxIdx = scores.indexOf(maxScore), sorted = [...scores].sort((a,b)=>a-b);
+            p1.push((maxScore > 0.12 && maxScore - sorted[2] > 0.04) ? [maxIdx] : []);
+        }
+        for (let q = 0; q < cfg.n2; q++) {
+            let row = [];
+            for (let r = 0; r < 4; r++) {
+                let s0 = rd(L.p2[q * 8 + r * 2]), s1 = rd(L.p2[q * 8 + r * 2 + 1]);
+                let isFilled = Math.max(s0, s1) > 0.12 && Math.abs(s0 - s1) > 0.04;
+                row.push(isFilled ? (s0 > s1 ? 'D' : 'S') : 'X');
+            }
+            p2.push(row);
+        }
+        for (let q = 0; q < cfg.n3; q++) {
+            let stuAns = "";
+            let bMinus = L.p3.find(b => b.q === q && b.k === '-'); if (bMinus && rd(bMinus) > 0.14) stuAns += "-";
+            for (let c = 0; c < 4; c++) {
+                let scores = [], cMarks = L.p3.filter(b => b.q === q && b.c === c);
+                cMarks.forEach(b => scores.push({ k: b.k, s: rd(b) }));
+                scores.sort((a, b) => b.s - a.s);
+                if (scores[0].s > 0.12 && (scores[0].s - scores[1].s > 0.04)) stuAns += scores[0].k;
+            }
+            p3.push(stuAns);
+        }
 
-    p3Result.forEach(q => q.marks.forEach(m => {
-        if (m.type === 'good') drawRing(m.x, m.y, COLOR_GOOD);
-        else if (m.type === 'bad') drawRing(m.x, m.y, COLOR_BAD);
-        else if (m.type === 'key') drawRing(m.x, m.y, COLOR_KEY, true);
-    }));
+        const g = gradeAll({ p1, p2, p3 }, ver);
 
-    lastGradedSbd = `${sbd}_${code}`;
+        // Nắn phẳng và vẽ viền
+        const outW = 800, sheetW = 718 - 24, sheetH = 1054 - 29, margin = sheetW * 0.05, K_flat = outW / (sheetW + 2 * margin), outH = Math.round((sheetH + 2 * margin) * K_flat);
+        const flatCanvas = document.createElement('canvas'); flatCanvas.width = outW; flatCanvas.height = outH;
+        const oCtx = flatCanvas.getContext('2d');
+        const outDataObj = oCtx.createImageData(outW, outH), od = outDataObj.data;
+        for (let yy = 0; yy < outH; yy++) {
+            const mappedY = yy / K_flat - margin + 29; 
+            for (let xx = 0; xx < outW; xx++) {
+                const mappedX = xx / K_flat - margin + 24; 
+                const d = H[6] * mappedX + H[7] * mappedY + 1, u = (H[0] * mappedX + H[1] * mappedY + H[2]) / d, v = (H[3] * mappedX + H[4] * mappedY + H[5]) / d;
+                const o = (yy * outW + xx) * 4;
+                if (u >= 0 && v >= 0 && u <= w - 1 && v <= h - 1) {
+                    const x0 = u | 0, y0 = v | 0, fx = u - x0, fy = v - y0;
+                    const i00 = (y0 * w + x0) * 4, i10 = (y0 * w + x1) * 4, i01 = (y1 * w + x0) * 4, i11 = (y1 * w + x1) * 4;
+                    for (let k = 0; k < 3; k++) od[o + k] = (imgData.data[i00 + k] * (1 - fx) + imgData.data[i10 + k] * fx) * (1 - fy) + (imgData.data[i01 + k] * (1 - fx) + imgData.data[i11 + k] * fx) * fy;
+                    od[o + 3] = 255;
+                } else { od[o] = od[o + 1] = od[o + 2] = 235; od[o + 3] = 255; }
+            }
+        }
+        oCtx.putImageData(outDataObj, 0, 0);
 
-    try {
+        const lw = 2.5, rBubble = 6.5 * K_flat;
+        function drawRing(b, color, isDashed = false) {
+            let cx = (b.x - 24 + margin) * K_flat, cy = (b.y - 29 + margin) * K_flat;
+            oCtx.beginPath(); oCtx.arc(cx, cy, rBubble, 0, 2 * Math.PI);
+            oCtx.strokeStyle = color; oCtx.lineWidth = lw;
+            if (isDashed) oCtx.setLineDash([lw * 1.5, lw * 1.2]); else oCtx.setLineDash([]);
+            oCtx.stroke(); oCtx.setLineDash([]);
+        }
+
+        const GOOD = '#1fb86a', BAD = '#ff4b3e', KEY = '#ffb300', ID = 'rgba(60, 130, 255, 0.95)';
+        L.sbd.forEach(b => { if (sbd[b.c] === String(b.d)) drawRing(b, ID); });
+        L.md.forEach(b => { if (code[b.c] === String(b.d)) drawRing(b, ID); });
+
+        L.p1.forEach(b => {
+            const isSel = p1[b.q].includes(b.o), isKey = (ver.mcq[b.q] !== null && (Array.isArray(ver.mcq[b.q]) ? ver.mcq[b.q].includes(b.o) : ver.mcq[b.q] === b.o));
+            if (isSel) drawRing(b, isKey ? GOOD : BAD); else if (isKey) drawRing(b, KEY, true);
+        });
+
+        L.p2.forEach(b => {
+            const sv = p2[b.q][b.r], kv = ver.tf[b.q][b.r], mine = b.s === 0 ? 'D' : 'S';
+            const isSel = sv === mine || sv === 'X';
+            if (isSel) drawRing(b, kv === null ? '#9aa3b5' : (kv.includes(mine) && sv !== 'X' ? GOOD : BAD));
+            else if (kv && kv.includes(mine) && !(sv && sv !== 'X' && kv.includes(sv))) drawRing(b, KEY, true);
+        });
+
+        L.p3.forEach(b => {
+            const cells = numToCells(p3[b.q]), st = g.p3.pts > 0 ? 'ok' : 'wrong';
+            if (cells.some(m => m.c === b.c && m.k === b.k)) drawRing(b, st === 'ok' ? GOOD : BAD);
+            else if (st !== 'ok' && numToCells(ver.num[b.q]).some(m => m.c === b.c && m.k === b.k)) drawRing(b, KEY, true);
+        });
+
         const bh = Math.max(34, Math.round(outW * 0.05));
         const finalCanvas = document.createElement('canvas');
-        finalCanvas.width = outCanvas.width; finalCanvas.height = outCanvas.height + bh;
+        finalCanvas.width = outW; finalCanvas.height = outH + bh;
         const fCtx = finalCanvas.getContext('2d');
-        fCtx.fillStyle = '#111'; fCtx.fillRect(0, 0, finalCanvas.width, bh);
-        fCtx.drawImage(outCanvas, 0, bh);
+        fCtx.fillStyle = '#111'; fCtx.fillRect(0, 0, outW, bh); fCtx.drawImage(flatCanvas, 0, bh);
         fCtx.fillStyle = '#fff'; fCtx.font = `600 ${Math.round(bh * 0.45)}px sans-serif`; fCtx.textBaseline = 'middle';
-        fCtx.fillText(`SBD: ${sbd} · Mã đề: ${code} · Điểm: ${totalScore}`, 16, bh / 2);
-        gradedImagesData.push({ filename: `${sbd}_${code}_${Date.now()}.jpg`, base64: finalCanvas.toDataURL('image/jpeg', 0.85).split(',')[1] });
-    } catch(e) {}
+        fCtx.fillText(`SBD: ${sbd} · Mã đề: ${code} · Điểm: ${g.total}`, 16, bh / 2);
 
-    document.getElementById('score-dashboard').style.display = 'block';
-    document.getElementById('ui-total').textContent = `${totalScore}đ`;
-    document.getElementById('ui-stu-name').textContent = stuInfo.name ? `${stuInfo.name} (${stuInfo.className})` : "Học sinh: (Chưa nạp DSHS)";
-    document.getElementById('ui-sbd-made').textContent = `SBD: ${sbd} | Mã đề: ${code}`;
-    document.getElementById('ui-p1-score').textContent = `${scoreP1}đ`; document.getElementById('ui-p1-detail').textContent = `Đúng ${right1}/${key.p1.length || 40}`;
-    document.getElementById('ui-p2-score').textContent = `${scoreP2}đ`; document.getElementById('ui-p2-detail').textContent = `Đúng ${right2Details}/${key.p2.length * 4}`;
-    document.getElementById('ui-p3-score').textContent = `${scoreP3}đ`; document.getElementById('ui-p3-detail').textContent = `Đúng ${right3}/${key.p3.length}`;
+        let imgB64 = finalCanvas.toDataURL('image/jpeg', 0.85);
+        gradedImagesData.push({ filename: `${sbd}_${code}_${Date.now()}.jpg`, base64: imgB64.split(',')[1] });
 
-    if (warnings.length > 0) {
-        document.getElementById('ui-warnings').textContent = "⚠️ " + warnings.join(" | ");
-        statusBox.textContent = `⚠️ SBD: ${sbd} cần kiểm tra mã đề!`; statusBox.style.color = 'var(--danger)';
-    } else {
-        document.getElementById('ui-warnings').textContent = "";
-        statusBox.textContent = `✅ Đã chấm xong SBD: ${sbd} (Mã: ${code}) - Tổng: ${totalScore}đ`; statusBox.style.color = 'var(--success)';
-    }
+        results.push({ sbd, md: code, total: g.total, max: g.max, parts: [g.p1.pts, g.p2.pts, g.p3.pts], t: Date.now() });
+        saveResults();
 
-    gradedRows.push({ sbd, name: stuInfo.name, className: stuInfo.className, code, scoreP1, scoreP2, scoreP3, totalScore, warnings: warnings.join('; '), file: fileName });
-    updateResultsTable();
+        if ($('#opt-sound').checked) playBeepCamera();
 
-    const camScanCount = document.getElementById('cam-scan-count');
-    if (camScanCount) camScanCount.textContent = `Đã chấm ${gradedRows.length} tờ`;
-
-    if (isContinuous) {
-        const showRes = document.getElementById('opt-show-res').checked;
-        if (showRes) {
-            document.getElementById('cam-res-score').textContent = `${totalScore}đ`;
-            let stuStr = stuInfo.name ? ` - ${stuInfo.name}` : '';
-            document.getElementById('cam-res-info').textContent = `SBD: ${sbd}${stuStr} | Mã đề: ${code}`;
-            document.getElementById('cam-res-img').src = outCanvas.toDataURL('image/jpeg', 0.85);
-            document.getElementById('cam-result-overlay').style.display = 'flex';
-            setTimeout(() => { document.getElementById('cam-result-overlay').style.display = 'none'; startAutoScan(); }, 2000);
+        if (isContinuous) {
+            LV.count = (LV.count || 0) + 1; $('#cam-scan-count').textContent = `Đã chấm ${LV.count} tờ`;
+            if ($('#opt-show-res').checked) {
+                $('#cam-res-score').textContent = `${g.total}đ`;
+                $('#cam-res-info').textContent = `SBD: ${sbd} | Mã đề: ${code}`;
+                $('#cam-res-img').src = imgB64;
+                $('#cam-result-overlay').style.display = 'flex';
+                setTimeout(() => { $('#cam-result-overlay').style.display = 'none'; startAutoScan(); }, 2000);
+            } else {
+                $('#lvMsg').textContent = `✅ Đã chấm xong SBD: ${sbd} (${g.total}đ)`; $('#lvMsg').style.color = "#00ff00";
+                setTimeout(() => { startAutoScan(); }, 1200);
+            }
         } else {
-            const hudText = document.getElementById('hud-text');
-            hudText.innerHTML = `✅ Đã chấm xong SBD: ${sbd} (${totalScore}đ). Chuyển tờ khác...`;
-            hudText.style.color = "#00ff00";
-            setTimeout(() => { startAutoScan(); }, 1200);
+            closeFullscreenCamera();
         }
-    } else {
-        outCanvas.style.display = 'block';
-    }
+        LV.busy = false;
+    }, 10);
 }
 
-function downloadResultImage() {
-    const link = document.createElement('a'); link.download = `Cham_${lastGradedSbd}.jpg`; link.href = document.getElementById('result-canvas').toDataURL('image/jpeg', 0.9); link.click();
-}
-
-function updateResultsTable() {
-    document.getElementById('count-graded').textContent = gradedRows.length; document.getElementById('nav-count').textContent = gradedRows.length;
-    document.getElementById('results-tbody').innerHTML = gradedRows.map((r, i) => `<tr><td>${i+1}</td><td><b>${r.sbd}</b></td><td style="text-align:left;">${r.name || '---'}</td><td>${r.code}</td><td><b style="color:#dc2626;">${r.totalScore}</b></td></tr>`).join('');
-}
-
-function exportResultsExcel() {
-    if (!gradedRows.length) { alert("Chưa có bài nào để xuất!"); return; }
-    const data = [["STT", "Họ và tên", "Lớp", "SBD", "Mã Đề", "Điểm P.I", "Điểm P.II", "Điểm P.III", "TỔNG ĐIỂM", "Cảnh báo", "File"], ...gradedRows.map((r, i) => [i + 1, r.name, r.className, r.sbd, r.code, r.scoreP1, r.scoreP2, r.scoreP3, r.totalScore, r.warnings, r.file])];
-    const wb = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(data), "BangDiem"); XLSX.writeFile(wb, `BangDiem_NTMIX_${Date.now()}.xlsx`);
-}
-
-function downloadAllImagesZip() {
-    if (gradedImagesData.length === 0) { alert("Chưa có ảnh nào được chấm để lưu!"); return; }
-    const btn = document.querySelector('.btn-warning'); const originalText = btn.innerHTML;
-    btn.innerHTML = `⏳ Đang tạo ZIP (${gradedImagesData.length} ảnh)...`; btn.disabled = true;
-    setTimeout(() => {
-        let zip = new JSZip(); let folder = zip.folder("AnhCham_NTMIX");
-        gradedImagesData.forEach(img => folder.file(img.filename, img.base64, {base64: true}));
-        zip.generateAsync({type:"blob"}).then(content => { saveAs(content, `AnhCham_NTMIX_${Date.now()}.zip`); btn.innerHTML = originalText; btn.disabled = false; }).catch(err => { alert("Có lỗi khi tạo ZIP: " + err); btn.innerHTML = originalText; btn.disabled = false; });
-    }, 100);
-}
+// ---------------- Khởi động ----------------
+renderKey(); renderRes();
 </script>
 </body>
 </html>
