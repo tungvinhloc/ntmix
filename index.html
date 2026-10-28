@@ -192,47 +192,19 @@ const SHEET2_JPG = "assets/vx_01.jpg";
 const SHEET3_JPG = "assets/vx_02.jpg";
 const SHEET4_JPG = "assets/bgd2025.jpg";
 const SHEET4_PDF = "assets/bgd2025.pdf";
-/* ==========================================================================
-   TỌA ĐỘ CHUẨN ĐO TỪ PAINT (ĐÃ BÙ TRỪ VÀO CHÍNH TÂM Ô ĐEN 12px)
-   ========================================================================== */
-const SHEET_BGD25 = {
-  id: 'bgd25',
-  name: 'Phiếu BGD 2025 (4MĐ)',
-  PW: 210, PH: 297, RB: 1.45,
-  CORNERS: [ [24+12, 29+12], [718+12, 29+12], [718+12, 1054+12], [24+12, 1054+12] ],
-  MARK_ROWS: [ [[36, 41], [730, 41]], [[36, 1066], [730, 1066]] ], // Giả lập dải neo
-  BAND_Y: [1066], bands: false,
-  
-  SBD_X: [510, 525, 541, 556, 571, 586, 601, 616],
-  MD_X: [654, 669, 684, 699],
-  ID_Y: [106, 128, 149, 171, 193, 215, 237, 258, 280, 302],
-  
-  P1_X: [
-    [86, 118, 151, 183], [248, 281, 314, 346], [412, 444, 477, 509], [575, 608, 640, 672]
-  ],
-  P1_Y: [410, 426, 443, 460, 476, 494, 511, 527, 543, 561],
-  
-  P2_X: [
-    [85, 118], [152, 183], [249, 282], [314, 347], [412, 445], [478, 511], [578, 608], [641, 674]
-  ],
-  P2_Y: [653, 670, 687, 704],
-  
-  P3_X: [
-    [80, 103, 125, 148], [184, 207, 229, 252], [289, 311, 333, 356], [393, 416, 439, 461], [498, 520, 542, 565], [602, 625, 647, 670]
-  ],
-  P3_DASH: 803, P3_COMMA: 820,
-  P3_D: [839, 855, 873, 891, 907, 924, 942, 959, 976, 994],
-  
-  MAX1: 40, MAX2: 8, MAX3: 6
-};
-const SHEETS = { bgd25: SHEET_BGD25 };
 
-let SHEET = SHEET_BGD25, K = 1, MS = 24, P1N = 10, PW, PH, RB, CORNERS, MARK_ROWS, BAND_Y, SBD_X, MD_X, ID_Y, P1_X, P1_Y, P2_X, P2_Y, P3_X, P3_DASH, P3_COMMA, P3_D, MAX1, MAX2, MAX3;
+/* ===================== LÕI NHẬN DIỆN & TỌA ĐỘ PHIẾU (CHUẨN NTMARK) ===================== */
+const SHEET_NH = { id: 'bgd2025_chuan', name: 'BGD 2025 Chuẩn', PW: 208, PH: 297, RB: 1.45, CORNERS: [[6.69, 5.46], [202.41, 5.38], [202.46, 288.04], [6.65, 288.04]], NAME: [74, 52, 66, 16], MARK_ROWS: [[[6.69, 5.46], [202.41, 5.38]], [[6.98, 96.38], [202.46, 96.38]], [[6.98, 161.23], [202.46, 161.23]], [[6.65, 202.71], [202.46, 202.71]], [[6.65, 288.04], [202.46, 288.04]]], BAND_Y: [96.38, 161.23, 202.71], bands: true, BARS_Y: [31.75, 37.63, 43.34, 49.19, 55.03, 60.87, 66.71, 72.55, 78.26, 84.23], BAR_X: 202.41, BAR_W: 3.72, BAR_H: 1.4, SBD_X: [145.64, 149.68, 153.69, 157.77, 161.83, 165.85, 169.86, 173.88], MD_X: [181.93, 185.95, 189.99, 194.08], ID_Y: [33.87, 39.75, 45.57, 51.41, 57.26, 63.09, 68.97, 74.79, 80.66, 86.5], P1_X: [[22.54, 30.86, 39.18, 47.46], [69.52, 77.89, 86.23, 94.48], [116.52, 124.86, 133.21, 141.44], [163.53, 171.88, 180.17, 188.47]], P1_Y: [108.98, 114.0, 118.99, 123.98, 128.97, 133.99, 138.99, 143.96, 148.98, 153.99], P2_X: [[22.62, 30.81], [39.22, 47.53], [69.38, 77.86], [86.12, 94.48], [116.47, 124.78], [133.21, 141.44], [163.28, 171.7], [180.02, 188.47]], P2_Y: [179.33, 184.34, 189.33, 194.3], P3_X: [[21.46, 26.46, 31.45, 36.44], [51.4, 56.45, 61.44, 66.42], [81.44, 86.44, 91.43, 96.44], [111.43, 116.45, 121.45, 126.43], [141.39, 146.41, 151.44, 156.41], [171.42, 176.43, 181.42, 186.41]], P3_DASH: 217.09, P3_COMMA: 222.7, P3_D: [228.28, 233.77, 239.37, 244.96, 250.52, 256.1, 261.68, 267.25, 272.79, 278.39], MAX1: 40, MAX2: 8, MAX3: 6 };
+const SHEET_KT = { id: 'vx_01', name: 'NTMIX - VX01', PW: 1901, PH: 861, RB: 11.2, K: 7.7, MS: 24, CORNERS: [[28.5, 74.5], [1875.5, 74.5], [1875.5, 813.5], [28.5, 813.5]], NAME: [266, 38, 390, 66], BAND_Y: [1e9, 1e9, 1e9], bands: false, SPOT: [1009.5, 74.5, 22], SBD_X: [134.5, 172.5], MD_X: [266.0, 304.0, 342.0], ID_Y: [260.25, 315.0, 370.0, 425.0, 480.0, 535.0, 590.0, 645.0, 699.5, 754.25], P1_X: [[485.0, 563.5, 642.0, 719.6]], P1_Y: [324.5, 371.5, 418.5, 465.5, 512.5, 559.5, 606.5, 653.5, 700.5, 747.5], P2_X: [[872.5, 950.2], [872.5, 950.2]], P2_Y: [[325.5, 372.5, 419.5, 466.5], [608.5, 655.5, 702.5, 749.5]], P3_X: [[1086.5, 1133.5, 1180.5, 1227.5], [1353.5, 1400.5, 1447.5, 1494.5], [1620.5, 1667.5, 1714.5, 1761.5]], P3_DASH: 230.5, P3_COMMA: 277.5, P3_D: [325.5, 372.5, 419.5, 466.5, 513.5, 560.5, 607.5, 654.5, 701.5, 748.5], MAX1: 10, MAX2: 2, MAX3: 3 };
+const SHEET_M = { id: 'vx_02', name: 'NTMIX - VX02', PW: 1100, PH: 914, RB: 6.4, K: 4.8, MS: 18, RR: 7.6, ORIENT: 'rings', P1N: 12, CORNERS: [[31.5, 48.5], [1072.5, 44.5], [1075.5, 894.4], [31.5, 894.5]], NAME: [478, 311, 232, 30], MARK_ROWS: [[[31.5, 48.5], [1072.5, 44.5]], [[31.5, 472.5], [1075.5, 472.5]], [[31.5, 894.5], [1075.5, 894.4]]], BAND_Y: [472.5], bands: true, SBD_X: [770.2, 791.9, 813.7, 835.3, 857.0, 878.6, 900.1, 922.0], MD_X: [961.0, 982.5, 1004.0, 1026.0], ID_Y: [177.5, 208.5, 239.9, 271.0, 302.4, 333.5, 364.5, 396.0, 427.0, 458.4], P1_X: [[114.5, 141.5, 168.0, 194.5]], P1_Y: [574.0, 600.5, 628.0, 654.5, 681.5, 708.5, 734.5, 761.5, 788.5, 815.0, 841.5, 868.5], P2_X: [[310.5, 337.9], [310.5, 337.9]], P2_Y: [[573.5, 600.0, 626.5, 653.5], [788.5, 815.0, 841.5, 868.5]], P3_X: [[442.5, 469.5, 496.5, 522.5], [602.9, 629.5, 656.5, 683.5], [763.5, 789.9, 816.5, 843.5], [923.5, 950.5, 976.7, 1003.5]], P3_DASH: 574.1, P3_COMMA: 600.5, P3_D: [628.0, 654.5, 681.5, 708.5, 734.6, 761.5, 788.5, 815.0, 841.5, 868.5], MAX1: 12, MAX2: 2, MAX3: 4 };
+const SHEET_BGD25 = { id: 'bgd2025', name: 'Phiếu BGD 2025 (4MĐ)', PW: 210, PH: 297, RB: 1.45, CORNERS: [[10.0, 10.0], [197.0, 10.0], [197.0, 287.0], [10.0, 287.0]], NAME: [74, 52, 66, 16], MARK_ROWS: [[[10.0, 10.0], [197.0, 10.0]], [[10.0, 93.0], [197.0, 93.0]], [[10.0, 172.0], [197.0, 172.0]], [[10.0, 215.0], [197.0, 215.0]], [[10.0, 287.0], [197.0, 287.0]]], BAND_Y: [93.0, 172.0, 215.0], bands: true, ORIENT: 'bands', BARS_Y: [31.75, 37.63, 43.34, 49.19, 55.03, 60.87, 66.71, 72.55, 78.26, 84.23], BAR_X: 197.0, BAR_W: 3.72, BAR_H: 1.4, SBD_X: [141.0, 145.0, 149.3, 153.3, 157.4, 161.4, 165.5, 169.5], MD_X: [179.8, 183.8, 187.8, 191.9], ID_Y: [30.8, 36.8, 42.4, 48.4, 54.3, 60.3, 66.2, 71.9, 77.8, 83.8], P1_X: [[26.7, 35.3, 44.2, 52.8], [70.4, 79.3, 88.2, 96.8], [114.6, 123.2, 132.1, 140.7], [158.5, 167.4, 176.0, 184.7]], P1_Y: [113.0, 117.3, 121.9, 126.5, 130.8, 135.7, 140.3, 144.6, 148.9, 153.8], P2_X: [[26.4, 35.3], [44.5, 52.8], [70.6, 79.5], [88.2, 97.1], [114.6, 123.5], [132.4, 141.3], [159.3, 167.4], [176.3, 185.2]], P2_Y: [178.6, 183.2, 187.8, 192.4], P3_X: [[25.1, 31.3, 37.2, 43.4], [53.1, 59.3, 65.2, 71.4], [81.4, 87.4, 93.3, 99.5], [109.5, 115.7, 121.9, 127.8], [137.8, 143.7, 149.6, 155.8], [165.8, 172.0, 178.0, 184.2]], P3_DASH: 219.2, P3_COMMA: 223.8, P3_D: [228.9, 233.2, 238.1, 242.9, 247.3, 251.9, 256.7, 261.3, 265.9, 270.8], MAX1: 40, MAX2: 8, MAX3: 6 };
+const SHEETS = { bgd2025_chuan: SHEET_NH, vx_01: SHEET_KT, vx_02: SHEET_M, bgd2025: SHEET_BGD25 };
+
+let SHEET = SHEET_BGD25, K = 1, MS = 3.8, P1N = 10, NAME, PW, PH, RB, CORNERS, MARK_ROWS, BAND_Y, BARS_Y, BAR_X, BAR_W, BAR_H, SBD_X, MD_X, ID_Y, P1_X, P1_Y, P2_X, P2_Y, P3_X, P3_DASH, P3_COMMA, P3_D, MAX1, MAX2, MAX3;
 function setSheet(id) {
-  SHEET = SHEETS[id] || SHEET_BGD25; PW = SHEET.PW; PH = SHEET.PH; RB = SHEET.RB; CORNERS = SHEET.CORNERS; MARK_ROWS = SHEET.MARK_ROWS; BAND_Y = SHEET.BAND_Y;
-  SBD_X = SHEET.SBD_X; MD_X = SHEET.MD_X; ID_Y = SHEET.ID_Y; P1_X = SHEET.P1_X; P1_Y = SHEET.P1_Y; P2_X = SHEET.P2_X; P2_Y = SHEET.P2_Y; P3_X = SHEET.P3_X; P3_DASH = SHEET.P3_DASH; P3_COMMA = SHEET.P3_COMMA; P3_D = SHEET.P3_D; MAX1 = SHEET.MAX1; MAX2 = SHEET.MAX2; MAX3 = SHEET.MAX3;
+  SHEET = SHEETS[id] || SHEET_BGD25; K = SHEET.K || 1; MS = SHEET.MS || 3.8; P1N = SHEET.P1N || 10; NAME = SHEET.NAME; PW = SHEET.PW; PH = SHEET.PH; RB = SHEET.RB; CORNERS = SHEET.CORNERS; MARK_ROWS = SHEET.MARK_ROWS; BAND_Y = SHEET.BAND_Y; BARS_Y = SHEET.BARS_Y; BAR_X = SHEET.BAR_X; BAR_W = SHEET.BAR_W; BAR_H = SHEET.BAR_H; SBD_X = SHEET.SBD_X; MD_X = SHEET.MD_X; ID_Y = SHEET.ID_Y; P1_X = SHEET.P1_X; P1_Y = SHEET.P1_Y; P2_X = SHEET.P2_X; P2_Y = SHEET.P2_Y; P3_X = SHEET.P3_X; P3_DASH = SHEET.P3_DASH; P3_COMMA = SHEET.P3_COMMA; P3_D = SHEET.P3_D; MAX1 = SHEET.MAX1; MAX2 = SHEET.MAX2; MAX3 = SHEET.MAX3;
 }
-setSheet('bgd25');
+setSheet('bgd2025');
 
 function makeLayout(cfg) {
   const L = { p1: [], p2: [], p3: [], sbd: [], md: [] };
@@ -257,7 +229,7 @@ function solveHomography(S, D) {
     const tmp = A[c]; A[c] = A[p]; A[p] = tmp;
     for (let r = 0; r < 8; r++) { if (r === c) continue; const f = A[r][c] / A[c][c]; for (let k = c; k < 9; k++) A[r][k] -= f * A[c][k]; }
   }
-  return A.map(row => row[8] / row[i]);
+  return A.map((row, i) => row[8] / row[i]);
 }
 function applyH(H, x, y) { const d = H[6] * x + H[7] * y + 1; return [(H[0] * x + H[1] * y + H[2]) / d, (H[3] * x + H[4] * y + H[5]) / d]; }
 function lumAt(g, w, h, u, v) {
@@ -396,7 +368,7 @@ function scanSheet(g, w, h, L, cfg, H, thr) {
   
   const second = [], grp = {};
   allB.forEach(b => {
-    if (b.blk === 'sbd' || b.blk === 'md') return; // Không trừ nhiễu chéo ở vùng in số
+    if (b.blk === 'sbd' || b.blk === 'md') return; 
     const k = b.blk.charAt(1) === '1' ? 'p1-' + b.q : b.blk.charAt(0) === 'p' ? 'p3-' + b.q + '-' + b.c : b.blk + '-' + b.c;
     (grp[k] = grp[k] || []).push(rd(b));
   });
@@ -449,8 +421,36 @@ function scanSheet(g, w, h, L, cfg, H, thr) {
   return { p1: p1, p2: p2, p3: p3, sbd: readId(L.sbd, L.sbdN), md: readId(L.md, L.mdN) };
 }
 
+function analyzeImage(imgData, w, h, cfg, thr) {
+  const L = makeLayout(cfg);
+  const g = redOf(imgData.data, w * h);
+  const cands = findMarkers(imgData.data, w, h);
+  if (cands.length < 4) return { error: 'markers', found: cands.length };
+  const quad = orderQuad(cands);
+  const fit = orient(quad);
+  if (!fit) return { error: 'orient' };
+  const res = scanSheet(g, w, h, L, cfg, fit.H, thr);
+  res.L = L; res.HB = [fit.H]; res.P = fit.P; res.ppm = dist(fit.P[0], fit.P[1]) / (CORNERS[1][0] - CORNERS[0][0]);
+  return res;
+}
+
+function buildScan(cv, source) {
+    const c = cv.getContext('2d', { willReadFrequently: true });
+    const id = c.getImageData(0, 0, cv.width, cv.height);
+    const r = analyzeImage(id, cv.width, cv.height, cfg, cfg.thr);
+    if (r.error) return { error: r.error, source: source, photo: cv };
+    const s = r; s.photo = cv; s.source = source; s.saved = false; s.sbdStr = r.sbd.join(''); s.mdStr = r.md.join('');
+    pickVersionFor(s); return s;
+}
+
+function pickVersionFor(s) {
+    const nz = c => String(c).replace(/^0+(?=\d)/, '');
+    const i = cfg.versions.findIndex(v => v.code && nz(v.code) === nz(s.mdStr));
+    if (i >= 0) { s.ver = i; s.matched = true; } else { s.ver = Math.min(cfg.active, cfg.versions.length - 1); s.matched = false; }
+}
+
 /* ==========================================================================
-   APP & UI LOGIC
+   APP & UI LOGIC TỪ ĐÂY
    ========================================================================== */
 const $ = (s, r) => (r || document).querySelector(s);
 const $$ = (s, r) => Array.from((r || document).querySelectorAll(s));
@@ -460,11 +460,12 @@ const esc = s => String(s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':
 
 function defaultCfg() {
   const v = { code: '', mcq: new Array(40).fill(null), tf: Array.from({length: 8}, () => new Array(4).fill(null)), num: new Array(6).fill('') };
-  return { sheet: 'bgd25', n1: 40, n2: 8, n3: 6, p1: 0.25, p2: 1, p3: 0.5, thr: 0.12, active: 0, versions: [v] };
+  return { sheet: 'bgd2025', n1: 40, n2: 8, n3: 6, p1: 0.25, p2: 1, p3: 0.5, thr: 0.12, active: 0, versions: [v] };
 }
 let cfg = LS.get('omr.cfg.ntmix', null) || defaultCfg();
 let results = LS.get('omr.results.ntmix', []) || [];
 let students = LS.get('omr.students', {});
+let scan = null; let gradedImagesData = [];
 
 function saveCfg() { LS.set('omr.cfg.ntmix', cfg); }
 function saveResults() { LS.set('omr.results.ntmix', results); renderBadge(); }
@@ -475,18 +476,21 @@ function maxTotal() { return cfg.n1 * cfg.p1 + cfg.n2 * cfg.p2 + cfg.n3 * cfg.p3
 function switchTab(t) {
   $$('.view').forEach(v => v.hidden = v.id !== 'v-' + t);
   $$('.tab').forEach(b => b.dataset.tab === t ? b.setAttribute('aria-current', 'page') : b.removeAttribute('aria-current'));
-  if (t === 'key') renderKey(); if (t === 'res') renderRes();
+  if (t === 'key') renderKey(); if (t === 'res') renderRes(); if (t === 'sheet') renderSheet();
   window.scrollTo(0, 0);
 }
 $$('.tab').forEach(b => b.addEventListener('click', () => switchTab(b.dataset.tab)));
 
 function gradeAll(st, ver) {
-  const out = { p1: { pts: 0 }, p2: { pts: 0, per: [] }, p3: { pts: 0 }, total: 0, max: maxTotal() };
+  const out = { p1: { pts: 0, st: [] }, p2: { pts: 0, per: [], st: [] }, p3: { pts: 0, st: [] }, total: 0, max: maxTotal() };
   for (let q = 0; q < cfg.n1; q++) {
     const kq = ver.mcq[q] !== null ? (Array.isArray(ver.mcq[q]) ? ver.mcq[q] : [ver.mcq[q]]) : [];
-    if (!kq.length) continue;
-    if (kq.length === 4) { out.p1.pts += cfg.p1; continue; }
-    if (st.p1[q] && st.p1[q].length === 1 && kq.includes(st.p1[q][0])) out.p1.pts += cfg.p1;
+    if (!kq.length) { out.p1.st.push('skip'); continue; }
+    if (kq.length === 4) { out.p1.pts += cfg.p1; out.p1.st.push('ok'); continue; }
+    if (!st.p1[q] || st.p1[q].length === 0) out.p1.st.push('blank');
+    else if (st.p1[q].length > 1) out.p1.st.push('multi');
+    else if (kq.includes(st.p1[q][0])) { out.p1.pts += cfg.p1; out.p1.st.push('ok'); }
+    else out.p1.st.push('wrong');
   }
   const TF_PTS = [0, 0.1, 0.25, 0.5, 1];
   for (let q = 0; q < cfg.n2; q++) {
@@ -498,15 +502,55 @@ function gradeAll(st, ver) {
       if (sv && sv !== 'X' && kv.includes(sv)) { cnt++; items.push('ok'); } else items.push(sv === '' ? 'blank' : 'wrong');
     }
     const pts = graded === 4 ? TF_PTS[cnt] * cfg.p2 : (graded ? (cnt / graded) * cfg.p2 : 0);
-    out.p2.pts += pts; out.p2.per.push({ cnt, pts, items });
+    out.p2.pts += pts; out.p2.per.push({ cnt, pts, items, graded });
+    out.p2.st.push(graded ? (cnt === graded ? 'ok' : cnt === 0 ? 'wrong' : 'part') : 'skip');
   }
   for (let q = 0; q < cfg.n3; q++) {
     const kq = ver.num[q], s = st.p3[q];
-    if (!kq) continue;
-    if (kq === '*') out.p3.pts += cfg.p3;
-    else if (s && String(s).replace(/\s+/g,'').replace(/[−–]/g,'-').replace(/\./g,',') === kq) out.p3.pts += cfg.p3;
+    if (!kq) { out.p3.st.push('skip'); continue; }
+    if (kq === '*') { out.p3.pts += cfg.p3; out.p3.st.push('ok'); continue; }
+    if (!s) out.p3.st.push('blank');
+    else if (String(s).replace(/\s+/g,'').replace(/[−–]/g,'-').replace(/\./g,',') === kq) { out.p3.pts += cfg.p3; out.p3.st.push('ok'); }
+    else out.p3.st.push('wrong');
   }
   out.total = out.p1.pts + out.p2.pts + out.p3.pts; return out;
+}
+
+// ---------------- PHIẾU IN VÀ CHỌN PHIẾU ----------------
+function renderSheetSel() {
+    const e = $('#sheetSel'); if (!e) return;
+    e.innerHTML = '<span class="lbl">Loại phiếu đang chọn</span><div class="vchips" style="margin-top:5px;">' +
+        [['bgd2025_chuan', 'BGD 2025 (120 câu)'], ['bgd2025', 'BGD 2025 (4 Mã Đề)'], ['vx_01', 'NTMIX - VX01'], ['vx_02', 'NTMIX - VX02']].map(x =>
+            `<button type="button" class="vchip" data-sh="${x[0]}" aria-pressed="${cfg.sheet === x[0]}">${x[1]}</button>`
+        ).join('') + '</div>';
+    $$('[data-sh]', e).forEach(b => b.onclick = () => switchSheet(b.dataset.sh));
+}
+
+function switchSheet(id) {
+    if (!SHEETS[id] || cfg.sheet === id) return;
+    cfg.sheet = id; setSheet(id);
+    const st = (id === 'vx_01' ? { n1: 10, n2: 2, n3: 3, p1: 0.25, p2: 1, p3: 0.5 } : id === 'vx_02' ? { n1: 12, n2: 2, n3: 4, p1: 0.25, p2: 1, p3: 0.5 } : id === 'bgd2025_chuan' ? { n1: 40, n2: 8, n3: 6, p1: 0.25, p2: 1, p3: 0.5 } : { n1: 40, n2: 8, n3: 6, p1: 0.25, p2: 1, p3: 0.5 });
+    cfg.n1 = Math.min(st.n1, MAX1); cfg.n2 = Math.min(st.n2, MAX2); cfg.n3 = Math.min(st.n3, MAX3);
+    cfg.p1 = st.p1; cfg.p2 = st.p2; cfg.p3 = st.p3;
+    saveCfg(); renderSheetSel(); renderKey(); if (!$('#v-sheet').hidden) renderSheet();
+}
+
+function renderSheet() {
+    if (cfg.sheet === 'vx_02') {
+        $('#sheetCard').innerHTML = '<h2>Phiếu NTMIX - VX02</h2><img class="sheetimg" src="' + SHEET3_JPG + '"><div class="actions"><button type="button" class="btn primary" id="pdfBtn">Tải mẫu (JPG)</button></div>';
+    } else if (cfg.sheet === 'vx_01') {
+        $('#sheetCard').innerHTML = '<h2>Phiếu NTMIX - VX01</h2><img class="sheetimg" src="' + SHEET2_JPG + '"><div class="actions"><button type="button" class="btn primary" id="pdfBtn">Tải mẫu (JPG)</button></div>';
+    } else if (cfg.sheet === 'bgd2025') {
+        $('#sheetCard').innerHTML = '<h2>Phiếu BGD 2025 (4 Mã Đề)</h2><img class="sheetimg" src="' + SHEET4_JPG + '"><div class="actions"><button type="button" class="btn primary" id="pdfBtn">Tải phiếu gốc (PDF)</button></div>';
+    } else {
+        $('#sheetCard').innerHTML = '<h2>Phiếu BGD 2025 Chuẩn (120 Câu)</h2><img class="sheetimg" src="' + SHEET_JPG + '"><div class="actions"><button type="button" class="btn primary" id="pdfBtn">Tải phiếu gốc (PDF)</button></div>';
+    }
+    $('#pdfBtn').onclick = async function () {
+        const file = cfg.sheet === 'vx_02' ? SHEET3_JPG : cfg.sheet === 'vx_01' ? SHEET2_JPG : cfg.sheet === 'bgd2025' ? SHEET4_PDF : SHEET_PDF;
+        const name = file.split('/').pop(); this.disabled = true;
+        try { const r = await fetch(file); const blob = await r.blob(); saveAs(blob, name); } catch(e) { alert('Không tải được file.'); }
+        this.disabled = false;
+    };
 }
 
 // ---------------- EXCEL & QR CỦA NTMIX ----------------
@@ -518,8 +562,7 @@ $('#excelPickKey').addEventListener('change', function() {
             const data = new Uint8Array(e.target.result);
             const wb = XLSX.read(data, { type: 'array' });
             const rows = XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]], { header: 1, defval: '' });
-            let added = 0;
-            let header = rows[0];
+            let added = 0; let header = rows[0];
             for (let c = 1; c < header.length; c++) {
                 let code = String(header[c]).trim().replace(/\D/g, ''); if (!code) continue;
                 let v = { code, mcq: new Array(40).fill(null), tf: Array.from({length:8}, ()=>new Array(4).fill(null)), num: new Array(6).fill('') };
@@ -531,13 +574,11 @@ $('#excelPickKey').addEventListener('change', function() {
                     if (p === 1 && q1 < 40) { v.mcq[q1++] = ['A','B','C','D'].includes(val) ? ['A','B','C','D'].indexOf(val) : null; }
                     else if (p === 2 && q2 < 8) {
                         let tf = (val.replace(/Đ/g,'D').replace(/[^DS]/g,'') + '----').slice(0,4);
-                        for(let i=0; i<4; i++) v.tf[q2][i] = ['D','S'].includes(tf[i]) ? tf[i] : null;
-                        q2++;
+                        for(let i=0; i<4; i++) v.tf[q2][i] = ['D','S'].includes(tf[i]) ? tf[i] : null; q2++;
                     } else if (p === 3 && q3 < 6) { v.num[q3++] = val.replace(/\./g, ','); }
                 }
                 const existing = cfg.versions.findIndex(x => x.code === code);
-                if (existing >= 0) cfg.versions[existing] = v; else cfg.versions.push(v);
-                added++;
+                if (existing >= 0) cfg.versions[existing] = v; else cfg.versions.push(v); added++;
             }
             if (added) {
                 if (cfg.versions.length > 1 && !cfg.versions[0].code) cfg.versions.shift();
@@ -550,8 +591,7 @@ $('#excelPickKey').addEventListener('change', function() {
 });
 
 $('#studentPickScan').addEventListener('change', function() {
-    const f = this.files[0]; this.value = ''; if (!f) return;
-    const r = new FileReader();
+    const f = this.files[0]; this.value = ''; if (!f) return; const r = new FileReader();
     r.onload = e => {
         try {
             const wb = XLSX.read(new Uint8Array(e.target.result), { type: 'array' });
@@ -564,8 +604,7 @@ $('#studentPickScan').addEventListener('change', function() {
                 if (sbd && name) { students[String(sbd).trim()] = { name: String(name).trim(), cls: String(cls).trim() }; added++; }
             });
             LS.set('omr.students', students);
-            $('#dshs-status-scan').textContent = `✅ Đã nạp ${added} học sinh`;
-            $('#dshs-status-scan').style.color = 'var(--ok)';
+            $('#dshs-status-scan').textContent = `✅ Đã nạp ${added} học sinh`; $('#dshs-status-scan').style.color = 'var(--ok)';
         } catch(err) { alert("Lỗi file Excel học sinh!"); }
     };
     r.readAsArrayBuffer(f);
@@ -589,7 +628,6 @@ function renderKey() {
     h += `<div class="field"><label class="lbl">Điểm P.I (mỗi câu)</label><input type="number" id="pts-p1" step="0.05" value="${cfg.p1}"></div>`;
     h += `<div class="field"><label class="lbl">Điểm P.III (mỗi câu)</label><input type="number" id="pts-p3" step="0.05" value="${cfg.p3}"></div></div>`;
     h += `<div class="field"><label class="lbl">Điểm P.II (tối đa mỗi câu)</label><input type="number" id="pts-p2" step="0.05" value="${cfg.p2}"></div>`;
-    h += `<p class="hint">Điểm P.II tính theo số ý đúng: 1 ý (10%), 2 ý (25%), 3 ý (50%), 4 ý (100%).</p>`;
     
     $('#keyCard').innerHTML = h;
     $$('.vchip', $('#keyCard')).forEach(b => b.onclick = () => { cfg.active = +b.dataset.v; saveCfg(); renderKey(); });
@@ -600,13 +638,39 @@ function renderKey() {
 }
 
 // ---------------- XUẤT ĐIỂM & BẢNG KẾT QUẢ ----------------
+const IMG = {
+    db: null,
+    open: function () {
+      if (IMG.db) return Promise.resolve(IMG.db);
+      return new Promise(function (res, rej) {
+        try {
+          const rq = indexedDB.open('btpm-images', 1);
+          rq.onupgradeneeded = function () { rq.result.createObjectStore('img'); };
+          rq.onsuccess = function () { IMG.db = rq.result; res(IMG.db); };
+          rq.onerror = function () { rej(rq.error); };
+        } catch (e) { rej(e); }
+      });
+    },
+    tx: function (mode, fn) {
+      return IMG.open().then(function (db) {
+        return new Promise(function (res, rej) {
+          const t = db.transaction('img', mode), st = t.objectStore('img'), r = fn(st);
+          t.oncomplete = function () { res(r && r.result); }; t.onerror = function () { rej(t.error); }; t.onabort = function () { rej(t.error); };
+        });
+      });
+    },
+    put: function (id, blob) { return IMG.tx('readwrite', function (st) { return st.put(blob, String(id)); }); },
+    get: function (id) { return IMG.tx('readonly', function (st) { return st.get(String(id)); }); },
+    del: function (id) { return IMG.tx('readwrite', function (st) { return st.delete(String(id)); }).catch(function () {}); }
+};
+
 function renderRes() {
     const host = $('#resCard');
     if (!results.length) {
         host.innerHTML = '<h2>Kết quả chấm</h2><div class="empty">Chưa có bài nào. Chấm một phiếu, điểm sẽ tự lưu vào đây.</div>'; return;
     }
     let h = '<div class="row"><h2>Kết quả chấm</h2><span class="hint">' + results.length + ' bài</span></div>';
-    h += '<div class="actions" style="margin-bottom:12px;"><button class="btn success" id="btnCsv">📥 Xuất Excel Điểm</button><button class="btn warning" id="btnZip">📦 Tải ZIP Tất Cả Ảnh</button><button class="btn danger ghost" id="btnClr" style="flex: 0 0 100px;">Xóa hết</button></div>';
+    h += '<div class="actions" style="margin-bottom:12px;"><button class="btn success" id="btnCsv">📥 Tải Excel Điểm</button><button class="btn warning" id="btnZip">📦 Tải ZIP Ảnh</button><button class="btn danger ghost" id="btnClr" style="flex: 0 0 100px;">Xóa hết</button></div>';
     h += '<div class="table-wrap"><table><thead><tr><th>STT</th><th>SBD</th><th>Họ & Tên</th><th>Mã</th><th>Tổng</th><th>Chi tiết</th></tr></thead><tbody>';
     
     results.forEach((r, i) => {
@@ -618,32 +682,45 @@ function renderRes() {
     host.innerHTML = h;
 
     $('#btnCsv').onclick = () => {
-        const rows = [ ["STT", "Họ và tên", "Lớp", "SBD", "Mã đề", "Điểm P.I", "Điểm P.II", "Điểm P.III", "Tổng điểm"] ];
+        const rows = [ ["STT", "Thời gian", "SBD", "Họ và tên", "Lớp", "Mã đề", "Điểm P.I", "Điểm P.II", "Điểm P.III", "Tổng điểm"] ];
         results.slice().reverse().forEach((r, i) => {
             let stu = students[r.sbd] || {name: '', cls: ''};
-            rows.push([i+1, stu.name, stu.cls, r.sbd, r.md, r.parts[0], r.parts[1], r.parts[2], r.total]);
+            let dt = new Date(r.t).toLocaleString('vi-VN');
+            rows.push([i+1, dt, r.sbd, stu.name, stu.cls, r.md, r.parts[0], r.parts[1], r.parts[2], r.total]);
         });
         const wb = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(rows), "BangDiem");
         XLSX.writeFile(wb, `BangDiem_NTMIX_${Date.now()}.xlsx`);
     };
-    $('#btnZip').onclick = () => {
-        if (!gradedImagesData.length) { alert("Dữ liệu ảnh cache đã trống. Vui lòng chấm bài mới để xuất ZIP."); return; }
-        const btn = $('#btnZip'); const o = btn.innerHTML; btn.innerHTML = "⏳ Đang tạo ZIP..."; btn.disabled = true;
-        let zip = new JSZip(); let folder = zip.folder("BaiCham_NTMIX");
-        gradedImagesData.forEach(img => folder.file(img.filename, img.base64, {base64: true}));
-        zip.generateAsync({type:"blob"}).then(c => { saveAs(c, `AnhCham_NTMIX_${Date.now()}.zip`); btn.innerHTML = o; btn.disabled = false; });
+    
+    $('#btnZip').onclick = async function() {
+        if (!results.length) return;
+        const oText = this.textContent; this.textContent = "⏳ Đang nén ZIP..."; this.disabled = true;
+        try {
+            let zip = new JSZip(); let folder = zip.folder("BaiCham_NTMIX");
+            for (let i=0; i<results.length; i++) {
+                let r = results[i]; let blob = await IMG.get(r.id);
+                if (blob) {
+                    let stu = students[r.sbd] ? `_${students[r.sbd].name}` : "";
+                    folder.file(`${r.sbd}_${r.md}${stu}.jpg`, blob);
+                }
+            }
+            let content = await zip.generateAsync({type:"blob"});
+            saveAs(content, `AnhCham_NTMIX_${Date.now()}.zip`);
+        } catch(e) { alert("Lỗi tạo ZIP"); }
+        this.textContent = oText; this.disabled = false;
     };
     $('#btnClr').onclick = function() {
-        if (confirm("Chắc chắn xóa sạch bảng điểm và dữ liệu ảnh?")) { results = []; gradedImagesData = []; saveResults(); renderRes(); }
+        if (confirm("Chắc chắn xóa sạch bảng điểm và dữ liệu ảnh?")) { 
+            results.forEach(r => IMG.del(r.id));
+            results = []; saveResults(); renderRes(); 
+        }
     };
 }
 
 /* ==========================================================================
    CAMERA & AI CORE
    ========================================================================== */
-const LV = { stream: null, timer: 0, stable: 0, last: null, busy: false, needLeave: false, leaveMiss: 0 };
-const LVO = { cont: false, snd: true };
-const SND = { a: null };
+const LV = { stream: null, timer: 0, stable: 0, last: null, busy: false, needLeave: false, leaveMiss: 0, count: 0 };
 
 function playBeepCamera() {
     if (!document.getElementById('opt-sound').checked) return;
@@ -660,7 +737,7 @@ function playBeepCamera() {
 }
 
 function lvGeom(r, v) {
-    const asp = (CORNERS_CANONICAL[1][0] - CORNERS_CANONICAL[0][0]) / (CORNERS_CANONICAL[3][1] - CORNERS_CANONICAL[0][1]);
+    const asp = (CORNERS[1][0] - CORNERS[0][0]) / (CORNERS[3][1] - CORNERS[0][1]);
     const gw = Math.min(r.width * 0.9, r.height * 0.7 * asp), gh = gw / asp;
     const cx = r.width / 2, cy = r.height * 0.5;
     const x0 = cx - gw / 2, x1 = cx + gw / 2, y0 = cy - gh / 2, y1 = cy + gh / 2, ws = Math.min(gw * 0.28, gh * 0.5, 120);
@@ -682,8 +759,7 @@ function lvOverlay(pts, state) {
     if (!pts) {
         c.strokeStyle = '#ff9800'; c.lineWidth = 3.5; c.lineCap = 'square'; c.setLineDash([Math.min(r.width, r.height)*0.1, Math.min(r.width, r.height)*0.8]);
         G.corners.forEach((q, i) => {
-            const s = G.ws * 0.6;
-            c.beginPath();
+            const s = G.ws * 0.6; c.beginPath();
             if (i===0) { c.moveTo(q[0], q[1]+s); c.lineTo(q[0], q[1]); c.lineTo(q[0]+s, q[1]); }
             if (i===1) { c.moveTo(q[0], q[1]+s); c.lineTo(q[0], q[1]); c.lineTo(q[0]-s, q[1]); }
             if (i===2) { c.moveTo(q[0], q[1]-s); c.lineTo(q[0], q[1]); c.lineTo(q[0]-s, q[1]); }
@@ -760,9 +836,9 @@ function detectCorners(imgData, w, h, wins) {
   for (let r = 0; r < 4; r++) {
     const P = [pts[r % 4], pts[(r + 1) % 4], pts[(r + 2) % 4], pts[(r + 3) % 4]];
     const ratio = (Math.hypot(P[0][0]-P[1][0], P[0][1]-P[1][1]) + Math.hypot(P[3][0]-P[2][0], P[3][1]-P[2][1])) / 2 / ((Math.hypot(P[0][0]-P[3][0], P[0][1]-P[3][1]) + Math.hypot(P[1][0]-P[2][0], P[1][1]-P[2][1])) / 2);
-    const asp = (CORNERS_CANONICAL[1][0] - CORNERS_CANONICAL[0][0]) / (CORNERS_CANONICAL[3][1] - CORNERS_CANONICAL[0][1]);
+    const asp = (CORNERS[1][0] - CORNERS[0][0]) / (CORNERS[3][1] - CORNERS[0][1]);
     if (ratio >= asp * 0.65 && ratio <= asp * 1.4) {
-      if (solveHomography(CORNERS_CANONICAL, P)) return P;
+      if (solveHomography(CORNERS, P)) return P;
     }
   }
   return null;
@@ -822,7 +898,7 @@ function lvTick() {
 }
 
 $('#btnLive').addEventListener('click', async () => {
-    if (Object.keys(answerKey).length === 0) { alert("Thầy/Cô nạp đáp án trước khi quét nhé!"); switchTab('tab-key'); return; }
+    if (Object.keys(cfg.versions[0].mcq).length === 0 && !cfg.versions[0].code) { alert("Thầy/Cô nạp đáp án trước khi quét nhé!"); switchTab('key'); return; }
     $('#lvChip').textContent = `Đã chấm ${results.length} tờ`;
     $('#live').hidden = false; document.body.style.overflow = 'hidden';
     LV.stable = 0; LV.busy = false; LV.needLeave = false; LV.cool = 0;
@@ -845,9 +921,6 @@ $('#lvShot').addEventListener('click', () => {
     hiRes.getContext('2d').drawImage(v, 0, 0); processImagePureJS(hiRes, $('#lvCont').checked);
 });
 
-/* ==========================================================================
-   XỬ LÝ ẢNH & ĐỒ HỌA VIỀN NTMARK (HOLLOW RING)
-   ========================================================================== */
 function processImagePureJS(sourceCanvas, isContinuous) {
     LV.busy = true; $('#lvMsg').textContent = 'Đang chấm...';
     
@@ -906,7 +979,7 @@ function processImagePureJS(sourceCanvas, isContinuous) {
             return;
         }
         
-        const H = solveHomography(CORNERS_CANONICAL, [[tl.cx, tl.cy], [tr.cx, tr.cy], [br.cx, br.cy], [bl.cx, bl.cy]]);
+        const H = solveHomography(CORNERS, [[tl.cx, tl.cy], [tr.cx, tr.cy], [br.cx, br.cy], [bl.cx, bl.cy]]);
         if (!H) { LV.busy = false; if (isContinuous) LV.timer = setTimeout(lvTick, 1000); return; }
 
         let L = makeLayout(cfg);
@@ -948,12 +1021,14 @@ function processImagePureJS(sourceCanvas, isContinuous) {
         const vIdx = cfg.versions.findIndex(v => v.code === code);
         const ver = vIdx >= 0 ? cfg.versions[vIdx] : cfg.versions[cfg.active];
 
-        let p1 = [], p2 = [], p3 = [];
+        let p1 = { pts: 0, st: [] }, st_p1 = [];
         for (let q = 0; q < cfg.n1; q++) {
             let scores = []; for (let o = 0; o < 4; o++) scores.push(rd(L.p1[q * 4 + o]));
             let maxScore = Math.max(...scores), maxIdx = scores.indexOf(maxScore), sorted = [...scores].sort((a,b)=>a-b);
-            p1.push((maxScore > 0.12 && maxScore - sorted[2] > 0.04) ? [maxIdx] : []);
+            st_p1.push((maxScore > 0.12 && maxScore - sorted[2] > 0.04) ? [maxIdx] : []);
         }
+        
+        let p2 = { pts: 0, per: [], st: [] }, st_p2 = [];
         for (let q = 0; q < cfg.n2; q++) {
             let row = [];
             for (let r = 0; r < 4; r++) {
@@ -961,8 +1036,10 @@ function processImagePureJS(sourceCanvas, isContinuous) {
                 let isFilled = Math.max(s0, s1) > 0.12 && Math.abs(s0 - s1) > 0.04;
                 row.push(isFilled ? (s0 > s1 ? 'D' : 'S') : 'X');
             }
-            p2.push(row);
+            st_p2.push(row);
         }
+        
+        let p3 = { pts: 0, st: [] }, st_p3 = [];
         for (let q = 0; q < cfg.n3; q++) {
             let stuAns = "";
             let bMinus = L.p3.find(b => b.q === q && b.k === '-'); if (bMinus && rd(bMinus) > 0.14) stuAns += "-";
@@ -972,20 +1049,20 @@ function processImagePureJS(sourceCanvas, isContinuous) {
                 scores.sort((a, b) => b.s - a.s);
                 if (scores[0].s > 0.12 && (scores[0].s - scores[1].s > 0.04)) stuAns += scores[0].k;
             }
-            p3.push(stuAns);
+            st_p3.push(stuAns);
         }
 
-        const g = gradeAll({ p1, p2, p3 }, ver);
+        const g = gradeAll({ p1: st_p1, p2: st_p2, p3: st_p3 }, ver);
 
         // Nắn phẳng và vẽ viền
-        const outW = 800, sheetW = 718 - 24, sheetH = 1054 - 29, margin = sheetW * 0.05, K_flat = outW / (sheetW + 2 * margin), outH = Math.round((sheetH + 2 * margin) * K_flat);
+        const outW = 800, sheetW = CORNERS[1][0] - CORNERS[0][0], sheetH = CORNERS[3][1] - CORNERS[0][1], margin = sheetW * 0.05, K_flat = outW / (sheetW + 2 * margin), outH = Math.round((sheetH + 2 * margin) * K_flat);
         const flatCanvas = document.createElement('canvas'); flatCanvas.width = outW; flatCanvas.height = outH;
         const oCtx = flatCanvas.getContext('2d');
         const outDataObj = oCtx.createImageData(outW, outH), od = outDataObj.data;
         for (let yy = 0; yy < outH; yy++) {
-            const mappedY = yy / K_flat - margin + 29; 
+            const mappedY = yy / K_flat - margin + CORNERS[0][1]; 
             for (let xx = 0; xx < outW; xx++) {
-                const mappedX = xx / K_flat - margin + 24; 
+                const mappedX = xx / K_flat - margin + CORNERS[0][0]; 
                 const d = H[6] * mappedX + H[7] * mappedY + 1, u = (H[0] * mappedX + H[1] * mappedY + H[2]) / d, v = (H[3] * mappedX + H[4] * mappedY + H[5]) / d;
                 const o = (yy * outW + xx) * 4;
                 if (u >= 0 && v >= 0 && u <= w - 1 && v <= h - 1) {
@@ -1000,7 +1077,7 @@ function processImagePureJS(sourceCanvas, isContinuous) {
 
         const lw = 2.5, rBubble = 6.5 * K_flat;
         function drawRing(b, color, isDashed = false) {
-            let cx = (b.x - 24 + margin) * K_flat, cy = (b.y - 29 + margin) * K_flat;
+            let cx = (b.x - CORNERS[0][0] + margin) * K_flat, cy = (b.y - CORNERS[0][1] + margin) * K_flat;
             oCtx.beginPath(); oCtx.arc(cx, cy, rBubble, 0, 2 * Math.PI);
             oCtx.strokeStyle = color; oCtx.lineWidth = lw;
             if (isDashed) oCtx.setLineDash([lw * 1.5, lw * 1.2]); else oCtx.setLineDash([]);
@@ -1012,60 +1089,70 @@ function processImagePureJS(sourceCanvas, isContinuous) {
         L.md.forEach(b => { if (code[b.c] === String(b.d)) drawRing(b, ID); });
 
         L.p1.forEach(b => {
-            const isSel = p1[b.q].includes(b.o), isKey = (ver.mcq[b.q] !== null && (Array.isArray(ver.mcq[b.q]) ? ver.mcq[b.q].includes(b.o) : ver.mcq[b.q] === b.o));
+            const isSel = st_p1[b.q].includes(b.o), isKey = (ver.mcq[b.q] !== null && (Array.isArray(ver.mcq[b.q]) ? ver.mcq[b.q].includes(b.o) : ver.mcq[b.q] === b.o));
             if (isSel) drawRing(b, isKey ? GOOD : BAD); else if (isKey) drawRing(b, KEY, true);
         });
 
         L.p2.forEach(b => {
-            const sv = p2[b.q][b.r], kv = ver.tf[b.q][b.r], mine = b.s === 0 ? 'D' : 'S';
+            const sv = st_p2[b.q][b.r], kv = ver.tf[b.q][b.r], mine = b.s === 0 ? 'D' : 'S';
             const isSel = sv === mine || sv === 'X';
             if (isSel) drawRing(b, kv === null ? '#9aa3b5' : (kv.includes(mine) && sv !== 'X' ? GOOD : BAD));
             else if (kv && kv.includes(mine) && !(sv && sv !== 'X' && kv.includes(sv))) drawRing(b, KEY, true);
         });
 
         L.p3.forEach(b => {
-            const cells = numToCells(p3[b.q]), st = g.p3.pts > 0 ? 'ok' : 'wrong';
+            const cells = numToCells(st_p3[b.q]), st = g.p3.st[b.q];
             if (cells.some(m => m.c === b.c && m.k === b.k)) drawRing(b, st === 'ok' ? GOOD : BAD);
             else if (st !== 'ok' && numToCells(ver.num[b.q]).some(m => m.c === b.c && m.k === b.k)) drawRing(b, KEY, true);
         });
 
-        const bh = Math.max(34, Math.round(outW * 0.05));
-        const finalCanvas = document.createElement('canvas');
-        finalCanvas.width = outW; finalCanvas.height = outH + bh;
-        const fCtx = finalCanvas.getContext('2d');
-        fCtx.fillStyle = '#111'; fCtx.fillRect(0, 0, outW, bh); fCtx.drawImage(flatCanvas, 0, bh);
-        fCtx.fillStyle = '#fff'; fCtx.font = `600 ${Math.round(bh * 0.45)}px sans-serif`; fCtx.textBaseline = 'middle';
-        fCtx.fillText(`SBD: ${sbd} · Mã đề: ${code} · Điểm: ${g.total}`, 16, bh / 2);
+        // Tạo ảnh blob nén
+        flatCanvas.toBlob(blob => {
+            const stu = students[sbd];
+            const stuName = stu ? stu.name : '';
+            
+            // Xử lý tạo Banner thông tin
+            const bh = Math.max(34, Math.round(outW * 0.05));
+            const finalCanvas = document.createElement('canvas');
+            finalCanvas.width = outW; finalCanvas.height = outH + bh;
+            const fCtx = finalCanvas.getContext('2d');
+            fCtx.fillStyle = '#111'; fCtx.fillRect(0, 0, outW, bh); fCtx.drawImage(flatCanvas, 0, bh);
+            fCtx.fillStyle = '#fff'; fCtx.font = `600 ${Math.round(bh * 0.45)}px sans-serif`; fCtx.textBaseline = 'middle';
+            fCtx.fillText(`SBD: ${sbd} · Mã đề: ${code} · Điểm: ${g.total}`, 16, bh / 2);
 
-        let imgB64 = finalCanvas.toDataURL('image/jpeg', 0.85);
-        gradedImagesData.push({ filename: `${sbd}_${code}_${Date.now()}.jpg`, base64: imgB64.split(',')[1] });
+            let imgB64 = finalCanvas.toDataURL('image/jpeg', 0.85);
+            
+            // Lưu vào DB Indexed (Dành cho chức năng tải PDF/ZIP gốc của NTMark)
+            const id = Date.now() + Math.floor(Math.random() * 1000);
+            results.push({ id: id, sbd, md: code, total: g.total, max: g.max, parts: [g.p1.pts, g.p2.pts, g.p3.pts], t: Date.now(), img: true, rect: true });
+            IMG.put(id, blob); saveResults();
+            gradedImagesData.push({ filename: `${sbd}_${code}_${Date.now()}.jpg`, base64: imgB64.split(',')[1] });
 
-        results.push({ sbd, md: code, total: g.total, max: g.max, parts: [g.p1.pts, g.p2.pts, g.p3.pts], t: Date.now() });
-        saveResults();
+            if ($('#opt-sound').checked) playBeepCamera();
 
-        if ($('#opt-sound').checked) playBeepCamera();
-
-        if (isContinuous) {
-            LV.count = (LV.count || 0) + 1; $('#cam-scan-count').textContent = `Đã chấm ${LV.count} tờ`;
-            if ($('#opt-show-res').checked) {
-                $('#cam-res-score').textContent = `${g.total}đ`;
-                $('#cam-res-info').textContent = `SBD: ${sbd} | Mã đề: ${code}`;
-                $('#cam-res-img').src = imgB64;
-                $('#cam-result-overlay').style.display = 'flex';
-                setTimeout(() => { $('#cam-result-overlay').style.display = 'none'; startAutoScan(); }, 2000);
+            if (isContinuous) {
+                LV.count = (LV.count || 0) + 1; $('#cam-scan-count').textContent = `Đã chấm ${LV.count} tờ`;
+                if ($('#opt-show-res').checked) {
+                    $('#cam-res-score').textContent = `${g.total}đ`;
+                    $('#cam-res-info').textContent = `SBD: ${sbd}${stuName ? ' - ' + stuName : ''} | Mã đề: ${code}`;
+                    $('#cam-res-img').src = imgB64;
+                    $('#cam-result-overlay').style.display = 'flex';
+                    setTimeout(() => {
+                        document.getElementById('cam-result-overlay').style.display = 'none';
+                        startAutoScan();
+                    }, 2000);
+                } else {
+                    $('#lvMsg').textContent = `✅ Đã chấm xong SBD: ${sbd} (${g.total}đ)`; $('#lvMsg').style.color = "#00ff00";
+                    setTimeout(() => { startAutoScan(); }, 1200);
+                }
             } else {
-                $('#lvMsg').textContent = `✅ Đã chấm xong SBD: ${sbd} (${g.total}đ)`; $('#lvMsg').style.color = "#00ff00";
-                setTimeout(() => { startAutoScan(); }, 1200);
+                closeFullscreenCamera();
             }
-        } else {
-            closeFullscreenCamera();
-        }
-        LV.busy = false;
+            LV.busy = false;
+        }, 'image/jpeg', 0.8);
     }, 10);
 }
 
 // ---------------- Khởi động ----------------
-renderKey(); renderRes();
+renderSheetSel(); renderKey(); renderRes();
 </script>
-</body>
-</html>
