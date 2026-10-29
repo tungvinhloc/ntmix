@@ -7965,7 +7965,83 @@ let qrState = { kind: 'idle' },
     SND: SND
   };
 })();
+// --- BỔ SUNG TÍNH NĂNG TẢI ZIP ẢNH & XUẤT EXCEL CHO NTMIX ---
+  setTimeout(function() {
+      // 1. Tự động chèn nút Tải ZIP vào cạnh nút Tải CSV
+      const csvBtn = document.getElementById('csvBtn');
+      if (csvBtn && !document.getElementById('zipBtn')) {
+          const zipBtn = document.createElement('button');
+          zipBtn.type = 'button';
+          zipBtn.className = 'btn warning';
+          zipBtn.id = 'zipBtn';
+          zipBtn.innerHTML = '📦 Tải ZIP Ảnh';
+          csvBtn.parentNode.insertBefore(zipBtn, csvBtn.nextSibling);
 
+          zipBtn.onclick = async function() {
+              const view = listRes().slice().reverse(); 
+              if (!view.length) {
+                  alert("Chưa có ảnh bài nào được chấm để tải!");
+                  return;
+              }
+              this.innerHTML = "⏳ Đang nén ZIP..."; 
+              this.disabled = true;
+              try {
+                  let zip = new JSZip(); 
+                  let folder = zip.folder("BaiCham_NTMIX");
+                  for (let i = 0; i < view.length; i++) {
+                      let r = view[i]; 
+                      let blob = await IMG.get(r.id);
+                      if (blob) { 
+                          let stu = getStudentInfo(r.sbd); 
+                          let sName = stu && stu.name ? `_${stu.name}` : ""; 
+                          folder.file(`${r.sbd}_${r.md}${sName}.jpg`, blob); 
+                      }
+                  }
+                  let content = await zip.generateAsync({type: "blob"}); 
+                  saveAs(content, `AnhCham_NTMIX_${Date.now()}.zip`);
+              } catch(e) { 
+                  alert("Lỗi tạo file ZIP ảnh: " + e.message); 
+              }
+              this.innerHTML = "📦 Tải ZIP Ảnh"; 
+              this.disabled = false;
+          };
+      }
+
+      // 2. Ghi đè chức năng của nút tải CSV thành Xuất File Excel (.xlsx) chuẩn
+      if (csvBtn) {
+          csvBtn.innerHTML = '📥 Xuất Excel Điểm';
+          csvBtn.onclick = function() {
+              const view = listRes().slice().reverse();
+              if (!view.length) {
+                  alert("Chưa có bài nào để xuất điểm!");
+                  return;
+              }
+              const rows = [['STT', 'Thời gian', 'Số báo danh', 'Họ và tên', 'Lớp', 'Mã đề', 'Điểm P.I', 'Điểm P.II', 'Điểm P.III', 'Tổng điểm', 'Điểm tối đa']];
+              view.forEach(function (r, index) {
+                  const p = r.parts || ['', '', ''];
+                  const info = getStudentInfo(r.sbd) || {name: '', cls: ''};
+                  rows.push([
+                      index + 1,
+                      new Date(r.t).toLocaleString('vi-VN'), 
+                      r.sbd, 
+                      info.name, 
+                      info.cls, 
+                      r.md, 
+                      p[0], p[1], p[2], 
+                      r.total, 
+                      r.max
+                  ]);
+              });
+              const wb = XLSX.utils.book_new(); 
+              XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(rows), "BangDiem");
+              XLSX.writeFile(wb, `BangDiem_NTMIX_${Date.now()}.xlsx`);
+              
+              const msg = document.getElementById('resMsg'); 
+              if (msg) msg.textContent = '✅ Đã tải bảng điểm Excel thành công.';
+          };
+      }
+  }, 1000);
+  
 </script>
 
 </body></html>
