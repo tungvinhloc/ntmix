@@ -1,14 +1,7 @@
-<!doctype html>
-<html lang="vi">
-<head>
-<meta charset="utf8">
-<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>NTMIX v1.5 - AI Precision Core</title>
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>NTMark v1.1 - Nguyễn Thanh Tùng</title>
+<meta name="claude:viewport-fit-sides" content="cover">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800&family=Itim&display=swap">
-<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.min.js"></script>
 <style>
 :root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}
 :root { --bg: #f1f5f9; --grid: rgba(36, 72, 168, 0.065); --card: #ffffff; --fg: #1e293b; --muted: #64748b; --line: #cbd5e1; --ink: #1a73e8; --ink-fg: #ffffff; --ink-soft: #eff6ff; --red: #dc2626; --red-soft: #fef2f2; --ok: #0f9d58; --ok-soft: #ecfdf5; --warn: #f59e0b; --warn-soft: #fffbeb; --f-body: 'Be Vietnam Pro', system-ui, sans-serif; --f-hand: 'Itim', cursive; }
@@ -18,7 +11,7 @@ body { font: 500 14px/1.5 var(--f-body); color: var(--fg); background-color: var
 h1, h2, h3, p { margin: 0; } h2 { font-size: 16px; font-weight: 700; color: #1e3a8a; } button, input, select, textarea { font: inherit; color: inherit; }
 .vh { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
 .top { display: flex; align-items: center; justify-content: space-between; gap: 12px; background: linear-gradient(135deg, #1e3a8a, #2563eb); padding: 16px; border-radius: 12px; color: white; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
-.brand { display: flex; align-items: center; gap: 10px; } .brand h1 { font-size: 20px; font-weight: 800; letter-spacing: -0.01em; }
+.brand { display: flex; align-items: center; gap: 10px; } .brand h1 { font-size: 20px; font-weight: 800; letter-spacing: -0.01em; margin:0;}
 .pill { font-size: 12px; font-weight: 700; padding: 4px 12px; border-radius: 999px; background: rgba(255,255,255,0.2); color: #fff; border: 1px solid rgba(255,255,255,0.4); }
 .card { background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 16px; display: flex; flex-direction: column; gap: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
 .row { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
@@ -47,8 +40,6 @@ canvas.photo { display: block; width: 100%; height: auto; border-radius: 8px; ba
 .stats { display: flex; gap: 16px; flex-wrap: wrap; font-size: 13px; font-weight: 600; color: var(--muted); background: #f8fafc; padding: 12px; border-radius: 10px; border: 1px dashed var(--line); } .stats b { color: var(--ink); font-size: 16px; }
 .list { display: flex; flex-direction: column; } .item { display: grid; grid-template-columns: 1fr auto auto; gap: 10px; align-items: center; padding: 12px 0; border-top: 1px solid var(--line); } .item:first-child { border-top: 0; } .item .who { font-weight: 700; font-size: 14px; color: #1e3a8a; } .item .meta { font-size: 12px; font-weight: 600; color: var(--muted); margin-top: 4px; } .item .sc { font-family: var(--f-hand); font-size: 26px; font-weight: bold; color: var(--red); }
 .item button { width: 36px; height: 36px; border: 1px solid var(--line); background: #f8fafc; border-radius: 8px; color: var(--muted); cursor: pointer; font-weight: bold; }
-.tabs { position: fixed; left: 0; right: 0; bottom: 0; z-index: 5; display: flex; justify-content: center; background: rgba(255,255,255,0.95); backdrop-filter: blur(10px); border-top: 1px solid var(--line); padding: 8px 12px calc(8px + env(safe-area-inset-bottom)); box-shadow: 0 -2px 10px rgba(0,0,0,0.05); } .tabs > div { display: flex; width: 100%; max-width: 640px; gap: 8px; }
-.tab { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 8px 4px; border: 0; background: transparent; color: var(--muted); font-size: 12px; font-weight: 700; border-radius: 10px; cursor: pointer; position: relative; transition: 0.2s; } .tab[aria-current='page'] { color: var(--ink); background: var(--ink-soft); } .tab svg { width: 24px; height: 24px; } .tab .bd { position: absolute; top: 4px; left: calc(50% + 8px); min-width: 18px; padding: 0 5px; height: 18px; border-radius: 9px; background: var(--red); color: white; font-size: 11px; line-height: 18px; text-align: center; }
 .prow { display: grid; grid-template-columns: 1fr auto 84px; gap: 8px; align-items: center; background: #f8fafc; padding: 10px; border-radius: 8px; } .prow.head { background: transparent; padding: 0 10px; font-size: 12px; color: var(--muted); } .pl { display: flex; flex-direction: column; } .pl small { color: var(--muted); font-size: 12px; font-weight: 600; }
 .tflist { display: flex; flex-direction: column; gap: 8px; } .tfq { display: grid; grid-template-columns: 1fr auto; grid-template-areas: 'q t' 's s'; gap: 6px 8px; padding: 8px; border-radius: 8px; background: #f8fafc; border: 1px solid #e2e8f0; } .tfq.bad { background: var(--red-soft); border-color: #fecaca; } .tfq.mid { background: var(--warn-soft); border-color: #fde68a; } .tqn { grid-area: q; font-size: 13px; font-weight: 700; color: var(--muted); } .sts { grid-area: s; display: flex; justify-content: space-between; gap: 6px; } .st { display: inline-flex; align-items: center; gap: 4px; } .st i { font-style: normal; font-size: 12px; font-weight: bold; color: var(--muted); width: 12px; text-align: center; } .o.tf { width: 30px; height: 30px; font-size: 13px; }
 .numlist { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; } .numq { display: grid; grid-template-columns: auto 1fr; gap: 6px 10px; align-items: center; padding: 10px; border-radius: 10px; border: 1px solid var(--line); background: #f8fafc; } .numq.bad { background: var(--red-soft); border-color: #fecaca; } .numq.good { background: var(--ok-soft); border-color: #a7f3d0; } .numin { min-height: 40px; padding: 6px 10px; border: 2px solid var(--line); border-radius: 8px; text-align: center; font-size: 16px; font-weight: bold; width: 100%; } .keyv { grid-column: 1 / -1; font-size: 12px; font-weight: 600; color: var(--muted); text-align: center; } .keyv b { color: var(--ink); font-size: 14px; }
@@ -56,34 +47,43 @@ canvas.photo { display: block; width: 100%; height: auto; border-radius: 8px; ba
 /* ========== GIAO DIỆN CAMERA & HIỂN THỊ ========== */
 .live { position: fixed; inset: 0; z-index: 9999; background: #000; color: #fff; display: flex; flex-direction: column; overflow: hidden; } .live[hidden] { display: none; }
 .live video { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
-.live canvas { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; }
-.lv-top { position: relative; z-index: 7; display: flex; align-items: flex-start; justify-content: space-between; padding: max(20px, env(safe-area-inset-top)) 16px 12px; background: linear-gradient(#000a, transparent); }
-.lv-bottom { position: relative; z-index: 7; margin-top: auto; display: flex; flex-direction: column; align-items: center; padding-bottom: max(24px, env(safe-area-inset-bottom)); background: linear-gradient(transparent, #000c); gap: 16px; }
-.btn-cam-close { width: 42px; height: 42px; border-radius: 50%; background: rgba(0,0,0,0.6); color: white; border: 1.5px solid rgba(255,255,255,0.6); font-size: 18px; font-weight: bold; cursor: pointer; display: flex; justify-content: center; align-items: center; }
-.cam-count-text { color: white; font-weight: 700; font-size: 15px; text-shadow: 0 2px 4px rgba(0,0,0,0.9); margin-left: 12px; margin-top: 10px;}
-.cam-top-opts { display: flex; flex-direction: column; gap: 12px; background: rgba(0,0,0,0.5); padding: 12px 16px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.2); }
-.cam-opt { color: #fff; font-size: 14px; font-weight: 600; display: flex; align-items: center; gap: 10px; cursor: pointer; } .cam-opt input { margin: 0; width: 20px; height: 20px; accent-color: #1a73e8; cursor: pointer; }
-.lv-msg { text-align: center; font-size: 16px; font-weight: 700; text-shadow: 0 2px 5px rgba(0,0,0,0.9); color: #fff; }
+.live canvas { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; z-index: 10; }
+.lv-top { position: absolute; top: max(20px, env(safe-area-inset-top)); left: 16px; right: 16px; display: flex; justify-content: space-between; align-items: flex-start; z-index: 50; pointer-events: none; }
+.cam-top-left { display: flex; align-items: center; gap: 12px; pointer-events: auto; }
+.btn-cam-close { width: 42px; height: 42px; border-radius: 50%; background: rgba(0,0,0,0.65); color: white; border: 1.5px solid rgba(255,255,255,0.6); font-size: 18px; font-weight: bold; cursor: pointer; display: flex; justify-content: center; align-items: center; box-shadow: 0 2px 5px rgba(0,0,0,0.3); }
+.cam-count-text { color: white; font-weight: 700; font-size: 15px; text-shadow: 0 2px 4px rgba(0,0,0,0.9); }
+.cam-top-opts { display: flex; flex-direction: column; gap: 10px; pointer-events: auto; background: rgba(0,0,0,0.5); padding: 12px 16px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.2); }
+.cam-opt { color: #fff; font-size: 14px; font-weight: 600; display: flex; align-items: center; gap: 8px; cursor: pointer; text-shadow: 0 1px 3px #000; } .cam-opt input { margin: 0; width: 20px; height: 20px; accent-color: #1a73e8; cursor: pointer; }
+.lv-bottom { position: absolute; bottom: 35px; left: 0; width: 100%; display: flex; flex-direction: column; align-items: center; z-index: 50; }
+.lv-msg { color: white; font-size: 16px; font-weight: 600; margin-bottom: 20px; text-shadow: 0 2px 4px rgba(0,0,0,0.9); text-align: center; }
 .lv-btn.wide { background: white; color: black; border: none; border-radius: 30px; font-size: 16px; font-weight: 800; padding: 16px 40px; width: 85%; max-width: 320px; box-shadow: 0 4px 12px rgba(0,0,0,0.4); cursor: pointer; }
-.lv-res { position: absolute; inset: 0; z-index: 100; background: rgba(0,0,0,0.9); display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 20px; } .lv-res[hidden] { display: none; }
-.lv-res-score b { font: 900 56px var(--f-body); color: #3ddc84; } .lv-res-info { font-size: 16px; font-weight: 700; color: white; opacity: 0.9; text-align: center; margin: 10px 0 20px; }
-.lv-res-img canvas { max-width: 100%; max-height: 60vh; border-radius: 12px; border: 2px solid #555; box-shadow: 0 10px 20px rgba(0,0,0,0.5); }
-.lv-res-cd { text-align: center; font-size: 14px; font-weight: 600; color: #aaa; margin-top: 20px; }
 
-/* Excel Upload Area */
-.excel-upload-zone { background: #e0f2fe; border: 2px dashed #38bdf8; border-radius: 12px; padding: 16px; text-align: center; margin-top: 12px; cursor: pointer; transition: 0.2s; }
-.excel-upload-zone:hover { background: #bae6fd; } .excel-upload-zone span { font-weight: 700; color: #0284c7; display: block; font-size: 15px; } .excel-upload-zone small { font-weight: 600; color: #0ea5e9; font-size: 12px; margin-top: 4px; display: block; }
+/* 4 góc ngắm chữ L đổi màu */
+.corner-box { position: absolute; width: 44px; height: 44px; border: 3.5px dashed #ff9800; transition: border-color 0.1s, border-style 0.1s; z-index: 5; }
+.corner-box.tl { top: 12%; left: 5%; border-right: none; border-bottom: none; }
+.corner-box.tr { top: 12%; right: 5%; border-left: none; border-bottom: none; }
+.corner-box.bl { bottom: 18%; left: 5%; border-right: none; border-top: none; }
+.corner-box.br { bottom: 18%; right: 5%; border-left: none; border-top: none; }
+.corner-box.locked { border-color: #3ddc84 !important; border-style: solid !important; }
+
+.lv-res { position: absolute; inset: 0; z-index: 100; background: rgba(0,0,0,0.85); display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 15px; } .lv-res[hidden] { display: none; }
+.lv-res-score b { color: #3ddc84; font-size: 56px; font-weight: 900; } .lv-res-info { color: white; font-size: 16px; margin: 5px 0 20px; opacity: 0.9; text-align: center; font-weight: 600; }
+.lv-res-img canvas { max-width: 100%; max-height: 60vh; border-radius: 12px; border: 2px solid #555; }
+.lv-res-cd { color: #aaa; font-size: 14px; margin-top: 20px; font-weight: 600; }
+
+.excel-upload-zone { background: #e0f2fe; border: 2px dashed #38bdf8; border-radius: 12px; padding: 16px; text-align: center; margin-top: 12px; cursor: pointer; transition: 0.2s; display: block; }
+.excel-upload-zone span { font-weight: 700; color: #0284c7; display: block; font-size: 15px; } .excel-upload-zone small { font-weight: 600; color: #0ea5e9; font-size: 12px; margin-top: 4px; display: block; }
+.spin { width: 22px; height: 22px; border-radius: 50%; border: 3px solid var(--ink-soft); border-top-color: var(--ink); animation: sp 0.8s linear infinite; } @keyframes sp { to { transform: rotate(360deg); } } .busy { display: flex; align-items: center; gap: 12px; justify-content: center; padding: 22px; color: var(--muted); }
+.resedit { background: var(--bg, #fff); color: var(--ink, #111); position: fixed; inset: 0; z-index: 70; display: flex; flex-direction: column; } .resedit[hidden] { display: none; } .resedit .iv-top { background: #111; color: #fff; display: flex; align-items: center; gap: 10px; padding: max(12px, env(safe-area-inset-top)) 16px 10px; } .iv-msg { flex: 1; text-align: center; font-size: 13px; } .re-body { flex: 1; min-height: 0; overflow: auto; padding: 14px 16px 40px; max-width: 640px; width: 100%; margin: 0 auto; } .re-img canvas { width: 100%; height: auto; display: block; border-radius: 10px; border: 1px solid var(--line); } .re-score { display: flex; align-items: baseline; gap: 6px; margin: 12px 0; } .re-score b { font-size: 28px; }
+.rowbtns { grid-column: 1/-1; display: flex; gap: 8px; } .item .rowbtns button { width: auto; flex: 1; height: 38px; border-radius: 10px; font: 600 13px/1 inherit; color: var(--ink); background: rgba(26,115,232,0.08); border: 1px solid var(--line); cursor: pointer; }
 </style>
 </head>
 <body>
 <div class="wrap">
   <header class="top">
     <div class="brand">
-      <img src="https://upload.wikimedia.org/wikipedia/commons/e/e4/Google_Earth_icon.svg" width="36" height="36" alt="Logo" style="filter: drop-shadow(0 2px 4px rgba(0,0,0,0.2));">
-      <div>
-          <h1>NTMIX Pro</h1>
-          <p style="margin:0; font-size:12px; opacity:0.9;">Tác giả: Nguyễn Thanh Tùng</p>
-      </div>
+      <img src="https://upload.wikimedia.org/wikipedia/commons/e/e4/Google_Earth_icon.svg" width="32" height="32" alt="Logo">
+      <div><h1 style="margin:0;">NTMIX Pro</h1><p style="margin:0; font-size:12px; opacity:0.9;">Tác giả: Nguyễn Thanh Tùng</p></div>
     </div>
     <span class="pill" id="cfgChip"></span>
   </header>
@@ -91,14 +91,12 @@ canvas.photo { display: block; width: 100%; height: auto; border-radius: 8px; ba
   <main>
     <section id="v-scan" class="view" aria-label="Chấm bài">
       <div class="card">
-        <div id="sheetSel" class="sheetsel"></div>
+        <div id="sheetSel" style="margin-bottom: 12px;"></div>
         <div class="actions">
-          <button class="btn primary big" type="button" id="btnLive">📷 Chấm Bằng Camera</button>
+          <button class="btn primary big" type="button" id="btnLive">📷 Mở Camera Chấm</button>
           <label class="btn" for="pick">🖼️ Chọn ảnh có sẵn</label>
           <input class="vh" type="file" id="pick" accept="image/*" multiple>
         </div>
-        <p class="hint" style="margin-top: 8px;">Đặt phiếu phẳng, đủ sáng. Viền ngắm sẽ tự động bắt 4 ô vuông đen và khóa nét (chuyển xanh lục) để chấm.</p>
-        
         <label class="excel-upload-zone" for="studentPickScan">
             <span>👥 Nạp Danh Sách Học Sinh (Tùy chọn)</span>
             <small id="dshs-status-scan">Bấm để chọn file Excel (.xlsx)</small>
@@ -108,7 +106,7 @@ canvas.photo { display: block; width: 100%; height: auto; border-radius: 8px; ba
       <div id="scanOut" aria-live="polite"></div>
     </section>
 
-    <!-- MÀN HÌNH CAMERA CHUẨN NTMARK -->
+    <!-- MÀN HÌNH CAMERA -->
     <div id="live" class="live" hidden role="dialog">
       <video id="lvVideo" playsinline muted autoplay></video>
       <canvas id="lvOv"></canvas>
@@ -125,6 +123,14 @@ canvas.photo { display: block; width: 100%; height: auto; border-radius: 8px; ba
         </div>
       </div>
 
+      <!-- 4 Góc ngắm Cứng bằng CSS -->
+      <div id="cam-overlay">
+        <div class="corner-box tl" id="cb-tl"></div>
+        <div class="corner-box tr" id="cb-tr"></div>
+        <div class="corner-box bl" id="cb-bl"></div>
+        <div class="corner-box br" id="cb-br"></div>
+      </div>
+
       <div class="lv-res" id="lvRes" hidden>
         <div class="lv-res-score" id="lvResScore"></div>
         <div class="lv-res-info" id="lvResInfo"></div>
@@ -138,27 +144,28 @@ canvas.photo { display: block; width: 100%; height: auto; border-radius: 8px; ba
       </div>
     </div>
 
+    <!-- MÀN HÌNH SỬA BÀI -->
+    <div id="resEdit" class="imgview resedit" hidden role="dialog">
+      <div class="iv-top"><button class="btn-cam-close" type="button" id="reClose">✕</button><div class="iv-msg">Sửa thông tin bài đã chấm</div><button class="btn primary" style="min-height:36px; padding:0 12px;" type="button" id="reSave">Lưu</button></div>
+      <div class="re-body" id="reBody"></div>
+    </div>
+
     <section id="v-key" class="view" hidden aria-label="Đáp án">
       <div class="card">
         <h2>Nhập Đáp Án Tự Động</h2>
-        <p class="hint">Nạp file Excel hoặc quét mã QR. Tất cả mã đề sẽ được tạo và cập nhật tự động.</p>
         <div class="actions" style="margin-top: 10px;">
-          <label class="btn success" for="excelPickKey" style="flex:1">📄 Nạp File Excel</label>
-          <button type="button" class="btn purple" id="qrLiveBtn" style="flex:1">📷 Quét Mã QR</button>
-          <button type="button" class="btn danger" id="qrClearAll" style="width: 100%; margin-top: 5px;">🗑️ Xóa Toàn Bộ Mã Đề</button>
+          <label class="btn success" for="excelPickKey" style="flex:1">📄 Nạp Excel Đáp Án</label>
+          <button type="button" class="btn danger" id="qrClearAll" style="flex:1">🗑️ Xóa Tất Cả Đề</button>
         </div>
-        <input class="vh" type="file" id="excelPickKey" accept=".xlsx, .xls, .csv">
+        <input class="vh" type="file" id="excelPickKey" accept=".xlsx, .xls">
         <div id="key-upload-status" class="note ok" style="display: none; margin-top: 10px;"></div>
       </div>
-      
-      <div id="qrLive" class="live" hidden role="dialog">
-        <video id="qrVideo" playsinline muted autoplay></video>
-        <div class="lv-top"><button class="btn-cam-close" type="button" id="qrClose">✕</button></div>
-        <div class="lv-bottom"><div class="lv-msg">Đưa mã QR vào giữa khung hình</div></div>
-      </div>
-
       <div class="card" id="cfgCard"></div>
       <div class="card" id="keyCard"></div>
+    </section>
+
+    <section id="v-sheet" class="view" hidden aria-label="Phiếu in">
+      <div class="card" id="sheetCard"></div>
     </section>
 
     <section id="v-res" class="view" hidden aria-label="Kết quả">
@@ -166,21 +173,20 @@ canvas.photo { display: block; width: 100%; height: auto; border-radius: 8px; ba
     </section>
   </main>
 </div>
-
-<nav class="tabs">
+<nav class="tabs" aria-label="Chuyển mục">
   <div>
     <button class="tab" type="button" data-tab="scan" aria-current="page">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4 8V6a2 2 0 0 1 2-2h2M16 4h2a2 2 0 0 1 2 2v2M20 16v2a2 2 0 0 1-2 2h-2M8 20H6a2 2 0 0 1-2-2v-2"/><rect x="9" y="9" width="6" height="6" rx="1"/></svg>
-      Chấm bài
-    </button>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 8h3l1.6-2.4h6.8L17 8h3a1 1 0 0 1 1 1v9a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V9a1 1 0 0 1 1-1z"/><circle cx="12" cy="13" r="3.4"/></svg>
+      Chấm bài</button>
     <button class="tab" type="button" data-tab="key">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6.5l1.8 1.8L9 5M4 12.5l1.8 1.8L9 11M4 18.5l1.8 1.8L9 17"/><path d="M13 7h7M13 13h7M13 19h7"/></svg>
-      Đáp án & Điểm
-    </button>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 6.5l1.8 1.8L9 5M4 12.5l1.8 1.8L9 11M4 18.5l1.8 1.8L9 17"/><path d="M13 7h7M13 13h7M13 19h7"/></svg>
+      Đáp án</button>
+    <button class="tab" type="button" data-tab="sheet">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 3h8l4 4v14H6z"/><path d="M14 3v4h4"/><rect x="8.6" y="11" width="2.6" height="2.6"/><rect x="12.8" y="11" width="2.6" height="2.6" fill="currentColor"/><rect x="8.6" y="15.4" width="2.6" height="2.6"/></svg>
+      Phiếu in</button>
     <button class="tab" type="button" data-tab="res">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 20V11M12 20V4M19 20v-6"/></svg>
-      Bảng điểm <span class="bd" id="resBadge" hidden>0</span>
-    </button>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 20V11M12 20V4M19 20v-6"/></svg>
+      Kết quả<span class="bd" id="resBadge" hidden>0</span></button>
   </div>
 </nav>
 
@@ -193,11 +199,11 @@ const SHEET3_JPG = "assets/vx_02.jpg";
 const SHEET4_JPG = "assets/bgd2025.jpg";
 const SHEET4_PDF = "assets/bgd2025.pdf";
 
-/* ===================== LÕI NHẬN DIỆN & TỌA ĐỘ PHIẾU (CHUẨN NTMARK) ===================== */
+/* ===================== LÕI TỌA ĐỘ PHIẾU (CHUẨN NTMARK) ===================== */
 const SHEET_NH = { id: 'bgd2025_chuan', name: 'BGD 2025 Chuẩn', PW: 208, PH: 297, RB: 1.45, CORNERS: [[6.69, 5.46], [202.41, 5.38], [202.46, 288.04], [6.65, 288.04]], NAME: [74, 52, 66, 16], MARK_ROWS: [[[6.69, 5.46], [202.41, 5.38]], [[6.98, 96.38], [202.46, 96.38]], [[6.98, 161.23], [202.46, 161.23]], [[6.65, 202.71], [202.46, 202.71]], [[6.65, 288.04], [202.46, 288.04]]], BAND_Y: [96.38, 161.23, 202.71], bands: true, BARS_Y: [31.75, 37.63, 43.34, 49.19, 55.03, 60.87, 66.71, 72.55, 78.26, 84.23], BAR_X: 202.41, BAR_W: 3.72, BAR_H: 1.4, SBD_X: [145.64, 149.68, 153.69, 157.77, 161.83, 165.85, 169.86, 173.88], MD_X: [181.93, 185.95, 189.99, 194.08], ID_Y: [33.87, 39.75, 45.57, 51.41, 57.26, 63.09, 68.97, 74.79, 80.66, 86.5], P1_X: [[22.54, 30.86, 39.18, 47.46], [69.52, 77.89, 86.23, 94.48], [116.52, 124.86, 133.21, 141.44], [163.53, 171.88, 180.17, 188.47]], P1_Y: [108.98, 114.0, 118.99, 123.98, 128.97, 133.99, 138.99, 143.96, 148.98, 153.99], P2_X: [[22.62, 30.81], [39.22, 47.53], [69.38, 77.86], [86.12, 94.48], [116.47, 124.78], [133.21, 141.44], [163.28, 171.7], [180.02, 188.47]], P2_Y: [179.33, 184.34, 189.33, 194.3], P3_X: [[21.46, 26.46, 31.45, 36.44], [51.4, 56.45, 61.44, 66.42], [81.44, 86.44, 91.43, 96.44], [111.43, 116.45, 121.45, 126.43], [141.39, 146.41, 151.44, 156.41], [171.42, 176.43, 181.42, 186.41]], P3_DASH: 217.09, P3_COMMA: 222.7, P3_D: [228.28, 233.77, 239.37, 244.96, 250.52, 256.1, 261.68, 267.25, 272.79, 278.39], MAX1: 40, MAX2: 8, MAX3: 6 };
 const SHEET_KT = { id: 'vx_01', name: 'NTMIX - VX01', PW: 1901, PH: 861, RB: 11.2, K: 7.7, MS: 24, CORNERS: [[28.5, 74.5], [1875.5, 74.5], [1875.5, 813.5], [28.5, 813.5]], NAME: [266, 38, 390, 66], BAND_Y: [1e9, 1e9, 1e9], bands: false, SPOT: [1009.5, 74.5, 22], SBD_X: [134.5, 172.5], MD_X: [266.0, 304.0, 342.0], ID_Y: [260.25, 315.0, 370.0, 425.0, 480.0, 535.0, 590.0, 645.0, 699.5, 754.25], P1_X: [[485.0, 563.5, 642.0, 719.6]], P1_Y: [324.5, 371.5, 418.5, 465.5, 512.5, 559.5, 606.5, 653.5, 700.5, 747.5], P2_X: [[872.5, 950.2], [872.5, 950.2]], P2_Y: [[325.5, 372.5, 419.5, 466.5], [608.5, 655.5, 702.5, 749.5]], P3_X: [[1086.5, 1133.5, 1180.5, 1227.5], [1353.5, 1400.5, 1447.5, 1494.5], [1620.5, 1667.5, 1714.5, 1761.5]], P3_DASH: 230.5, P3_COMMA: 277.5, P3_D: [325.5, 372.5, 419.5, 466.5, 513.5, 560.5, 607.5, 654.5, 701.5, 748.5], MAX1: 10, MAX2: 2, MAX3: 3 };
 const SHEET_M = { id: 'vx_02', name: 'NTMIX - VX02', PW: 1100, PH: 914, RB: 6.4, K: 4.8, MS: 18, RR: 7.6, ORIENT: 'rings', P1N: 12, CORNERS: [[31.5, 48.5], [1072.5, 44.5], [1075.5, 894.4], [31.5, 894.5]], NAME: [478, 311, 232, 30], MARK_ROWS: [[[31.5, 48.5], [1072.5, 44.5]], [[31.5, 472.5], [1075.5, 472.5]], [[31.5, 894.5], [1075.5, 894.4]]], BAND_Y: [472.5], bands: true, SBD_X: [770.2, 791.9, 813.7, 835.3, 857.0, 878.6, 900.1, 922.0], MD_X: [961.0, 982.5, 1004.0, 1026.0], ID_Y: [177.5, 208.5, 239.9, 271.0, 302.4, 333.5, 364.5, 396.0, 427.0, 458.4], P1_X: [[114.5, 141.5, 168.0, 194.5]], P1_Y: [574.0, 600.5, 628.0, 654.5, 681.5, 708.5, 734.5, 761.5, 788.5, 815.0, 841.5, 868.5], P2_X: [[310.5, 337.9], [310.5, 337.9]], P2_Y: [[573.5, 600.0, 626.5, 653.5], [788.5, 815.0, 841.5, 868.5]], P3_X: [[442.5, 469.5, 496.5, 522.5], [602.9, 629.5, 656.5, 683.5], [763.5, 789.9, 816.5, 843.5], [923.5, 950.5, 976.7, 1003.5]], P3_DASH: 574.1, P3_COMMA: 600.5, P3_D: [628.0, 654.5, 681.5, 708.5, 734.6, 761.5, 788.5, 815.0, 841.5, 868.5], MAX1: 12, MAX2: 2, MAX3: 4 };
-const SHEET_BGD25 = { id: 'bgd2025', name: 'Phiếu BGD 2025 (4MĐ)', PW: 210, PH: 297, RB: 1.45, CORNERS: [[10.0, 10.0], [197.0, 10.0], [197.0, 287.0], [10.0, 287.0]], NAME: [74, 52, 66, 16], MARK_ROWS: [[[10.0, 10.0], [197.0, 10.0]], [[10.0, 93.0], [197.0, 93.0]], [[10.0, 172.0], [197.0, 172.0]], [[10.0, 215.0], [197.0, 215.0]], [[10.0, 287.0], [197.0, 287.0]]], BAND_Y: [93.0, 172.0, 215.0], bands: true, ORIENT: 'bands', BARS_Y: [31.75, 37.63, 43.34, 49.19, 55.03, 60.87, 66.71, 72.55, 78.26, 84.23], BAR_X: 197.0, BAR_W: 3.72, BAR_H: 1.4, SBD_X: [141.0, 145.0, 149.3, 153.3, 157.4, 161.4, 165.5, 169.5], MD_X: [179.8, 183.8, 187.8, 191.9], ID_Y: [30.8, 36.8, 42.4, 48.4, 54.3, 60.3, 66.2, 71.9, 77.8, 83.8], P1_X: [[26.7, 35.3, 44.2, 52.8], [70.4, 79.3, 88.2, 96.8], [114.6, 123.2, 132.1, 140.7], [158.5, 167.4, 176.0, 184.7]], P1_Y: [113.0, 117.3, 121.9, 126.5, 130.8, 135.7, 140.3, 144.6, 148.9, 153.8], P2_X: [[26.4, 35.3], [44.5, 52.8], [70.6, 79.5], [88.2, 97.1], [114.6, 123.5], [132.4, 141.3], [159.3, 167.4], [176.3, 185.2]], P2_Y: [178.6, 183.2, 187.8, 192.4], P3_X: [[25.1, 31.3, 37.2, 43.4], [53.1, 59.3, 65.2, 71.4], [81.4, 87.4, 93.3, 99.5], [109.5, 115.7, 121.9, 127.8], [137.8, 143.7, 149.6, 155.8], [165.8, 172.0, 178.0, 184.2]], P3_DASH: 219.2, P3_COMMA: 223.8, P3_D: [228.9, 233.2, 238.1, 242.9, 247.3, 251.9, 256.7, 261.3, 265.9, 270.8], MAX1: 40, MAX2: 8, MAX3: 6 };
+const SHEET_BGD25 = { id: 'bgd2025', name: 'Phiếu BGD 2025 (4MĐ)', PW: 210, PH: 297, RB: 1.45, CORNERS: [[10.0, 10.0], [197.0, 10.0], [197.0, 287.0], [10.0, 287.0]], NAME: [74, 52, 66, 16], MARK_ROWS: [[[10.0, 10.0], [197.0, 10.0]], [[10.0, 93.0], [197.0, 93.0]], [[10.0, 172.0], [197.0, 172.0]], [[10.0, 215.0], [197.0, 215.0]], [[10.0, 287.0], [197.0, 287.0]]], BAND_Y: [93.0, 172.0, 215.0], bands: true, ORIENT: 'bands', BARS_Y: [31.75, 37.63, 43.34, 49.19, 55.03, 60.87, 66.71, 72.55, 78.26, 84.23], BAR_X: 197.0, BAR_W: 3.72, BAR_H: 1.4, SBD_X: [140.8, 144.8, 149.1, 153.1, 157.2, 161.2, 165.3, 169.3], MD_X: [179.2, 183.5, 187.9, 191.6], ID_Y: [30.5, 36.5, 42.4, 48.4, 54.3, 60.3, 66.2, 72.2, 78.1, 84.0], P1_X: [[26.4, 35.3, 44.2, 53.1], [70.5, 79.4, 88.3, 97.2], [114.4, 123.0, 131.9, 140.8], [158.3, 166.9, 175.7, 184.6]], P1_Y: [112.7, 117.3, 121.9, 126.5, 131.1, 135.7, 140.3, 144.9, 149.5, 154.0], P2_X: [[26.4, 35.3], [44.4, 53.0], [70.5, 79.4], [88.3, 96.9], [114.4, 123.0], [132.1, 140.7], [158.2, 166.8], [176.0, 184.6]], P2_Y: [178.4, 183.0, 187.6, 192.1], P3_X: [[25.1, 31.3, 37.4, 43.4], [53.1, 59.2, 65.2, 71.1], [81.0, 87.2, 93.1, 99.1], [109.0, 115.2, 121.1, 127.0], [137.0, 143.2, 149.1, 155.0], [165.0, 171.2, 177.1, 183.0]], P3_DASH: 218.9, P3_COMMA: 223.5, P3_D: [228.6, 233.2, 237.8, 242.4, 247.0, 251.6, 256.2, 260.8, 265.4, 270.0], MAX1: 40, MAX2: 8, MAX3: 6 };
 const SHEETS = { bgd2025_chuan: SHEET_NH, vx_01: SHEET_KT, vx_02: SHEET_M, bgd2025: SHEET_BGD25 };
 
 let SHEET = SHEET_BGD25, K = 1, MS = 3.8, P1N = 10, NAME, PW, PH, RB, CORNERS, MARK_ROWS, BAND_Y, BARS_Y, BAR_X, BAR_W, BAR_H, SBD_X, MD_X, ID_Y, P1_X, P1_Y, P2_X, P2_Y, P3_X, P3_DASH, P3_COMMA, P3_D, MAX1, MAX2, MAX3;
@@ -229,7 +235,7 @@ function solveHomography(S, D) {
     const tmp = A[c]; A[c] = A[p]; A[p] = tmp;
     for (let r = 0; r < 8; r++) { if (r === c) continue; const f = A[r][c] / A[c][c]; for (let k = c; k < 9; k++) A[r][k] -= f * A[c][k]; }
   }
-  return A.map((row, i) => row[8] / row[i]);
+  return A.map(row => row[8] / row[i]);
 }
 function applyH(H, x, y) { const d = H[6] * x + H[7] * y + 1; return [(H[0] * x + H[1] * y + H[2]) / d, (H[3] * x + H[4] * y + H[5]) / d]; }
 function lumAt(g, w, h, u, v) {
@@ -238,8 +244,12 @@ function lumAt(g, w, h, u, v) {
   return (g[y0 * w + x0] * (1 - fx) + g[y0 * w + x1] * fx) * (1 - fy) + (g[y1 * w + x0] * (1 - fx) + g[y1 * w + x1] * fx) * fy;
 }
 function sampleMM(g, w, h, H, x, y) { const p = applyH(H, x, y); return lumAt(g, w, h, p[0], p[1]); }
+function bandOf(y) { let b = 0; while (b < BAND_Y.length && y >= BAND_Y[b]) b++; return b; }
+
 function redOf(d, n) { const g = new Float32Array(n); for (let i = 0, p = 0; i < n; i++, p += 4) g[i] = d[p]; return g; }
 function markGray(d, n) { const g = new Float32Array(n); for (let i = 0, p = 0; i < n; i++, p += 4) g[i] = (d[p] + d[p + 1] + d[p + 2]) / 3; return g; }
+function chanOf(d, w, x0, y0, cw, ch, off) { const g = new Float32Array(cw * ch); for (let y = 0; y < ch; y++) { let p = ((y0 + y) * w + x0) * 4 + off; for (let x = 0; x < cw; x++, p += 4) g[y * cw + x] = d[p]; } return g; }
+
 function adaptiveMask(g, w, h) {
   const R = Math.max(12, Math.round(Math.min(w, h) / 12)); const W1 = w + 1, I = new Float64Array(W1 * (h + 1));
   for (let y = 0; y < h; y++) { let row = 0; for (let x = 0; x < w; x++) { row += g[y * w + x]; I[(y + 1) * W1 + x + 1] = I[y * W1 + x + 1] + row; } }
@@ -250,11 +260,12 @@ function adaptiveMask(g, w, h) {
       const x0 = Math.max(0, x - R), x1 = Math.min(w, x + R + 1);
       const sum = I[y1 * W1 + x1] - I[y0 * W1 + x1] - I[y1 * W1 + x0] + I[y0 * W1 + x0];
       const mean = sum / ((x1 - x0) * (y1 - y0)), v = g[y * w + x];
-      if (v < mean * 0.65 && mean - v > 20) m[y * w + x] = 1;
+      if (v < mean * 0.62 && mean - v > Math.max(18, Math.min(45, mean * 0.4))) m[y * w + x] = 1;
     }
   }
   return m;
 }
+
 function findBlobs(mask, w, h) {
   const N = w * h, seen = new Uint8Array(N), stack = new Int32Array(N), buf = new Int32Array(N), minA = Math.max(20, N / 60000), maxA = N / 100, out = [];
   for (let s = 0; s < N; s++) {
@@ -271,8 +282,10 @@ function findBlobs(mask, w, h) {
   }
   return out;
 }
+
 function blobShape(px, w) {
-  let sx = 0, sy = 0, n = px.length, xs = new Float32Array(n), ys = new Float32Array(n);
+  const n = px.length, xs = new Float32Array(n), ys = new Float32Array(n);
+  let sx = 0, sy = 0;
   for (let i = 0; i < n; i++) { const x = px[i] % w, y = (px[i] - x) / w; xs[i] = x; ys[i] = y; sx += x; sy += y; }
   let best = Infinity, ratio = 9;
   for (let a = 0; a < 90; a += 5) {
@@ -282,11 +295,12 @@ function blobShape(px, w) {
       const u = xs[i] * c + ys[i] * s, v = -xs[i] * s + ys[i] * c;
       if (u < u0) u0 = u; if (u > u1) u1 = u; if (v < v0) v0 = v; if (v > v1) v1 = v;
     }
-    const area = (u1 - u0 + 1) * (v1 - v0 + 1);
-    if (area < best) { best = area; ratio = Math.max(u1 - u0 + 1, v1 - v0 + 1) / Math.min(u1 - u0 + 1, v1 - v0 + 1); }
+    const bw = u1 - u0 + 1, bh = v1 - v0 + 1, area = bw * bh;
+    if (area < best) { best = area; ratio = Math.max(bw, bh) / Math.min(bw, bh); }
   }
   return { cx: sx / n, cy: sy / n, n: n, fill: n / best, ratio: ratio, side: Math.sqrt(best) };
 }
+
 function findMarkers(d, w, h) {
   const g = new Float32Array(w * h); for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) g[y * w + x] = d[(y * w + x) * 4];
   const mk = adaptiveMask(g, w, h), out = [];
@@ -296,6 +310,7 @@ function findMarkers(d, w, h) {
   });
   return out;
 }
+
 function orderQuad(q) {
   const mxc = (q[0].cx + q[1].cx + q[2].cx + q[3].cx) / 4, myc = (q[0].cy + q[1].cy + q[2].cy + q[3].cy) / 4;
   return q.slice().sort((p1, p2) => Math.atan2(p1.cy - myc, p1.cx - mxc) - Math.atan2(p2.cy - myc, p2.cx - mxc));
@@ -313,6 +328,7 @@ function orient(pts) {
   }
   return null;
 }
+
 function detectCorners(imgData, w, h, wins) {
   const pts = [];
   for (let k = 0; k < 4; k++) {
@@ -333,6 +349,7 @@ function detectCorners(imgData, w, h, wins) {
   const fit = orient(pts);
   return { found: fit ? 2 : 1, pts: fit ? fit.P : pts.map(p => [p.cx, p.cy]) };
 }
+
 function bubbleScore(g, w, h, H, b, inOff, a0, a1) {
   let s = 0, c = 0;
   for (let i = 0; i < inOff.length; i++) {
@@ -354,6 +371,7 @@ function bubbleScore(g, w, h, H, b, inOff, a0, a1) {
 function discOffsets(rad, step) {
   const o = []; for (let y = -rad; y <= rad + 1e-9; y += step) for (let x = -rad; x <= rad + 1e-9; x += step) if (x * x + y * y <= rad * rad) o.push([x, y]); return o;
 }
+
 function scanSheet(g, w, h, L, cfg, H, thr) {
   const inOff = discOffsets(6, 1.5), A0 = 8.5, A1 = 12.5;
   const raw = b => bubbleScore(g, w, h, H, b, inOff, A0, A1);
@@ -368,7 +386,7 @@ function scanSheet(g, w, h, L, cfg, H, thr) {
   
   const second = [], grp = {};
   allB.forEach(b => {
-    if (b.blk === 'sbd' || b.blk === 'md') return; 
+    if (b.blk === 'sbd' || b.blk === 'md') return; // Không trừ nhiễu chéo ở vùng in số
     const k = b.blk.charAt(1) === '1' ? 'p1-' + b.q : b.blk.charAt(0) === 'p' ? 'p3-' + b.q + '-' + b.c : b.blk + '-' + b.c;
     (grp[k] = grp[k] || []).push(rd(b));
   });
@@ -457,6 +475,11 @@ const $$ = (s, r) => Array.from((r || document).querySelectorAll(s));
 const LS = { get: (k, d) => { try { const v = localStorage.getItem(k); return v ? JSON.parse(v) : d; } catch(e){return d;} }, set: (k, v) => { try { localStorage.setItem(k, JSON.stringify(v)); } catch(e){} } };
 const fmt = x => String(Math.round(x * 100) / 100).replace('.', ',');
 const esc = s => String(s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+
+function getStudentInfo(sbd) {
+    const stds = LS.get('omr.students', {});
+    return stds[String(sbd).trim()] || null;
+}
 
 function defaultCfg() {
   const v = { code: '', mcq: new Array(40).fill(null), tf: Array.from({length: 8}, () => new Array(4).fill(null)), num: new Array(6).fill('') };
@@ -554,87 +577,104 @@ function renderSheet() {
 }
 
 // ---------------- EXCEL & QR CỦA NTMIX ----------------
-$('#excelPickKey').addEventListener('change', function() {
-    const f = this.files[0]; this.value = ''; if (!f) return;
-    const r = new FileReader();
-    r.onload = e => {
-        try {
-            const data = new Uint8Array(e.target.result);
-            const wb = XLSX.read(data, { type: 'array' });
-            const rows = XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]], { header: 1, defval: '' });
-            let added = 0; let header = rows[0];
-            for (let c = 1; c < header.length; c++) {
-                let code = String(header[c]).trim().replace(/\D/g, ''); if (!code) continue;
-                let v = { code, mcq: new Array(40).fill(null), tf: Array.from({length:8}, ()=>new Array(4).fill(null)), num: new Array(6).fill('') };
-                let p = 1, q1 = 0, q2 = 0, q3 = 0, lastQ = 0;
-                for (let r = 1; r < rows.length; r++) {
-                    let qNum = parseInt(rows[r][0]); if (isNaN(qNum)) continue;
-                    if (qNum <= lastQ && qNum === 1) p++; lastQ = qNum;
-                    let val = String(rows[r][c]).trim().toUpperCase();
-                    if (p === 1 && q1 < 40) { v.mcq[q1++] = ['A','B','C','D'].includes(val) ? ['A','B','C','D'].indexOf(val) : null; }
-                    else if (p === 2 && q2 < 8) {
-                        let tf = (val.replace(/Đ/g,'D').replace(/[^DS]/g,'') + '----').slice(0,4);
-                        for(let i=0; i<4; i++) v.tf[q2][i] = ['D','S'].includes(tf[i]) ? tf[i] : null; q2++;
-                    } else if (p === 3 && q3 < 6) { v.num[q3++] = val.replace(/\./g, ','); }
-                }
-                const existing = cfg.versions.findIndex(x => x.code === code);
-                if (existing >= 0) cfg.versions[existing] = v; else cfg.versions.push(v); added++;
+function bindExcelEvents() {
+    setTimeout(() => {
+        // Nạp Excel Đáp Án
+        const epk = $('#excelPickKey');
+        if (epk) epk.onchange = function() {
+            const f = this.files[0]; this.value = ''; if (!f) return; const r = new FileReader();
+            r.onload = e => {
+                try {
+                    const wb = XLSX.read(new Uint8Array(e.target.result), { type: 'array' });
+                    const rows = XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]], { header: 1, defval: '' });
+                    let added = 0; let header = rows[0];
+                    for (let c = 1; c < header.length; c++) {
+                        let code = String(header[c]).trim().replace(/\D/g, ''); if (!code) continue;
+                        let v = emptyVer(code); let p = 1, q1 = 0, q2 = 0, q3 = 0, lastQ = 0;
+                        for (let i = 1; i < rows.length; i++) {
+                            let qNum = parseInt(rows[i][0]); if (isNaN(qNum)) continue;
+                            if (qNum <= lastQ && qNum === 1) p++; lastQ = qNum;
+                            let val = String(rows[i][c]).trim().toUpperCase();
+                            if (p === 1 && q1 < cfg.n1) { v.mcq[q1++] = ['A','B','C','D'].includes(val) ? ['A','B','C','D'].indexOf(val) : null; }
+                            else if (p === 2 && q2 < cfg.n2) {
+                                let tf = (val.replace(/Đ/g,'D').replace(/[^DS]/g,'') + '----').slice(0,4);
+                                for(let j=0; j<4; j++) v.tf[q2][j] = ['D','S'].includes(tf[j]) ? tf[j] : null; q2++;
+                            } else if (p === 3 && q3 < cfg.n3) { v.num[q3++] = val.replace(/\./g, ','); }
+                        }
+                        const existing = cfg.versions.findIndex(x => x.code === code);
+                        if (existing >= 0) cfg.versions[existing] = v; else cfg.versions.push(v); added++;
+                    }
+                    if (added) {
+                        if (cfg.versions.length > 1 && !cfg.versions[0].code) cfg.versions.shift();
+                        saveCfg(); renderKey(); alert(`✅ Đã nạp thành công ${added} mã đề từ Excel.`);
+                    }
+                } catch(err) { alert("Lỗi file Excel hoặc sai định dạng!"); }
+            };
+            r.readAsArrayBuffer(f);
+        };
+
+        // Nạp Danh Sách Học Sinh
+        const sp = $('#studentPickScan');
+        if (sp) sp.onchange = function() {
+            const f = this.files[0]; this.value = ''; if (!f) return; const r = new FileReader();
+            r.onload = e => {
+                try {
+                    const wb = XLSX.read(new Uint8Array(e.target.result), { type: 'array' });
+                    const rows = XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]]);
+                    let students = LS.get('omr.students', {}); let added = 0;
+                    rows.forEach(row => {
+                        let sbd = row['SBD'] || row['Số báo danh'] || row['sbd'] || row['Mã học sinh'];
+                        let name = row['HỌ VÀ TÊN'] || row['Họ và tên'] || row['Họ tên'] || row['Tên'];
+                        let cls = row['Lớp'] || row['LỚP'] || row['Class'] || '';
+                        if (sbd && name) { students[String(sbd).trim()] = { name: String(name).trim(), cls: String(cls).trim() }; added++; }
+                    });
+                    LS.set('omr.students', students); alert(`✅ Đã cập nhật ${added} học sinh!`);
+                    $('#dshs-status-scan').textContent = `✅ Đã nạp ${added} học sinh`;
+                    $('#dshs-status-scan').style.color = 'var(--ok)';
+                    if ($('#v-res') && !$('#v-res').hidden) renderRes();
+                } catch(err) { alert("Lỗi file Excel!"); }
+            };
+            r.readAsArrayBuffer(f);
+        };
+
+        // Xóa tất cả mã đề
+        const qc = $('#qrClearAll');
+        if (qc) qc.addEventListener('click', function() {
+            if (confirm("Chắc chắn xóa toàn bộ mã đề đã nạp?")) {
+                cfg.versions = [ { code: '', mcq: new Array(40).fill(null), tf: Array.from({length:8}, ()=>new Array(4).fill(null)), num: new Array(6).fill('') } ];
+                cfg.active = 0; saveCfg(); renderKey();
+                alert('✅ Đã xóa toàn bộ mã đề.');
             }
-            if (added) {
-                if (cfg.versions.length > 1 && !cfg.versions[0].code) cfg.versions.shift();
-                saveCfg(); renderKey();
-                $('#key-upload-status').style.display = 'block'; $('#key-upload-status').textContent = `✅ Đã nạp thành công ${added} mã đề từ Excel.`;
-            } else throw new Error();
-        } catch(err) { alert("Lỗi đọc file Excel hoặc file không đúng định dạng!"); }
-    };
-    r.readAsArrayBuffer(f);
-});
+        });
+    }, 500);
+}
 
-$('#studentPickScan').addEventListener('change', function() {
-    const f = this.files[0]; this.value = ''; if (!f) return; const r = new FileReader();
-    r.onload = e => {
-        try {
-            const wb = XLSX.read(new Uint8Array(e.target.result), { type: 'array' });
-            const rows = XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]]);
-            let added = 0;
-            rows.forEach(row => {
-                let sbd = row['SBD'] || row['Số báo danh'] || row['sbd'];
-                let name = row['HỌ VÀ TÊN'] || row['Họ và tên'] || row['Họ tên'] || row['Tên'];
-                let cls = row['Lớp'] || row['LỚP'] || row['Class'] || '';
-                if (sbd && name) { students[String(sbd).trim()] = { name: String(name).trim(), cls: String(cls).trim() }; added++; }
-            });
-            LS.set('omr.students', students);
-            $('#dshs-status-scan').textContent = `✅ Đã nạp ${added} học sinh`; $('#dshs-status-scan').style.color = 'var(--ok)';
-        } catch(err) { alert("Lỗi file Excel học sinh!"); }
-    };
-    r.readAsArrayBuffer(f);
-});
-
-$('#qrClearAll').addEventListener('click', function() {
-    if (confirm("Chắc chắn xóa toàn bộ mã đề đã nạp?")) {
-        cfg.versions = [ { code: '', mcq: new Array(40).fill(null), tf: Array.from({length:8}, ()=>new Array(4).fill(null)), num: new Array(6).fill('') } ];
-        cfg.active = 0; saveCfg(); renderKey();
-        $('#key-upload-status').style.display = 'block'; $('#key-upload-status').textContent = `✅ Đã xóa toàn bộ mã đề.`;
-    }
-});
+function emptyVer(code) {
+  return { code: code || '', mcq: new Array(40).fill(null), tf: Array.from({length: 8}, () => new Array(4).fill(null)), num: new Array(6).fill('') };
+}
 
 function renderKey() {
     const v = curVer();
-    let h = '<div class="row"><h2>Danh sách Mã đề</h2></div><div class="vchips">';
-    cfg.versions.forEach((ver, i) => { h += `<button class="vchip" data-v="${i}" aria-pressed="${i===cfg.active}">Đề ${ver.code||(i+1)}</button>`; });
-    h += '</div><div class="fields one"><div class="field"><label class="lbl">Sửa mã đề đang chọn</label><input id="codeIn" class="mono" maxlength="4" value="' + esc(v.code) + '"></div></div>';
+    let k = '<div class="row"><h2>Danh sách Mã đề</h2></div>' + 
+          '<div class="actions" style="margin-bottom:12px;"><label class="btn success" for="excelPickKey" style="cursor:pointer; flex: 1 1 100%;">📄 Nạp Excel Đáp Án</label><button type="button" class="btn danger" id="qrClearAll" style="flex: 1 1 100%;">🗑️ Xóa Tất Cả Đề</button></div>' +
+          '<div class="vchips" style="margin-bottom:12px;">';
+    cfg.versions.forEach((ver, i) => { k += `<button class="vchip" data-v="${i}" aria-pressed="${i===cfg.active}">Đề ${ver.code||(i+1)}</button>`; });
+    k += '</div><div class="fields one"><div class="field"><label class="lbl">Sửa mã đề đang chọn</label><input id="codeIn" class="mono" maxlength="4" value="' + esc(v.code) + '"></div></div>';
     
-    h += '<h3 style="margin-top:16px; color:var(--ink);">Cấu trúc Điểm</h3><div class="grid-2">';
-    h += `<div class="field"><label class="lbl">Điểm P.I (mỗi câu)</label><input type="number" id="pts-p1" step="0.05" value="${cfg.p1}"></div>`;
-    h += `<div class="field"><label class="lbl">Điểm P.III (mỗi câu)</label><input type="number" id="pts-p3" step="0.05" value="${cfg.p3}"></div></div>`;
-    h += `<div class="field"><label class="lbl">Điểm P.II (tối đa mỗi câu)</label><input type="number" id="pts-p2" step="0.05" value="${cfg.p2}"></div>`;
+    k += '<h3 style="margin-top:16px; color:var(--ink);">Cấu trúc Điểm</h3><div class="grid-2">';
+    k += `<div class="field"><label class="lbl">Điểm P.I (mỗi câu)</label><input type="number" id="pts-p1" step="0.05" value="${cfg.p1}"></div>`;
+    k += `<div class="field"><label class="lbl">Điểm P.III (mỗi câu)</label><input type="number" id="pts-p3" step="0.05" value="${cfg.p3}"></div></div>`;
+    k += `<div class="field" style="margin-top:10px;"><label class="lbl">Điểm P.II (tối đa mỗi câu)</label><input type="number" id="pts-p2" step="0.05" value="${cfg.p2}"></div>`;
+    k += `<p class="hint" style="margin-top:8px;">Điểm P.II tính theo số ý đúng: 1 ý (10%), 2 ý (25%), 3 ý (50%), 4 ý (100%).</p>`;
     
-    $('#keyCard').innerHTML = h;
+    $('#keyCard').innerHTML = k;
     $$('.vchip', $('#keyCard')).forEach(b => b.onclick = () => { cfg.active = +b.dataset.v; saveCfg(); renderKey(); });
     $('#codeIn').onchange = function() { v.code = this.value.replace(/\D/g,'').slice(0,4); saveCfg(); renderKey(); };
     $('#pts-p1').onchange = function() { cfg.p1 = parseFloat(this.value)||0.25; saveCfg(); };
     $('#pts-p2').onchange = function() { cfg.p2 = parseFloat(this.value)||1.0; saveCfg(); };
     $('#pts-p3').onchange = function() { cfg.p3 = parseFloat(this.value)||0.5; saveCfg(); };
+
+    bindExcelEvents(); // Gắn lại sự kiện sau khi render đè DOM
 }
 
 // ---------------- XUẤT ĐIỂM & BẢNG KẾT QUẢ ----------------
@@ -918,7 +958,7 @@ $('#lvClose').addEventListener('click', () => {
 $('#lvShot').addEventListener('click', () => {
     if (!LV.stream) return; clearTimeout(LV.timer);
     const v = $('#lvVideo'); const hiRes = document.createElement('canvas'); hiRes.width = v.videoWidth; hiRes.height = v.videoHeight;
-    hiRes.getContext('2d').drawImage(v, 0, 0); processImagePureJS(hiRes, $('#lvCont').checked);
+    hiRes.getContext('2d').drawImage(v, 0, 0); processImagePureJS(hiRes, $('#opt-continuous').checked);
 });
 
 function processImagePureJS(sourceCanvas, isContinuous) {
@@ -1118,7 +1158,8 @@ function processImagePureJS(sourceCanvas, isContinuous) {
             const fCtx = finalCanvas.getContext('2d');
             fCtx.fillStyle = '#111'; fCtx.fillRect(0, 0, outW, bh); fCtx.drawImage(flatCanvas, 0, bh);
             fCtx.fillStyle = '#fff'; fCtx.font = `600 ${Math.round(bh * 0.45)}px sans-serif`; fCtx.textBaseline = 'middle';
-            fCtx.fillText(`SBD: ${sbd} · Mã đề: ${code} · Điểm: ${g.total}`, 16, bh / 2);
+            const stuStr = stuName ? ' - ' + stuName : '';
+            fCtx.fillText(`SBD: ${sbd}${stuStr} · Mã đề: ${code} · Điểm: ${g.total}`, 16, bh / 2);
 
             let imgB64 = finalCanvas.toDataURL('image/jpeg', 0.85);
             
@@ -1126,7 +1167,7 @@ function processImagePureJS(sourceCanvas, isContinuous) {
             const id = Date.now() + Math.floor(Math.random() * 1000);
             results.push({ id: id, sbd, md: code, total: g.total, max: g.max, parts: [g.p1.pts, g.p2.pts, g.p3.pts], t: Date.now(), img: true, rect: true });
             IMG.put(id, blob); saveResults();
-            gradedImagesData.push({ filename: `${sbd}_${code}_${Date.now()}.jpg`, base64: imgB64.split(',')[1] });
+            if (typeof gradedImagesData !== 'undefined') gradedImagesData.push({ filename: `${sbd}_${code}_${Date.now()}.jpg`, base64: imgB64.split(',')[1] });
 
             if ($('#opt-sound').checked) playBeepCamera();
 
@@ -1134,11 +1175,11 @@ function processImagePureJS(sourceCanvas, isContinuous) {
                 LV.count = (LV.count || 0) + 1; $('#cam-scan-count').textContent = `Đã chấm ${LV.count} tờ`;
                 if ($('#opt-show-res').checked) {
                     $('#cam-res-score').textContent = `${g.total}đ`;
-                    $('#cam-res-info').textContent = `SBD: ${sbd}${stuName ? ' - ' + stuName : ''} | Mã đề: ${code}`;
+                    $('#cam-res-info').textContent = `SBD: ${sbd}${stuStr} | Mã đề: ${code}`;
                     $('#cam-res-img').src = imgB64;
                     $('#cam-result-overlay').style.display = 'flex';
                     setTimeout(() => {
-                        document.getElementById('cam-result-overlay').style.display = 'none';
+                        $('#cam-result-overlay').style.display = 'none';
                         startAutoScan();
                     }, 2000);
                 } else {
@@ -1156,3 +1197,4 @@ function processImagePureJS(sourceCanvas, isContinuous) {
 // ---------------- Khởi động ----------------
 renderSheetSel(); renderKey(); renderRes();
 </script>
+</body></html>
