@@ -6908,13 +6908,21 @@ function paintMarks(c, sc, g, ver, lw, ringFn) {
       y += 84 + 35; // Dịch y xuống dưới các hộp
     }
 
-    // 5. LÕI XỬ LÝ HIỂN THỊ TÊN HỌC SINH THÔNG MINH
-    const stu = stuOf(r.sbd); // Kiểm tra học sinh trong danh sách
+    // 5. LÕI XỬ LÝ HIỂN THỊ TÊN HỌC SINH THÔNG MINH (Đã tối ưu cho NTMIX)
+    let stu = null;
+    try {
+        // Đọc thẳng danh sách học sinh từ bộ nhớ ngầm của NTMIX
+        const stds = JSON.parse(localStorage.getItem('omr.students') || '{}');
+        if (r.sbd) {
+            stu = stds[String(r.sbd).trim()] || null;
+        }
+    } catch(e) {}
+
     c.fillStyle = '#6b7280'; c.font = '500 24px ' + F; c.textAlign = 'left';
     
-    if (stu) {
+    if (stu && stu.name) {
       // TRƯỜNG HỢP 1: Có trong danh sách -> Hiển thị text chữ sắc nét
-      c.fillText('Họ tên học sinh (Từ danh sách excel)', M, y);
+      c.fillText('Họ tên học sinh (Từ danh sách Excel)', M, y);
       y += 40;
       c.fillStyle = '#111827'; c.font = '700 40px ' + F;
       c.fillText(stu.name + (stu.cls ? ' - Lớp: ' + stu.cls : ''), M, y);
@@ -6926,7 +6934,15 @@ function paintMarks(c, sc, g, ver, lw, ringFn) {
       let nameImg = null;
       try {
         const nb = await IMG.get(r.id + 'n');
-        if (nb) nameImg = await blobToImg(nb);
+        if (nb) {
+            // Tự động giải mã blob ảnh an toàn 100%
+            nameImg = await new Promise(function(resolve) {
+                const img = new Image();
+                img.onload = function() { resolve(img); };
+                img.onerror = function() { resolve(null); };
+                img.src = URL.createObjectURL(nb);
+            });
+        }
       } catch (e) {}
       
       if (nameImg) {
@@ -6938,7 +6954,6 @@ function paintMarks(c, sc, g, ver, lw, ringFn) {
         y += 25; // Khoảng trống nếu lỡ cả ảnh cắt cũng không tồn tại
       }
     }
-
     // 6. HIỂN THỊ ẢNH TOÀN BỘ BÀI THI CÓ KHOANH TRÒN
     let base = null;
     try {
