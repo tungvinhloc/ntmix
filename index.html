@@ -6865,7 +6865,7 @@ function paintMarks(c, sc, g, ver, lw, ringFn) {
     return new Blob(chunks, { type: 'application/pdf' });
   }
   async function pdfStudentPage(r, idx, n, listName) {
-    // 1. Nhường CPU 50ms để iPhone kịp dọn rác RAM đồ họa
+    // 1. Nhường CPU 50ms để iPhone kịp dọn rác RAM đồ họa (Chống trắng trang iOS)
     await new Promise(resolve => setTimeout(resolve, 50));
 
     const W = 1240, H = 1754, M = 70;
@@ -6876,6 +6876,7 @@ function paintMarks(c, sc, g, ver, lw, ringFn) {
     c.fillStyle = '#fff'; c.fillRect(0, 0, W, H);
     const F = '"Be Vietnam Pro","Segoe UI",Arial,sans-serif';
     
+    // Tự động bỏ qua lỗi lệch vùng (Scope) của các biến hệ thống
     let cs, sheet, ver, PN_arr = ['I', 'II', 'III'];
     try { cs = r.cs || csOf(); } catch(e) { cs = r.cs || {n1:40, n2:0, n3:0, p1:0.25, p2:0, p3:0}; }
     try { sheet = r.sheet || cfg.sheet; } catch(e) { sheet = r.sheet || 'nh'; }
@@ -6930,29 +6931,67 @@ function paintMarks(c, sc, g, ver, lw, ringFn) {
       y += 84 + 45; 
     }
 
-    // 5. TRUY XUẤT TÊN CỰC CHUẨN BẰNG BỘ NHỚ LÕI CỦA APP
-    let stu = null;
+    // ==========================================
+    // LƯỚI BẢO VỆ 3 TẦNG: TRUY XUẤT TÊN HỌC SINH
+    // ==========================================
+    let stuName = '';
+    let stuCls = '';
     try {
-        const stuKey = function(s) { return String(s == null ? '' : s).replace(/\D/g, '').replace(/^0+(?=\d)/, ''); };
-        const k = stuKey(r.sbd);
-        if (k) {
-            // Lấy thẳng từ mảng lưu học sinh của phiên làm việc hiện tại
-            const arr = curList && curList() ? (curList().students || []) : [];
-            stu = arr.find(s => s.k === k);
+        // Tầng 1: Lấy từ bộ nhớ B&T Pro Mark mới
+        const key = String(r.sbd || '').replace(/\D/g, '').replace(/^0+/, '');
+        const lsStr = localStorage.getItem('omr.lists');
+        if (lsStr) {
+            const ls = JSON.parse(lsStr);
+            const activeList = ls.items.find(l => l.id === (r.lid || ls.active)) || ls.items[0];
+            if (activeList && activeList.students) {
+                const s = activeList.students.find(x => String(x.k) === key);
+                if (s) { stuName = s.name; stuCls = s.cls; }
+            }
         }
-    } catch(e) {}
+        
+        // Tầng 2: Lấy từ bộ nhớ NTMIX cũ
+        if (!stuName) {
+            const stdsStr = localStorage.getItem('omr.students');
+            if (stdsStr) {
+                const stds = JSON.parse(stdsStr);
+                const s = stds[String(r.sbd).trim()];
+                if (s) { stuName = s.name; stuCls = s.cls; }
+            }
+        }
 
-    // IN TÊN (NẾU CÓ)
-    if (stu && stu.name) {
+        // Tầng 3 (TỐI THƯỢNG): Đọc và cắt thẳng chữ từ giao diện web!
+        if (!stuName) {
+            // Quét tìm tất cả các thẻ đang hiển thị bài thi
+            const domItems = document.querySelectorAll('.item');
+            for (let i = 0; i < domItems.length; i++) {
+                const txt = domItems[i].textContent || '';
+                // Nếu tìm thấy chữ SBD của bài này
+                if (txt.includes(String(r.sbd))) {
+                    // Tách chuỗi mẫu: "SBD 46000259 - NGUYỄN VĂN QUỐC HUY · Mã đề 0212"
+                    const partsName = txt.split('-');
+                    if (partsName.length >= 2 && partsName[0].includes('SBD')) {
+                        // Lấy phần tên nằm giữa dấu "-" và dấu "·"
+                        stuName = partsName[1].split('·')[0].trim();
+                        break;
+                    }
+                }
+            }
+        }
+    } catch(e) {
+        console.error("Lỗi trích xuất tên:", e);
+    }
+
+    // IN TÊN NẾU TÌM THẤY 
+    if (stuName) {
       c.fillStyle = '#6b7280'; c.font = '500 24px ' + F; c.textAlign = 'left';
       c.fillText('Họ tên học sinh', M, y);
       y += 35;
       c.fillStyle = '#111827'; c.font = '700 38px ' + F;
-      c.fillText(stu.name + (stu.cls ? ' - Lớp: ' + stu.cls : ''), M, y);
+      c.fillText(stuName + (stuCls ? ' - Lớp: ' + stuCls : ''), M, y);
       y += 45;
     }
 
-    // TẢI VÀ VẼ ẢNH GỐC 
+    // TẢI VÀ VẼ ẢNH GỐC (Bảo vệ tràn RAM đồ họa iOS)
     let base = null;
     let objUrl = null;
     try {
@@ -6987,7 +7026,7 @@ function paintMarks(c, sc, g, ver, lw, ringFn) {
       c.drawImage(t, M + (aw - dw) / 2, y, dw, dh);
 
       t.width = 0;
-      t.height = 0;
+      t.height = 0; // Phá hủy Canvas ngay lập tức
     } else {
       c.fillStyle = '#9ca3af'; c.font = '400 26px ' + F; c.textAlign = 'left';
       c.fillText('Bài này không có ảnh lưu kèm.', M, y + 40);
@@ -7013,7 +7052,7 @@ function paintMarks(c, sc, g, ver, lw, ringFn) {
     } catch(e) {}
 
     cv.width = 0;
-    cv.height = 0;
+    cv.height = 0; // Phá hủy Canvas chính
 
     return { w: W, h: H, jpg: jpg || new Uint8Array(0) };
   }
