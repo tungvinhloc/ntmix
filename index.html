@@ -6906,7 +6906,7 @@ function paintMarks(c, sc, g, ver, lw, ringFn) {
     c.fillText(new Date(r.t).toLocaleString('vi-VN') + (r.edited ? ' · đã sửa' : ''), M, 178);
 
     // Điểm tổng góc phải
-    c.textAlign = 'right'; c.fillStyle = '#1d3a8a'; c.font = '800 96px ' + F;
+    c.textAlign = 'right'; c.fillStyle = '#dc2626'; c.font = '800 96px ' + F; // Đổi '#1d3a8a' thành '#dc2626' ở dòng này
     c.fillText(r.total != null ? String(r.total).replace('.',',') : '0', W - M - 150, 160);
     c.fillStyle = '#6b7280'; c.font = '500 34px ' + F; c.textAlign = 'left';
     c.fillText('/ ' + (r.max != null ? String(r.max).replace('.',',') : '10') + ' điểm', W - M - 140, 160);
