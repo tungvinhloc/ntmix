@@ -1651,7 +1651,7 @@ const SHEET_M = {
 };
 const SHEET_BGD25 = {
   id: 'bgd25',
-  name: 'Phiếu TNMaker BGD 2025 (4MĐ)',
+  name: 'Phiếu BGD 2025 (4MĐ)',
   PW: 210, 
   PH: 297,
   RB: 1.45,
@@ -3647,7 +3647,7 @@ function renderPhoto(sheetImg, cfg, marks, o) {
         ['nh', 'Phiếu BGD Chuẩn 2025'],
         ['m', 'Phiếu NH-01'],
         ['kt', 'Phiếu NH-02'],
-        ['bgd25', 'Phiếu TNMaker BGD 2025 (4MĐ)']
+        ['bgd25', 'Phiếu BGD 2025 (4MĐ)']
       ]
         .map(function (x) {
           return (
@@ -6865,101 +6865,100 @@ function paintMarks(c, sc, g, ver, lw, ringFn) {
     return new Blob(chunks, { type: 'application/pdf' });
   }
   async function pdfStudentPage(r, idx, n, listName) {
-    const W = 1240, H = 1754, M = 70, cv = document.createElement('canvas'), c = cv.getContext('2d');
-    c.fillStyle = '#fff'; c.fillRect(0, 0, W, H);
+    const W = 1240,
+      H = 1754,
+      M = 70,
+      cv = document.createElement('canvas');
+    cv.width = W;
+    cv.height = H;
+    const c = cv.getContext('2d');
+    c.fillStyle = '#fff';
+    c.fillRect(0, 0, W, H);
     const F = '"Be Vietnam Pro","Segoe UI",Arial,sans-serif';
-    const cs = r.cs || csOf(), sheet = r.sheet || cfg.sheet;
-    let g = null, ver = verForCode(r.md || '');
-    if (r.ans) g = withSheet(sheet, function () { return gradeAll({ p1: r.ans.p1, p2: r.ans.p2, p3: r.ans.p3 }, cs, ver); });
-
-    // 1. Dòng tiêu đề trên cùng
-    c.fillStyle = '#6b7280'; c.font = '500 26px ' + F; c.textAlign = 'left';
+    const cs = r.cs || csOf(),
+      sheet = r.sheet || cfg.sheet;
+    let g = null,
+      ver = verForCode(r.md || '');
+    if (r.ans)
+      g = withSheet(sheet, function () {
+        return gradeAll({ p1: r.ans.p1, p2: r.ans.p2, p3: r.ans.p3 }, cs, ver);
+      });
+    c.fillStyle = '#6b7280';
+    c.font = '500 26px ' + F;
+    c.textAlign = 'left';
     c.fillText('B&T Pro Mark · ' + listName, M, 72);
-    c.textAlign = 'right'; c.fillText('Bài ' + idx + '/' + n, W - M, 72);
-
-    // 2. SBD, Mã đề và Ngày tháng
-    c.fillStyle = '#111827'; c.font = '700 46px ' + F; c.textAlign = 'left';
-    const info = 'SBD ' + (r.sbd || '—') + ' · Mã đề ' + (r.md || '—');
-    c.fillText(info, M, 140);
-    c.fillStyle = '#6b7280'; c.font = '400 24px ' + F;
+    c.textAlign = 'right';
+    c.fillText('Bài ' + idx + '/' + n, W - M, 72);
+    c.fillStyle = '#111827';
+    c.font = '700 46px ' + F;
+    c.textAlign = 'left';
+    c.fillText('SBD ' + (r.sbd || '—') + ' · Mã đề ' + (r.md || '—'), M, 140);
+    c.fillStyle = '#6b7280';
+    c.font = '400 24px ' + F;
     c.fillText(new Date(r.t).toLocaleString('vi-VN') + (r.edited ? ' · đã sửa' : ''), M, 178);
-
-    // 3. Điểm tổng góc phải
-    c.textAlign = 'right'; c.fillStyle = '#1d3a8a'; c.font = '800 96px ' + F;
+    c.textAlign = 'right';
+    c.fillStyle = '#1d3a8a';
+    c.font = '800 96px ' + F;
     c.fillText(fmt(r.total), W - M - 150, 160);
-    c.fillStyle = '#6b7280'; c.font = '500 34px ' + F; c.textAlign = 'left';
+    c.fillStyle = '#6b7280';
+    c.font = '500 34px ' + F;
+    c.textAlign = 'left';
     c.fillText('/ ' + fmt(r.max) + ' điểm', W - M - 140, 160);
-
-    // 4. Các hộp điểm thành phần (Phần I, II, III)
     let y = 215;
-    const parts = r.parts || [], mx = g ? [g.p1.max, g.p2.max, g.p3.max] : null, ns = [cs.n1, cs.n2, cs.n3];
-    const act = [0, 1, 2].filter(function (i) { return parts[i] != null && ns[i]; });
+    const parts = r.parts || [],
+      mx = g ? [g.p1.max, g.p2.max, g.p3.max] : null,
+      ns = [cs.n1, cs.n2, cs.n3];
+    const act = [0, 1, 2].filter(function (i) {
+      return parts[i] != null && ns[i];
+    });
     if (act.length) {
       const bw = (W - 2 * M - 20 * (act.length - 1)) / act.length;
       act.forEach(function (i, k) {
         const x = M + k * (bw + 20);
-        c.fillStyle = '#eef2ff'; c.strokeStyle = '#c7d2fe'; c.lineWidth = 2;
-        c.beginPath(); c.roundRect(x, y, bw, 84, 14); c.fill(); c.stroke();
-        c.fillStyle = '#374151'; c.font = '500 24px ' + F; c.textAlign = 'left';
+        c.fillStyle = '#eef2ff';
+        c.strokeStyle = '#c7d2fe';
+        c.lineWidth = 2;
+        c.beginPath();
+        c.roundRect(x, y, bw, 84, 14);
+        c.fill();
+        c.stroke();
+        c.fillStyle = '#374151';
+        c.font = '500 24px ' + F;
+        c.textAlign = 'left';
         c.fillText('Phần ' + PN[i], x + 20, y + 34);
-        c.fillStyle = '#111827'; c.font = '700 34px ' + F;
+        c.fillStyle = '#111827';
+        c.font = '700 34px ' + F;
         c.fillText(fmt(parts[i]) + (mx ? ' / ' + fmt(mx[i]) : ''), x + 20, y + 70);
       });
-      y += 84 + 35; // Dịch y xuống dưới các hộp
+      y += 84 + 24;
     }
-
-    // 5. LÕI XỬ LÝ HIỂN THỊ TÊN HỌC SINH THÔNG MINH (Đã tối ưu cho NTMIX)
-    let stu = null;
+    let nm = null;
     try {
-        // Đọc thẳng danh sách học sinh từ bộ nhớ ngầm của NTMIX
-        const stds = JSON.parse(localStorage.getItem('omr.students') || '{}');
-        if (r.sbd) {
-            stu = stds[String(r.sbd).trim()] || null;
-        }
-    } catch(e) {}
-
-    c.fillStyle = '#6b7280'; c.font = '500 24px ' + F; c.textAlign = 'left';
-    
-    if (stu && stu.name) {
-      // TRƯỜNG HỢP 1: Có trong danh sách -> Hiển thị text chữ sắc nét
-      c.fillText('Họ tên học sinh (Từ danh sách Excel)', M, y);
-      y += 40;
-      c.fillStyle = '#111827'; c.font = '700 40px ' + F;
-      c.fillText(stu.name + (stu.cls ? ' - Lớp: ' + stu.cls : ''), M, y);
-      y += 35;
-    } else {
-      // TRƯỜNG HỢP 2: Không có trong danh sách -> Lấy ảnh cắt chữ ký/tên
-      c.fillText('Họ tên học sinh (Chưa có SBD trong danh sách)', M, y);
-      y += 15;
-      let nameImg = null;
-      try {
-        const nb = await IMG.get(r.id + 'n');
-        if (nb) {
-            // Tự động giải mã blob ảnh an toàn 100%
-            nameImg = await new Promise(function(resolve) {
-                const img = new Image();
-                img.onload = function() { resolve(img); };
-                img.onerror = function() { resolve(null); };
-                img.src = URL.createObjectURL(nb);
-            });
-        }
-      } catch (e) {}
-      
-      if (nameImg) {
-        const nh = 75; // Chiều cao ảnh cắt để vừa vặn layout
-        const nw = nameImg.width * (nh / nameImg.height);
-        c.drawImage(nameImg, M, y, nw, nh);
-        y += nh + 25;
-      } else {
-        y += 25; // Khoảng trống nếu lỡ cả ảnh cắt cũng không tồn tại
-      }
+      const nb = await IMG.get(r.id + 'n');
+      if (nb) nm = await blobToImg(nb);
+    } catch (e) {
+      /* bỏ qua */
     }
-    // 6. HIỂN THỊ ẢNH TOÀN BỘ BÀI THI CÓ KHOANH TRÒN
+    if (nm) {
+      c.fillStyle = '#6b7280';
+      c.font = '500 22px ' + F;
+      c.textAlign = 'left';
+      c.fillText('Họ tên học sinh', M, y + 22);
+      const nh = Math.min(100, ((nm.height * 400) / nm.width) * 1.0),
+        nw = (nh * nm.width) / nm.height;
+      c.strokeStyle = '#d1d5db';
+      c.lineWidth = 2;
+      c.strokeRect(M, y + 34, Math.min(nw, 520), nh);
+      c.drawImage(nm, M, y + 34, Math.min(nw, 520), nh);
+      y += 34 + nh + 24;
+    }
     let base = null;
     try {
       const b = await IMG.get(r.id);
       if (b) base = await blobToImg(b);
-    } catch (e) {}
+    } catch (e) {
+      /* bỏ qua */
+    }
     if (base) {
       const t = document.createElement('canvas');
       t.width = base.naturalWidth || base.width;
@@ -6981,12 +6980,16 @@ function paintMarks(c, sc, g, ver, lw, ringFn) {
             ver
           );
         });
-      const aw = W - 2 * M, ah = H - y - 60;
-      const k = Math.min(aw / t.width, ah / t.height);
-      const dw = t.width * k, dh = t.height * k;
+      const aw = W - 2 * M,
+        ah = H - y - 60,
+        k = Math.min(aw / t.width, ah / t.height),
+        dw = t.width * k,
+        dh = t.height * k;
       c.drawImage(t, M + (aw - dw) / 2, y, dw, dh);
     } else {
-      c.fillStyle = '#9ca3af'; c.font = '400 26px ' + F; c.textAlign = 'left';
+      c.fillStyle = '#9ca3af';
+      c.font = '400 26px ' + F;
+      c.textAlign = 'left';
       c.fillText('Bài này không có ảnh lưu kèm.', M, y + 40);
     }
     return { w: W, h: H, jpg: await canvasJpeg(cv, 0.82) };
