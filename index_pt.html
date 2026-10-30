@@ -6865,134 +6865,135 @@ function paintMarks(c, sc, g, ver, lw, ringFn) {
     return new Blob(chunks, { type: 'application/pdf' });
   }
   async function pdfStudentPage(r, idx, n, listName) {
-    const W = 1240,
-      H = 1754,
-      M = 70,
-      cv = document.createElement('canvas');
-    cv.width = W;
-    cv.height = H;
-    const c = cv.getContext('2d');
-    c.fillStyle = '#fff';
-    c.fillRect(0, 0, W, H);
+    const W = 1240, H = 1754, M = 70, cv = document.createElement('canvas'), c = cv.getContext('2d');
+    c.fillStyle = '#fff'; c.fillRect(0, 0, W, H);
     const F = '"Be Vietnam Pro","Segoe UI",Arial,sans-serif';
-    const cs = r.cs || csOf(),
-      sheet = r.sheet || cfg.sheet;
-    let g = null,
-      ver = verForCode(r.md || '');
-    if (r.ans)
-      g = withSheet(sheet, function () {
-        return gradeAll({ p1: r.ans.p1, p2: r.ans.p2, p3: r.ans.p3 }, cs, ver);
-      });
-    c.fillStyle = '#6b7280';
-    c.font = '500 26px ' + F;
-    c.textAlign = 'left';
-    c.fillText('B&T Pro Mark · ' + listName, M, 72);
-    c.textAlign = 'right';
-    c.fillText('Bài ' + idx + '/' + n, W - M, 72);
-    c.fillStyle = '#111827';
-    c.font = '700 46px ' + F;
-    c.textAlign = 'left';
-    c.fillText('SBD ' + (r.sbd || '—') + ' · Mã đề ' + (r.md || '—'), M, 140);
-    c.fillStyle = '#6b7280';
-    c.font = '400 24px ' + F;
+    
+    let cs, sheet, ver, PN_arr = ['I', 'II', 'III'];
+    try { cs = r.cs || csOf(); } catch(e) { cs = r.cs || {n1:40, n2:0, n3:0, p1:0.25, p2:0, p3:0}; }
+    try { sheet = r.sheet || cfg.sheet; } catch(e) { sheet = r.sheet || 'nh'; }
+    try { ver = verForCode(r.md || ''); } catch(e) {
+        const c2 = JSON.parse(localStorage.getItem('omr.cfg2')||'{}');
+        const i = (c2.versions||[]).findIndex(v => v.code && String(v.code).replace(/^0+/,'') === String(r.md).replace(/^0+/,''));
+        ver = c2.versions && c2.versions[i >= 0 ? i : 0];
+    }
+    
+    let g = null;
+    try {
+        if (r.ans && typeof withSheet === 'function' && typeof gradeAll === 'function') {
+            g = withSheet(sheet, function () { return gradeAll({ p1: r.ans.p1, p2: r.ans.p2, p3: r.ans.p3 }, cs, ver); });
+        }
+    } catch(e) {}
+
+    // 1. Dòng tiêu đề trên cùng
+    c.fillStyle = '#6b7280'; c.font = '500 26px ' + F; c.textAlign = 'left';
+    c.fillText('B&T Pro Mark · ' + (listName || 'Kết quả'), M, 72);
+    c.textAlign = 'right'; c.fillText('Bài ' + idx + '/' + n, W - M, 72);
+
+    // 2. SBD, Mã đề và Ngày tháng
+    c.fillStyle = '#111827'; c.font = '700 46px ' + F; c.textAlign = 'left';
+    const info = 'SBD ' + (r.sbd || '—') + ' · Mã đề ' + (r.md || '—');
+    c.fillText(info, M, 140);
+    c.fillStyle = '#6b7280'; c.font = '400 24px ' + F;
     c.fillText(new Date(r.t).toLocaleString('vi-VN') + (r.edited ? ' · đã sửa' : ''), M, 178);
-    c.textAlign = 'right';
-    c.fillStyle = '#1d3a8a';
-    c.font = '800 96px ' + F;
-    c.fillText(fmt(r.total), W - M - 150, 160);
-    c.fillStyle = '#6b7280';
-    c.font = '500 34px ' + F;
-    c.textAlign = 'left';
-    c.fillText('/ ' + fmt(r.max) + ' điểm', W - M - 140, 160);
+
+    // 3. Điểm tổng góc phải
+    c.textAlign = 'right'; c.fillStyle = '#1d3a8a'; c.font = '800 96px ' + F;
+    c.fillText(r.total != null ? String(r.total).replace('.',',') : '0', W - M - 150, 160);
+    c.fillStyle = '#6b7280'; c.font = '500 34px ' + F; c.textAlign = 'left';
+    c.fillText('/ ' + (r.max != null ? String(r.max).replace('.',',') : '10') + ' điểm', W - M - 140, 160);
+
+    // 4. Các hộp điểm thành phần
     let y = 215;
-    const parts = r.parts || [],
-      mx = g ? [g.p1.max, g.p2.max, g.p3.max] : null,
-      ns = [cs.n1, cs.n2, cs.n3];
-    const act = [0, 1, 2].filter(function (i) {
-      return parts[i] != null && ns[i];
-    });
+    const parts = r.parts || [], mx = g ? [g.p1.max, g.p2.max, g.p3.max] : null, ns = [cs.n1, cs.n2, cs.n3];
+    const act = [0, 1, 2].filter(function (i) { return parts[i] != null && ns[i]; });
     if (act.length) {
       const bw = (W - 2 * M - 20 * (act.length - 1)) / act.length;
       act.forEach(function (i, k) {
         const x = M + k * (bw + 20);
-        c.fillStyle = '#eef2ff';
-        c.strokeStyle = '#c7d2fe';
-        c.lineWidth = 2;
-        c.beginPath();
-        c.roundRect(x, y, bw, 84, 14);
-        c.fill();
-        c.stroke();
-        c.fillStyle = '#374151';
-        c.font = '500 24px ' + F;
-        c.textAlign = 'left';
-        c.fillText('Phần ' + PN[i], x + 20, y + 34);
-        c.fillStyle = '#111827';
-        c.font = '700 34px ' + F;
-        c.fillText(fmt(parts[i]) + (mx ? ' / ' + fmt(mx[i]) : ''), x + 20, y + 70);
+        c.fillStyle = '#eef2ff'; c.strokeStyle = '#c7d2fe'; c.lineWidth = 2;
+        c.beginPath(); 
+        if(c.roundRect) c.roundRect(x, y, bw, 84, 14); else c.rect(x,y,bw,84);
+        c.fill(); c.stroke();
+        c.fillStyle = '#374151'; c.font = '500 24px ' + F; c.textAlign = 'left';
+        c.fillText('Phần ' + PN_arr[i], x + 20, y + 34);
+        c.fillStyle = '#111827'; c.font = '700 34px ' + F;
+        c.fillText(String(parts[i]).replace('.',',') + (mx ? ' / ' + String(mx[i]).replace('.',',') : ''), x + 20, y + 70);
       });
-      y += 84 + 24;
+      y += 84 + 45; 
     }
-    let nm = null;
+
+    // 5. TRUY XUẤT HỌ TÊN HỌC SINH TỪ DANH SÁCH EXCEL 
+    // (Tự động đọc đúng các cột: STT | SBD | Họ tên | Lớp)
+    let stu = null;
     try {
-      const nb = await IMG.get(r.id + 'n');
-      if (nb) nm = await blobToImg(nb);
-    } catch (e) {
-      /* bỏ qua */
+        const key = String(r.sbd || '').replace(/\D/g, '').replace(/^0+/, '');
+        const ls = JSON.parse(localStorage.getItem('omr.lists') || '{"items":[]}');
+        const active = ls.items.find(l => l.id === ls.active) || ls.items[0];
+        if (active && active.students) {
+            stu = active.students.find(s => String(s.k) === key);
+        }
+    } catch(e) {}
+
+    // NẾU TÌM THẤY TRONG DANH SÁCH -> IN RA CHỮ TEXT
+    // KHÔNG TÌM THẤY -> BỎ TRỐNG LUÔN ĐỂ LÀM TO ẢNH PHIẾU BÊN DƯỚI
+    if (stu && stu.name) {
+      c.fillStyle = '#6b7280'; c.font = '500 24px ' + F; c.textAlign = 'left';
+      c.fillText('Họ tên học sinh', M, y);
+      y += 35;
+      c.fillStyle = '#111827'; c.font = '700 38px ' + F;
+      c.fillText(stu.name + (stu.cls ? ' - Lớp: ' + stu.cls : ''), M, y);
+      y += 45;
     }
-    if (nm) {
-      c.fillStyle = '#6b7280';
-      c.font = '500 22px ' + F;
-      c.textAlign = 'left';
-      c.fillText('Họ tên học sinh', M, y + 22);
-      const nh = Math.min(100, ((nm.height * 400) / nm.width) * 1.0),
-        nw = (nh * nm.width) / nm.height;
-      c.strokeStyle = '#d1d5db';
-      c.lineWidth = 2;
-      c.strokeRect(M, y + 34, Math.min(nw, 520), nh);
-      c.drawImage(nm, M, y + 34, Math.min(nw, 520), nh);
-      y += 34 + nh + 24;
-    }
+
+    // 6. HIỂN THỊ ẢNH TOÀN BỘ BÀI THI CÓ KHOANH TRÒN
     let base = null;
     try {
-      const b = await IMG.get(r.id);
-      if (b) base = await blobToImg(b);
-    } catch (e) {
-      /* bỏ qua */
-    }
+      const b = typeof IMG !== 'undefined' ? await IMG.get(r.id) : null;
+      if (b) {
+          base = await new Promise(function(resolve) {
+              const img = new Image();
+              img.onload = function() { resolve(img); };
+              img.onerror = function() { resolve(null); };
+              img.src = URL.createObjectURL(b);
+          });
+      }
+    } catch (e) {}
+
     if (base) {
       const t = document.createElement('canvas');
       t.width = base.naturalWidth || base.width;
       t.height = base.naturalHeight || base.height;
       t.getContext('2d').drawImage(base, 0, 0);
-      if (r.rect && r.ans)
-        withSheet(sheet, function () {
-          paintRect(
-            t,
-            {
-              L: makeLayout(cs),
-              p1: r.ans.p1,
-              p2: r.ans.p2,
-              p3: r.ans.p3,
-              sbd: String(r.sbd || '').split(''),
-              md: String(r.md || '').split('')
-            },
-            cs,
-            ver
-          );
-        });
-      const aw = W - 2 * M,
-        ah = H - y - 60,
-        k = Math.min(aw / t.width, ah / t.height),
-        dw = t.width * k,
-        dh = t.height * k;
+      try {
+          if (r.rect && r.ans && typeof paintRect === 'function') {
+            withSheet(sheet, function () {
+              paintRect(t, { L: makeLayout(cs), p1: r.ans.p1, p2: r.ans.p2, p3: r.ans.p3, sbd: String(r.sbd || '').split(''), md: String(r.md || '').split('') }, cs, ver);
+            });
+          }
+      } catch(e) {}
+      
+      // Tính toán làm to ảnh tối đa
+      const aw = W - 2 * M, ah = H - y - 60;
+      const k = Math.min(aw / t.width, ah / t.height);
+      const dw = t.width * k, dh = t.height * k;
       c.drawImage(t, M + (aw - dw) / 2, y, dw, dh);
     } else {
-      c.fillStyle = '#9ca3af';
-      c.font = '400 26px ' + F;
-      c.textAlign = 'left';
+      c.fillStyle = '#9ca3af'; c.font = '400 26px ' + F; c.textAlign = 'left';
       c.fillText('Bài này không có ảnh lưu kèm.', M, y + 40);
     }
-    return { w: W, h: H, jpg: await canvasJpeg(cv, 0.82) };
+    
+    let jpg = null;
+    try {
+        jpg = typeof canvasJpeg === 'function' ? await canvasJpeg(cv, 0.85) : null;
+        if (!jpg) {
+            const blob = await new Promise(resolve => cv.toBlob(resolve, 'image/jpeg', 0.85));
+            const arr = await blob.arrayBuffer();
+            jpg = new Uint8Array(arr);
+        }
+    } catch(e) {}
+
+    return { w: W, h: H, jpg: jpg };
   }
   async function pdfSummaryPages(view, listName) {
     const W = 1240,
