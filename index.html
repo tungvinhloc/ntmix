@@ -6923,8 +6923,7 @@ function paintMarks(c, sc, g, ver, lw, ringFn) {
       y += 84 + 45; 
     }
 
-    // 5. TRUY XUẤT HỌ TÊN HỌC SINH TỪ DANH SÁCH EXCEL 
-    // (Tự động đọc đúng các cột: STT | SBD | Họ tên | Lớp)
+    // 5. TRUY XUẤT HỌ TÊN HỌC SINH
     let stu = null;
     try {
         const key = String(r.sbd || '').replace(/\D/g, '').replace(/^0+/, '');
@@ -6935,8 +6934,6 @@ function paintMarks(c, sc, g, ver, lw, ringFn) {
         }
     } catch(e) {}
 
-    // NẾU TÌM THẤY TRONG DANH SÁCH -> IN RA CHỮ TEXT
-    // KHÔNG TÌM THẤY -> BỎ TRỐNG LUÔN ĐỂ LÀM TO ẢNH PHIẾU BÊN DƯỚI
     if (stu && stu.name) {
       c.fillStyle = '#6b7280'; c.font = '500 24px ' + F; c.textAlign = 'left';
       c.fillText('Họ tên học sinh', M, y);
@@ -6946,16 +6943,24 @@ function paintMarks(c, sc, g, ver, lw, ringFn) {
       y += 45;
     }
 
-    // 6. HIỂN THỊ ẢNH TOÀN BỘ BÀI THI CÓ KHOANH TRÒN
+    // 6. TẢI VÀ VẼ ẢNH GỐC (Bổ sung bộ chặn chống đứt gãy của Safari)
     let base = null;
     try {
       const b = typeof IMG !== 'undefined' ? await IMG.get(r.id) : null;
       if (b) {
+          // Bắt trình duyệt phải đợi ảnh load đủ 100% mới đi tiếp
           base = await new Promise(function(resolve) {
               const img = new Image();
-              img.onload = function() { resolve(img); };
-              img.onerror = function() { resolve(null); };
-              img.src = URL.createObjectURL(b);
+              const url = URL.createObjectURL(b);
+              img.onload = function() { 
+                  URL.revokeObjectURL(url); // Dọn dẹp ram ngay lập tức
+                  resolve(img); 
+              };
+              img.onerror = function() { 
+                  URL.revokeObjectURL(url);
+                  resolve(null); 
+              };
+              img.src = url;
           });
       }
     } catch (e) {}
@@ -6973,7 +6978,6 @@ function paintMarks(c, sc, g, ver, lw, ringFn) {
           }
       } catch(e) {}
       
-      // Tính toán làm to ảnh tối đa
       const aw = W - 2 * M, ah = H - y - 60;
       const k = Math.min(aw / t.width, ah / t.height);
       const dw = t.width * k, dh = t.height * k;
@@ -6983,17 +6987,22 @@ function paintMarks(c, sc, g, ver, lw, ringFn) {
       c.fillText('Bài này không có ảnh lưu kèm.', M, y + 40);
     }
     
+    // 7. XUẤT RA CHUỖI ẢNH JPG
     let jpg = null;
     try {
-        jpg = typeof canvasJpeg === 'function' ? await canvasJpeg(cv, 0.85) : null;
+        if (typeof canvasJpeg === 'function') {
+            jpg = await canvasJpeg(cv, 0.85);
+        }
         if (!jpg) {
             const blob = await new Promise(resolve => cv.toBlob(resolve, 'image/jpeg', 0.85));
-            const arr = await blob.arrayBuffer();
-            jpg = new Uint8Array(arr);
+            if (blob) {
+                const arr = await blob.arrayBuffer();
+                jpg = new Uint8Array(arr);
+            }
         }
     } catch(e) {}
 
-    return { w: W, h: H, jpg: jpg };
+    return { w: W, h: H, jpg: jpg || new Uint8Array(0) }; // Đảm bảo luôn trả về mảng dù lỗi
   }
   async function pdfSummaryPages(view, listName) {
     const W = 1240,
