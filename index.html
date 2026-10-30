@@ -6865,7 +6865,14 @@ function paintMarks(c, sc, g, ver, lw, ringFn) {
     return new Blob(chunks, { type: 'application/pdf' });
   }
   async function pdfStudentPage(r, idx, n, listName) {
-    const W = 1240, H = 1754, M = 70, cv = document.createElement('canvas'), c = cv.getContext('2d');
+    // 1. CHỐT CHẶN QUAN TRỌNG: Nhường CPU 50ms để iPhone kịp dọn rác RAM đồ họa
+    await new Promise(resolve => setTimeout(resolve, 50));
+
+    const W = 1240, H = 1754, M = 70;
+    const cv = document.createElement('canvas');
+    cv.width = W; 
+    cv.height = H;
+    const c = cv.getContext('2d');
     c.fillStyle = '#fff'; c.fillRect(0, 0, W, H);
     const F = '"Be Vietnam Pro","Segoe UI",Arial,sans-serif';
     
@@ -6885,25 +6892,25 @@ function paintMarks(c, sc, g, ver, lw, ringFn) {
         }
     } catch(e) {}
 
-    // 1. Dòng tiêu đề trên cùng
+    // Dòng tiêu đề trên cùng
     c.fillStyle = '#6b7280'; c.font = '500 26px ' + F; c.textAlign = 'left';
     c.fillText('B&T Pro Mark · ' + (listName || 'Kết quả'), M, 72);
     c.textAlign = 'right'; c.fillText('Bài ' + idx + '/' + n, W - M, 72);
 
-    // 2. SBD, Mã đề và Ngày tháng
+    // SBD, Mã đề và Ngày tháng
     c.fillStyle = '#111827'; c.font = '700 46px ' + F; c.textAlign = 'left';
     const info = 'SBD ' + (r.sbd || '—') + ' · Mã đề ' + (r.md || '—');
     c.fillText(info, M, 140);
     c.fillStyle = '#6b7280'; c.font = '400 24px ' + F;
     c.fillText(new Date(r.t).toLocaleString('vi-VN') + (r.edited ? ' · đã sửa' : ''), M, 178);
 
-    // 3. Điểm tổng góc phải
+    // Điểm tổng góc phải
     c.textAlign = 'right'; c.fillStyle = '#1d3a8a'; c.font = '800 96px ' + F;
     c.fillText(r.total != null ? String(r.total).replace('.',',') : '0', W - M - 150, 160);
     c.fillStyle = '#6b7280'; c.font = '500 34px ' + F; c.textAlign = 'left';
     c.fillText('/ ' + (r.max != null ? String(r.max).replace('.',',') : '10') + ' điểm', W - M - 140, 160);
 
-    // 4. Các hộp điểm thành phần
+    // Các hộp điểm thành phần
     let y = 215;
     const parts = r.parts || [], mx = g ? [g.p1.max, g.p2.max, g.p3.max] : null, ns = [cs.n1, cs.n2, cs.n3];
     const act = [0, 1, 2].filter(function (i) { return parts[i] != null && ns[i]; });
@@ -6923,7 +6930,7 @@ function paintMarks(c, sc, g, ver, lw, ringFn) {
       y += 84 + 45; 
     }
 
-    // 5. TRUY XUẤT HỌ TÊN HỌC SINH
+    // TRUY XUẤT HỌ TÊN HỌC SINH TỪ DANH SÁCH EXCEL 
     let stu = null;
     try {
         const key = String(r.sbd || '').replace(/\D/g, '').replace(/^0+/, '');
@@ -6943,24 +6950,18 @@ function paintMarks(c, sc, g, ver, lw, ringFn) {
       y += 45;
     }
 
-    // 6. TẢI VÀ VẼ ẢNH GỐC (Bổ sung bộ chặn chống đứt gãy của Safari)
+    // TẢI VÀ VẼ ẢNH GỐC 
     let base = null;
+    let objUrl = null;
     try {
       const b = typeof IMG !== 'undefined' ? await IMG.get(r.id) : null;
       if (b) {
-          // Bắt trình duyệt phải đợi ảnh load đủ 100% mới đi tiếp
+          objUrl = URL.createObjectURL(b);
           base = await new Promise(function(resolve) {
               const img = new Image();
-              const url = URL.createObjectURL(b);
-              img.onload = function() { 
-                  URL.revokeObjectURL(url); // Dọn dẹp ram ngay lập tức
-                  resolve(img); 
-              };
-              img.onerror = function() { 
-                  URL.revokeObjectURL(url);
-                  resolve(null); 
-              };
-              img.src = url;
+              img.onload = function() { resolve(img); };
+              img.onerror = function() { resolve(null); };
+              img.src = objUrl;
           });
       }
     } catch (e) {}
@@ -6982,12 +6983,21 @@ function paintMarks(c, sc, g, ver, lw, ringFn) {
       const k = Math.min(aw / t.width, ah / t.height);
       const dw = t.width * k, dh = t.height * k;
       c.drawImage(t, M + (aw - dw) / 2, y, dw, dh);
+
+      // 2. CHỐT CHẶN QUAN TRỌNG: Phá hủy Canvas "t" ngay lập tức để giải phóng RAM
+      t.width = 0;
+      t.height = 0;
     } else {
       c.fillStyle = '#9ca3af'; c.font = '400 26px ' + F; c.textAlign = 'left';
       c.fillText('Bài này không có ảnh lưu kèm.', M, y + 40);
     }
+
+    // Thu hồi URL sau khi chắc chắn ảnh đã được vẽ lên mặt phẳng
+    if (objUrl) {
+        URL.revokeObjectURL(objUrl);
+    }
     
-    // 7. XUẤT RA CHUỖI ẢNH JPG
+    // NÉN VÀ XUẤT ẢNH PDF
     let jpg = null;
     try {
         if (typeof canvasJpeg === 'function') {
@@ -7002,7 +7012,11 @@ function paintMarks(c, sc, g, ver, lw, ringFn) {
         }
     } catch(e) {}
 
-    return { w: W, h: H, jpg: jpg || new Uint8Array(0) }; // Đảm bảo luôn trả về mảng dù lỗi
+    // 3. CHỐT CHẶN QUAN TRỌNG: Phá hủy Canvas chính "cv" sau khi đã lấy được dải pixel nén (jpg)
+    cv.width = 0;
+    cv.height = 0;
+
+    return { w: W, h: H, jpg: jpg || new Uint8Array(0) };
   }
   async function pdfSummaryPages(view, listName) {
     const W = 1240,
