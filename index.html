@@ -6865,7 +6865,7 @@ function paintMarks(c, sc, g, ver, lw, ringFn) {
     return new Blob(chunks, { type: 'application/pdf' });
   }
   async function pdfStudentPage(r, idx, n, listName) {
-    // 1. CHỐT CHẶN QUAN TRỌNG: Nhường CPU 50ms để iPhone kịp dọn rác RAM đồ họa
+    // 1. Nhường CPU 50ms để iPhone kịp dọn rác RAM đồ họa
     await new Promise(resolve => setTimeout(resolve, 50));
 
     const W = 1240, H = 1754, M = 70;
@@ -6930,17 +6930,15 @@ function paintMarks(c, sc, g, ver, lw, ringFn) {
       y += 84 + 45; 
     }
 
-    // TRUY XUẤT HỌ TÊN HỌC SINH TỪ DANH SÁCH EXCEL 
+    // 5. TRUY XUẤT HỌ TÊN BẰNG HÀM GỐC CỦA ỨNG DỤNG (Tuyệt đối an toàn)
     let stu = null;
     try {
-        const key = String(r.sbd || '').replace(/\D/g, '').replace(/^0+/, '');
-        const ls = JSON.parse(localStorage.getItem('omr.lists') || '{"items":[]}');
-        const active = ls.items.find(l => l.id === ls.active) || ls.items[0];
-        if (active && active.students) {
-            stu = active.students.find(s => String(s.k) === key);
+        if (typeof stuOf === 'function') {
+            stu = stuOf(r.sbd); // Gọi thẳng hàm lấy dữ liệu siêu chuẩn của app
         }
     } catch(e) {}
 
+    // NẾU TÌM THẤY TRONG DANH SÁCH -> IN RA CHỮ TEXT
     if (stu && stu.name) {
       c.fillStyle = '#6b7280'; c.font = '500 24px ' + F; c.textAlign = 'left';
       c.fillText('Họ tên học sinh', M, y);
@@ -6984,7 +6982,7 @@ function paintMarks(c, sc, g, ver, lw, ringFn) {
       const dw = t.width * k, dh = t.height * k;
       c.drawImage(t, M + (aw - dw) / 2, y, dw, dh);
 
-      // 2. CHỐT CHẶN QUAN TRỌNG: Phá hủy Canvas "t" ngay lập tức để giải phóng RAM
+      // Phá hủy Canvas ngay lập tức để chống tràn RAM iOS
       t.width = 0;
       t.height = 0;
     } else {
@@ -6992,7 +6990,6 @@ function paintMarks(c, sc, g, ver, lw, ringFn) {
       c.fillText('Bài này không có ảnh lưu kèm.', M, y + 40);
     }
 
-    // Thu hồi URL sau khi chắc chắn ảnh đã được vẽ lên mặt phẳng
     if (objUrl) {
         URL.revokeObjectURL(objUrl);
     }
@@ -7012,7 +7009,6 @@ function paintMarks(c, sc, g, ver, lw, ringFn) {
         }
     } catch(e) {}
 
-    // 3. CHỐT CHẶN QUAN TRỌNG: Phá hủy Canvas chính "cv" sau khi đã lấy được dải pixel nén (jpg)
     cv.width = 0;
     cv.height = 0;
 
