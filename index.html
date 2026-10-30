@@ -6930,15 +6930,19 @@ function paintMarks(c, sc, g, ver, lw, ringFn) {
       y += 84 + 45; 
     }
 
-    // 5. TRUY XUẤT HỌ TÊN BẰNG HÀM GỐC CỦA ỨNG DỤNG (Tuyệt đối an toàn)
+    // 5. TRUY XUẤT TÊN CỰC CHUẨN BẰNG BỘ NHỚ LÕI CỦA APP
     let stu = null;
     try {
-        if (typeof stuOf === 'function') {
-            stu = stuOf(r.sbd); // Gọi thẳng hàm lấy dữ liệu siêu chuẩn của app
+        const stuKey = function(s) { return String(s == null ? '' : s).replace(/\D/g, '').replace(/^0+(?=\d)/, ''); };
+        const k = stuKey(r.sbd);
+        if (k) {
+            // Lấy thẳng từ mảng lưu học sinh của phiên làm việc hiện tại
+            const arr = curList && curList() ? (curList().students || []) : [];
+            stu = arr.find(s => s.k === k);
         }
     } catch(e) {}
 
-    // NẾU TÌM THẤY TRONG DANH SÁCH -> IN RA CHỮ TEXT
+    // IN TÊN (NẾU CÓ)
     if (stu && stu.name) {
       c.fillStyle = '#6b7280'; c.font = '500 24px ' + F; c.textAlign = 'left';
       c.fillText('Họ tên học sinh', M, y);
@@ -6982,7 +6986,6 @@ function paintMarks(c, sc, g, ver, lw, ringFn) {
       const dw = t.width * k, dh = t.height * k;
       c.drawImage(t, M + (aw - dw) / 2, y, dw, dh);
 
-      // Phá hủy Canvas ngay lập tức để chống tràn RAM iOS
       t.width = 0;
       t.height = 0;
     } else {
