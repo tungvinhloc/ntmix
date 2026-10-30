@@ -6895,7 +6895,7 @@ function paintMarks(c, sc, g, ver, lw, ringFn) {
 
     // Dòng tiêu đề trên cùng
     c.fillStyle = '#6b7280'; c.font = '500 26px ' + F; c.textAlign = 'left';
-    c.fillText('B&T Pro Mark · ' + (listName || 'Kết quả'), M, 72);
+    c.fillText('NTMIX · ' + (listName || 'Kết quả'), M, 72);
     c.textAlign = 'right'; c.fillText('Bài ' + idx + '/' + n, W - M, 72);
 
     // SBD, Mã đề và Ngày tháng
@@ -6937,7 +6937,7 @@ function paintMarks(c, sc, g, ver, lw, ringFn) {
     let stuName = '';
     let stuCls = '';
     try {
-        // Tầng 1: Lấy từ bộ nhớ B&T Pro Mark mới
+        // Tầng 1: Lấy từ bộ nhớ NTMIX mới
         const key = String(r.sbd || '').replace(/\D/g, '').replace(/^0+/, '');
         const lsStr = localStorage.getItem('omr.lists');
         if (lsStr) {
