@@ -5695,15 +5695,20 @@ function paintMarks(c, sc, g, ver, lw, ringFn) {
           const wb = window.XLSX.read(buf, { type: 'array' });
           let best = null;
           for (let i = 0; i < wb.SheetNames.length; i++) {
-            const r = parseRoster(window.XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[i]], { header: 1, raw: true, defval: '' }));
-            if (!best || r.list.length > best.list.length) best = r;
+            if (typeof parseRoster === 'function') {
+                const r = parseRoster(window.XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[i]], { header: 1, raw: true, defval: '' }));
+                if (!best || r.list.length > best.list.length) best = r;
+            }
           }
           if(best && best.list.length) {
-            const activeList = curList();
-            activeList.students = best.list;
-            saveLists();
-            renderScan();
-            alert('Đã nạp thành công ' + best.list.length + ' thí sinh!');
+            const ls = LS.get('omr.lists', null);
+            if (ls && ls.items) {
+                const activeList = ls.items.find(l => l.id === ls.active) || ls.items[0];
+                activeList.students = best.list;
+                LS.set('omr.lists', ls);
+                renderScan();
+                alert('Đã nạp thành công ' + best.list.length + ' thí sinh!');
+            }
           } else {
             alert('Không tìm thấy dữ liệu học sinh hợp lệ.');
           }
@@ -5712,7 +5717,7 @@ function paintMarks(c, sc, g, ver, lw, ringFn) {
         }
       };
     }
-  }  
+  } 
   function keepScroll(fn) {
     const y = window.scrollY;
     fn();
