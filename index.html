@@ -1708,7 +1708,12 @@ const SHEET_BGD25 = {
   P3_COMMA: 223.5,
   P3_D: [228.6, 233.2, 237.8, 242.4, 247.0, 251.6, 256.2, 260.8, 265.4, 270.0],
   
-  MAX1: 40, MAX2: 8, MAX3: 6
+  MAX1: 40, 
+  MAX2: 8, 
+  MAX3: 6,
+  // BỔ SUNG ĐỘ DÀI CỘT SBD VÀ MÃ ĐỀ ĐỂ APP HIỂN THỊ ĐỦ
+  SBD_LEN: 8, 
+  MD_LEN: 4
 };
 const SHEETS = { nh: SHEET_NH, kt: SHEET_KT, m: SHEET_M, bgd25: SHEET_BGD25 };
 let SHEET = SHEET_NH,
@@ -3410,8 +3415,12 @@ function renderPhoto(sheetImg, cfg, marks, o) {
     { n1: 12, n2: 0, n3: 0, p1: 0.5, p2: 0, p3: 0 },
     { n1: 8, n2: 2, n3: 2, p1: 0.25, p2: 1, p3: 0.5 }
   ];
+    const PRESETS_BGD25 = [
+    { n1: 40, n2: 8, n3: 6, p1: 0.25, p2: 1, p3: 0.5 },
+    { n1: 40, n2: 0, n3: 0, p1: 0.25, p2: 0, p3: 0 }
+  ];
   const presetsFor = function (id) {
-    return id === 'kt' ? PRESETS_KT : id === 'm' ? PRESETS_M : PRESETS;
+    return id === 'kt' ? PRESETS_KT : id === 'm' ? PRESETS_M : id === 'bgd25' ? PRESETS_BGD25 : PRESETS;
   };
   const presetsNow = function () {
     return presetsFor(cfg && cfg.sheet);
@@ -3670,15 +3679,22 @@ function renderPhoto(sheetImg, cfg, marks, o) {
     cfg.thr = cfg.thrs[id] || 0.08;
     cfg.structs = cfg.structs || {};
     cfg.structs[prevId] = { n1: cfg.n1, n2: cfg.n2, n3: cfg.n3, p1: cfg.p1, p2: cfg.p2, p3: cfg.p3 };
-    const st = cfg.structs[id] || (id === 'kt' ? PRESETS_KT[0] : id === 'm' ? PRESETS_M[0] : PRESETS[1]);
-    cfg.n1 = Math.min(st.n1, MAX1);
-    cfg.n2 = Math.min(st.n2, MAX2);
-    cfg.n3 = Math.min(st.n3, MAX3);
+    const st = cfg.structs[id] || (id === 'kt' ? PRESETS_KT[0] : id === 'm' ? PRESETS_M[0] : id === 'bgd25' ? PRESETS_BGD25[0] : PRESETS[1]);
+    cfg.n1 = Math.min(st.n1, SHEET.MAX1 || MAX1);
+    cfg.n2 = Math.min(st.n2, SHEET.MAX2 || MAX2);
+    cfg.n3 = Math.min(st.n3, SHEET.MAX3 || MAX3);
     cfg.p1 = st.p1;
     cfg.p2 = st.p2;
     cfg.p3 = st.p3;
+    
+    // ĐÓNG BĂNG TÍNH NĂNG VÀ ÉP LẤY ĐÚNG ĐỘ DÀI CỘT
+    // Thay vì đếm chung chung, ép ứng dụng ưu tiên lấy độ dài khai báo riêng của từng phiếu
+    const currentSbdLen = SHEET.SBD_LEN || SHEET.SBD_X.length;
+    const currentMdLen = SHEET.MD_LEN || SHEET.MD_X.length;
+
     cfg.versions.forEach(function (v) {
-      let c = String(v.code || '').trim().replace(/\D/g, '');
+      // Cắt chuỗi mã đề dựa trên độ dài chính xác của phiếu đang chọn
+      let c = String(v.code || '').trim().replace(/\D/g, '').slice(0, currentMdLen);
       v.code = c;
     });
     saveCfg();
@@ -5585,13 +5601,11 @@ function paintMarks(c, sc, g, ver, lw, ringFn) {
     // -----------------------------------------
 
    h +=
-      '<div class="fields"><div class="field"><label class="lbl" for="sbdIn">Số báo danh' + nameStr + '</label><input id="sbdIn" class="mono" maxlength="' +
-      SBD_X.length +
+      '<div class="fields"><div class="field"><label class="lbl" for="sbdIn">Số báo danh' + nameStr + '</label><input id="sbdIn" class="mono" maxlength="' + (SHEET.SBD_LEN || SBD_X.length) + '"
       '" inputmode="numeric" value="' +
       esc(scan.sbdStr) +
       '"></div>' +
-      '<div class="field"><label class="lbl" for="mdIn">Mã đề</label><input id="mdIn" class="mono" maxlength="' +
-      MD_X.length +
+      '<div class="field"><label class="lbl" for="mdIn">Mã đề</label><input id="mdIn" class="mono" maxlength="' + (SHEET.MD_LEN || MD_X.length) + '"
       '" inputmode="numeric" value="' +
       esc(scan.mdStr) +
       '"></div></div>' +
