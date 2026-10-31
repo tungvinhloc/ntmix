@@ -3435,15 +3435,15 @@ function renderPhoto(sheetImg, cfg, marks, o) {
     };
   }
   function defaultCfg() {
-    const v = emptyVer('0101');
+    const v = emptyVer('0201');
     'CADBBACDABDCADBCAB'.split('').forEach(function (c, i) {
       v.mcq[i] = LET.indexOf(c);
     });
-    v.tf[0] = ['D', 'S', 'D', 'S'];
-    v.tf[1] = ['S', 'S', 'D', 'D'];
-    v.tf[2] = ['D', 'D', 'S', 'D'];
-    v.tf[3] = ['S', 'D', 'S', 'S'];
-    v.num = ['2,5', '-1', '12', '0,75', '3', '-4,2'];
+    v.tf[0] = ['D', 'D', 'S', 'S'];
+    v.tf[1] = ['D', 'D', 'D', 'S'];
+    v.tf[2] = ['S', 'S', 'S', 'D'];
+    v.tf[3] = ['S', 'D', 'D', 'D'];
+    v.num = ['6561', '-29', '28', '19,8', '2', '19'];
     return {
       v: 2,
       sheet: 'nh',
@@ -4415,8 +4415,8 @@ function renderPhoto(sheetImg, cfg, marks, o) {
       const key = (ver.num[q] === '*' ? '1' : ver.num[q]) || '';
       m.p3.push(q === 2 ? '13' : q === 4 ? '' : key);
     }
-    m.sbd = '24011234'.split('');
-    m.md = (ver.code || '0101').padEnd(4, '0').slice(0, MD_X.length).split('');
+    m.sbd = '46001234'.split('');
+    m.md = (ver.code || '0201').padEnd(4, '0').slice(0, MD_X.length).split('');
     return m;
   }
   async function makeSample(o) {
@@ -7527,7 +7527,7 @@ let qrState = { kind: 'idle' },
       '<input class="vh" type="file" id="excelPick" accept=".xlsx, .xls, .csv">' +
       '<details class="qrpaste"' +
       (qrState.kind === 'paste' ? ' open' : '') +
-      '><summary>Hoặc dán nội dung mã QR</summary><div class="field"><textarea id="qrText" spellcheck="false" placeholder=\'[["0101","A","B",…],["0102",…]]\'></textarea></div>' +
+      '><summary>Hoặc dán nội dung mã QR</summary><div class="field"><textarea id="qrText" spellcheck="false" placeholder=\'[["0201","A","B",…],["0102",…]]\'></textarea></div>' +
       '<div class="actions"><button type="button" class="btn small" id="qrParse">Đọc nội ' +
       'dung</button></div></details>';
       
