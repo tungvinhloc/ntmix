@@ -1715,6 +1715,78 @@ const SHEET_BGD25 = {
   SBD_LEN: 8, 
   MD_LEN: 4
 };
+const SHEET_BGD25 = {
+  id: 'bgd25',
+  name: 'Phiếu TNMaker BGD 2025(4MĐ)',
+  PW: 210, 
+  PH: 297,
+  RB: 1.45,
+  CORNERS: [
+    [10.0, 10.0],
+    [197.0, 10.0],
+    [197.0, 287.0],
+    [10.0, 287.0]
+  ],
+  NAME: [74, 52, 66, 16],
+  
+  // Đóng băng nguyên trạng các dải neo ngang hiện tại
+  MARK_ROWS: [
+    [[10.0, 10.0], [197.0, 10.0]],
+    [[10.0, 93.0], [197.0, 93.0]],
+    [[10.0, 172.0], [197.0, 172.0]],
+    [[10.0, 215.0], [197.0, 215.0]],
+    [[10.0, 287.0], [197.0, 287.0]]
+  ],
+  BAND_Y: [93.0, 172.0, 215.0],
+  bands: true,
+  ORIENT: 'bands',
+  
+  BARS_Y: [31.75, 37.63, 43.34, 49.19, 55.03, 60.87, 66.71, 72.55, 78.26, 84.23],
+  BAR_X: 197.0,
+  BAR_W: 3.72,
+  BAR_H: 1.4,
+  
+  // --- TỌA ĐỘ SBD & MÃ ĐỀ: BƯỚC NHẢY CỘT CHUẨN XÁC 4.3MM ---
+  SBD_X: [140.8, 144.8, 149.1, 153.1, 157.2, 161.2, 165.3, 169.3],
+  MD_X: [179.2, 183.5, 187.9, 191.6],
+  ID_Y: [30.5, 36.5, 42.4, 48.4, 54.3, 60.3, 66.2, 72.2, 78.1, 84.0],
+  
+  // --- PHẦN I  ---
+  P1_X: [
+    [26.4, 35.3, 44.2, 53.1],     // Câu 1 - 10 (Cột 1)
+    [70.5, 79.4, 88.3, 97.2],     // Câu 11 - 20 (Cột 2)
+    [114.4, 123.0, 131.9, 140.8], // Câu 21 - 30 (Cột 3)
+    [158.3, 166.9, 175.7, 184.6]  // Câu 31 - 40 (Cột 4)
+  ],
+  P1_Y: [112.7, 117.3, 121.9, 126.5, 131.1, 135.7, 140.3, 144.9, 149.5, 154.0],
+  
+ // TỌA ĐỘ PHẦN II (Dựa trên đo đạc pixel thực tế)
+  P2_X: [
+    [26.4, 35.3], [44.4, 53.0],   // Câu 1, Câu 2 (Cột 1)
+    [70.5, 79.4], [88.3, 96.9],   // Câu 3, Câu 4 (Cột 2)
+    [114.4, 123.0], [132.1, 140.7], // Câu 5, Câu 6 (Cột 3)
+    [158.2, 166.8], [176.0, 184.6]  // Câu 7, Câu 8 (Cột 4)
+  ],
+  P2_Y: [178.4, 183.0, 187.6, 192.1],
+  
+  // --- PHẦN III: CHUẨN HÓA BƯỚC NHẢY VÀ KHỞI ĐIỂM ĐÚNG VỊ TRÍ TNMAKER ---
+  P3_X: [
+    [25.1, 31.3, 37.4, 43.4], // Câu 1
+    [53.1, 59.2, 65.2, 71.1], // Câu 2
+    [81.0, 87.2, 93.1, 99.1], // Câu 3
+    [109.0, 115.2, 121.1, 127.0], // Câu 4
+    [137.0, 143.2, 149.1, 155.0], // Câu 5
+    [165.0, 171.2, 177.1, 183.0]  // Câu 6
+  ],
+  P3_DASH: 218.9,
+  P3_COMMA: 223.5,
+  P3_D: [228.6, 233.2, 237.8, 242.4, 247.0, 251.6, 256.2, 260.8, 265.4, 270.0],
+  
+  MAX1: 40, MAX2: 8, MAX3: 6,
+  // BỔ SUNG ĐỘ DÀI CỘT SBD VÀ MÃ ĐỀ ĐỂ APP HIỂN THỊ ĐỦ
+  SBD_LEN: 8, 
+  MD_LEN: 4
+};
 const SHEETS = { nh: SHEET_NH, kt: SHEET_KT, m: SHEET_M, bgd25: SHEET_BGD25 };
 let SHEET = SHEET_NH,
   K = 1,
@@ -3686,14 +3758,11 @@ function renderPhoto(sheetImg, cfg, marks, o) {
     cfg.p1 = st.p1;
     cfg.p2 = st.p2;
     cfg.p3 = st.p3;
-    
-    // ĐÓNG BĂNG TÍNH NĂNG VÀ ÉP LẤY ĐÚNG ĐỘ DÀI CỘT
-    // Thay vì đếm chung chung, ép ứng dụng ưu tiên lấy độ dài khai báo riêng của từng phiếu
+
     const currentSbdLen = SHEET.SBD_LEN || SHEET.SBD_X.length;
     const currentMdLen = SHEET.MD_LEN || SHEET.MD_X.length;
 
     cfg.versions.forEach(function (v) {
-      // Cắt chuỗi mã đề dựa trên độ dài chính xác của phiếu đang chọn
       let c = String(v.code || '').trim().replace(/\D/g, '').slice(0, currentMdLen);
       v.code = c;
     });
@@ -5601,12 +5670,10 @@ function paintMarks(c, sc, g, ver, lw, ringFn) {
     // -----------------------------------------
 
    h +=
-      '<div class="fields"><div class="field"><label class="lbl" for="sbdIn">Số báo danh' + nameStr + '</label><input id="sbdIn" class="mono" maxlength="' + (SHEET.SBD_LEN || SBD_X.length) + '"
-      '" inputmode="numeric" value="' +
+      '<div class="fields"><div class="field"><label class="lbl" for="sbdIn">Số báo danh' + nameStr + '</label><input id="sbdIn" class="mono" maxlength="' + (SHEET.SBD_LEN || SBD_X.length) + '" inputmode="numeric" value="' +
       esc(scan.sbdStr) +
       '"></div>' +
-      '<div class="field"><label class="lbl" for="mdIn">Mã đề</label><input id="mdIn" class="mono" maxlength="' + (SHEET.MD_LEN || MD_X.length) + '"
-      '" inputmode="numeric" value="' +
+      '<div class="field"><label class="lbl" for="mdIn">Mã đề</label><input id="mdIn" class="mono" maxlength="' + (SHEET.MD_LEN || MD_X.length) + '" inputmode="numeric" value="' +
       esc(scan.mdStr) +
       '"></div></div>' +
       '<div style="margin-top: 12px;"><label class="btn small ghost" for="studentPickScan" style="width: 100%; border: 1px dashed var(--ink); color: var(--ink); cursor:pointer;">+ Nạp danh sách học sinh từ Excel</label><input class="vh" type="file" id="studentPickScan" accept=".xlsx, .xls, .csv"></div>';
