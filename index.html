@@ -3466,6 +3466,15 @@ function renderPhoto(sheetImg, cfg, marks, o) {
 
   // BƯỚC 1: HÀM LẤY THÔNG TIN HỌC SINH TỪ BỘ NHỚ
   function getStudentInfo(sbd) {
+    const key = String(sbd || '').replace(/\D/g, '').replace(/^0+/, '');
+    const ls = LS.get('omr.lists', null);
+    if (ls && ls.items) {
+        const activeList = ls.items.find(l => l.id === ls.active) || ls.items[0];
+        if (activeList && activeList.students) {
+            const stu = activeList.students.find(s => String(s.k) === key);
+            if (stu) return stu;
+        }
+    }
     const stds = LS.get('omr.students', {});
     return stds[String(sbd).trim()] || null;
   }
@@ -3757,10 +3766,8 @@ function renderPhoto(sheetImg, cfg, marks, o) {
     cfg.p1 = st.p1;
     cfg.p2 = st.p2;
     cfg.p3 = st.p3;
-
-    const currentSbdLen = SHEET.SBD_LEN || SHEET.SBD_X.length;
+    
     const currentMdLen = SHEET.MD_LEN || SHEET.MD_X.length;
-
     cfg.versions.forEach(function (v) {
       let c = String(v.code || '').trim().replace(/\D/g, '').slice(0, currentMdLen);
       v.code = c;
@@ -3777,7 +3784,6 @@ function renderPhoto(sheetImg, cfg, marks, o) {
       });
     }, 'sample');
   }
-
   function showTab(t) {
     tab = t;
     $$('.view').forEach(function (v) {
@@ -5597,122 +5603,43 @@ function paintMarks(c, sc, g, ver, lw, ringFn) {
     }
     if (scan.error) {
       const msgs = {
-        markers: [
-          'Không thấy đủ 4 ô vuông đen ở góc phiếu.',
-          'Chụp trọn cả tờ phiếu, đủ sáng, không để ngón tay hay vật khác che góc. Giữ điện thoại ' +
-            'song song mặt bàn.'
-        ],
-        quad: [
-          'Không ghép được 4 góc của phiếu.',
-          'Có thể ảnh chụp quá gần hoặc có nhiều vật đen trong khung. Chụp lại sát vào tờ phiếu, nền sáng hơn.'
-        ],
-        orient: [
-          'Thấy 4 góc nhưng không nhận ra các vạch đen nhỏ ở mép phải phiếu.',
-          'Hãy chụp cả tờ phiếu còn nguyên mép, không bị cắt, và dùng đúng mẫu phiếu của ứng dụng.'
-        ],
+        markers: ['Không thấy đủ 4 ô vuông đen ở góc phiếu.', 'Chụp trọn cả tờ phiếu, đủ sáng, không để ngón tay hay vật khác che góc. Giữ điện thoại song song mặt bàn.'],
+        quad: ['Không ghép được 4 góc của phiếu.', 'Có thể ảnh chụp quá gần hoặc có nhiều vật đen trong khung. Chụp lại sát vào tờ phiếu, nền sáng hơn.'],
+        orient: ['Thấy 4 góc nhưng không nhận ra các vạch đen nhỏ ở mép phải phiếu.', 'Hãy chụp cả tờ phiếu còn nguyên mép, không bị cắt, và dùng đúng mẫu phiếu của ứng dụng.'],
         load: ['Không mở được ảnh này.', 'Thử chụp lại hoặc chọn một ảnh JPG hoặc PNG khác.'],
-        cam: [
-          scan.camTitle || 'Không mở được camera.',
-          scan.camBody ||
-            'Kiểm tra quyền camera của trình duyệt rồi thử lại, hoặc dùng nút Chụp phiếu để chấm.'
-        ]
+        cam: [scan.camTitle || 'Không mở được camera.', scan.camBody || 'Kiểm tra quyền camera của trình duyệt rồi thử lại, hoặc dùng nút Chụp phiếu để chấm.']
       }[scan.error] || ['Không đọc được phiếu.', 'Chụp lại với đủ sáng.'];
-      out.innerHTML =
-        '<div class="card" style="margin-top:14px"><div class="note err"><b>' +
-        msgs[0] +
-        '</b><br>' +
-        msgs[1] +
-        '</div></div>';
+      out.innerHTML = '<div class="card" style="margin-top:14px"><div class="note err"><b>' + msgs[0] + '</b><br>' + msgs[1] + '</div></div>';
       return;
     }
-    const g = grade(),
-      ver = cfg.versions[scan.ver],
-      sample = scan.source === 'sample';
-    const parts = [
-      [g.p1, cfg.n1],
-      [g.p2, cfg.n2],
-      [g.p3, cfg.n3]
-    ];
+    const g = grade(), ver = cfg.versions[scan.ver], sample = scan.source === 'sample';
+    const parts = [[g.p1, cfg.n1], [g.p2, cfg.n2], [g.p3, cfg.n3]];
     let h = '<div class="card" style="margin-top:14px">';
-    if (sample)
-      h +=
-        '<div><span class="tag">Ảnh mẫu</span> <span class="hint">' +
-        'Phiếu mẫu hiển thị mẫu.' +
-        '</span></div>';
-    h +=
-      '<div class="gradebox"><div class="grade" role="img" aria-label="Điểm ' +
-      fmt(g.total) +
-      ' trên ' +
-      fmt(g.max) +
-      '">' +
-      '<svg viewBox="0 0 200 100" preserveAspectRatio="none" aria-hidden="true"><path d="M30 58C22 28 78 6 126 12c46 6 70 30 56 56-14 26-82 32-124 20C22 78 14 54 38 30" fill="none" stroke="currentColor" stroke-width="3.4" stroke-linecap="round"/></svg>' +
-      '<span class="num">' +
-      fmt(g.total) +
-      '</span><span class="of">/' +
-      fmt(g.max) +
-      '</span></div>' +
-      '<div class="sum"><div class="chips">';
+    if (sample) h += '<div><span class="tag">Ảnh mẫu</span> <span class="hint">Phiếu mẫu hiển thị mẫu.</span></div>';
+    h += '<div class="gradebox"><div class="grade" role="img" aria-label="Điểm ' + fmt(g.total) + ' trên ' + fmt(g.max) + '"><svg viewBox="0 0 200 100" preserveAspectRatio="none" aria-hidden="true"><path d="M30 58C22 28 78 6 126 12c46 6 70 30 56 56-14 26-82 32-124 20C22 78 14 54 38 30" fill="none" stroke="currentColor" stroke-width="3.4" stroke-linecap="round"/></svg><span class="num">' + fmt(g.total) + '</span><span class="of">/' + fmt(g.max) + '</span></div><div class="sum"><div class="chips">';
     parts.forEach(function (p, i) {
-      if (parts[i][1])
-        h += '<span class="chip">Phần ' + PN[i] + ': ' + fmt(p[0].pts) + '/' + fmt(p[0].max) + '</span>';
+      if (parts[i][1]) h += '<span class="chip">Phần ' + PN[i] + ': ' + fmt(p[0].pts) + '/' + fmt(p[0].max) + '</span>';
     });
-    h +=
-      '</div><div class="hint">' +
-      (cfg.n1 ? 'Phần I đúng ' + g.p1.ok + '/' + cfg.n1 : '') +
-      (cfg.n3 ? (cfg.n1 ? ' · ' : '') + 'Phần III đúng ' + g.p3.ok + '/' + cfg.n3 : '') +
-      '</div></div></div>';
+    h += '</div><div class="hint">' + (cfg.n1 ? 'Phần I đúng ' + g.p1.ok + '/' + cfg.n1 : '') + (cfg.n3 ? (cfg.n1 ? ' · ' : '') + 'Phần III đúng ' + g.p3.ok + '/' + cfg.n3 : '') + '</div></div></div>';
     h += warnHTML();
     
-    // --- LẤY THÔNG TIN HỌC SINH ĐỂ HIỂN THỊ ---
     const info = getStudentInfo(scan.sbdStr);
     const nameStr = info ? ' - <b><span style="color:var(--ink)">' + esc(info.name) + '</span> (' + esc(info.cls) + ')</b>' : '';
-    // -----------------------------------------
-
- h +=
-      '<div class="fields"><div class="field"><label class="lbl" for="sbdIn">Số báo danh' + nameStr + '</label><input id="sbdIn" class="mono" maxlength="' + (SHEET.SBD_LEN || SBD_X.length) + '" inputmode="numeric" value="' +
-      esc(scan.sbdStr) +
-      '"></div>' +
-      '<div class="field"><label class="lbl" for="mdIn">Mã đề</label><input id="mdIn" class="mono" maxlength="' + (SHEET.MD_LEN || MD_X.length) + '" inputmode="numeric" value="' +
-      esc(scan.mdStr) +
-      '"></div></div>' +
-      '<div style="margin-top: 12px;"><label class="btn small ghost" for="studentPickScan" style="width: 100%; border: 1px dashed var(--ink); color: var(--ink); cursor:pointer;">+ Nạp danh sách học sinh từ Excel</label><input class="vh" type="file" id="studentPickScan" accept=".xlsx, .xls, .csv"></div>';
+    
+    h += '<div class="fields"><div class="field"><label class="lbl" for="sbdIn">Số báo danh' + nameStr + '</label><input id="sbdIn" class="mono" maxlength="' + (SHEET.SBD_LEN || SBD_X.length) + '" inputmode="numeric" value="' + esc(scan.sbdStr) + '"></div><div class="field"><label class="lbl" for="mdIn">Mã đề</label><input id="mdIn" class="mono" maxlength="' + (SHEET.MD_LEN || MD_X.length) + '" inputmode="numeric" value="' + esc(scan.mdStr) + '"></div></div><div style="margin-top: 12px;"><label class="btn small ghost" for="studentPickScan" style="width: 100%; border: 1px dashed var(--ink); color: var(--ink); cursor:pointer;">+ Nạp danh sách học sinh từ Excel</label><input class="vh" type="file" id="studentPickScan" accept=".xlsx, .xls, .csv"></div>';
+    
     if (cfg.versions.length > 1 || !scan.matched) {
       h += '<div class="vchips"><span class="lbl">Chấm theo</span>';
       cfg.versions.forEach(function (v, i) {
-        h +=
-          '<button type="button" class="vchip" data-sv="' +
-          i +
-          '" aria-pressed="' +
-          (i === scan.ver) +
-          '">Đề ' +
-          (i + 1) +
-          (v.code ? ' · ' + v.code : '') +
-          '</button>';
+        h += '<button type="button" class="vchip" data-sv="' + i + '" aria-pressed="' + (i === scan.ver) + '">Đề ' + (i + 1) + (v.code ? ' · ' + v.code : '') + '</button>';
       });
       h += '</div>';
-      if (!scan.matched && cfg.versions.length > 1)
-        h +=
-          '<p class="hint">Mã đề đọc được chưa trùng đề nào đã nhập, đang chấm theo Đề ' +
-          (scan.ver + 1) +
-          '.</p>';
+      if (!scan.matched && cfg.versions.length > 1) h += '<p class="hint">Mã đề đọc được chưa trùng đề nào đã nhập, đang chấm theo Đề ' + (scan.ver + 1) + '.</p>';
     }
     if (!sample) autoSave(scan);
-    h +=
-      (sample
-        ? ''
-        : '<div class="note ok" style="margin-top:12px"><b>Đã tự động lưu</b> vào tab Kết quả. Sửa ' +
-          'số báo danh, mã đề hoặc đáp án ở dưới thì điểm đã lưu tự cập nhật theo.</div>') +
-      '<div class="actions"><button type="button" class="btn primary" id="nextBtn">Chấm phiếu ' +
-      'tiếp</button></div></div>';
-    h +=
-      '<div class="card" style="margin-top:14px"><h2>Ảnh đã nhận diện</h2><div id="cvHost"></div><p class="hint">Vòng ' +
-      'xanh lá là ý đúng, vòng đỏ là ý sai, vòng vàng (hoặc nét đứt vòng xanh) là đáp án đúng ở chỗ học sinh làm sai ' +
-      'hoặc bỏ trống, vòng xanh dương là số báo danh và mã đề. Khung xanh dương là 4 góc phiếu ' +
-      'máy tìm thấy, vòng nhỏ xanh lá là các ô neo đã nhận, vòng cam là ô neo máy ước ' +
-      'tính.</p></div>';
-    h +=
-      '<div class="card" style="margin-top:14px"><h2>Kiểm tra từng câu</h2><p class="hint">Máy ' +
-      'đọc sai chỗ nào thì chạm hoặc gõ lại chỗ đó, điểm tự tính lại.</p>';
+    h += (sample ? '' : '<div class="note ok" style="margin-top:12px"><b>Đã tự động lưu</b> vào tab Kết quả. Sửa số báo danh, mã đề hoặc đáp án ở dưới thì điểm đã lưu tự cập nhật theo.</div>') + '<div class="actions"><button type="button" class="btn primary" id="nextBtn">Chấm phiếu tiếp</button></div></div>';
+    h += '<div class="card" style="margin-top:14px"><h2>Ảnh đã nhận diện</h2><div id="cvHost"></div><p class="hint">Vòng xanh lá là ý đúng, vòng đỏ là ý sai, vòng vàng (hoặc nét đứt vòng xanh) là đáp án đúng ở chỗ học sinh làm sai hoặc bỏ trống, vòng xanh dương là số báo danh và mã đề. Khung xanh dương là 4 góc phiếu máy tìm thấy, vòng nhỏ xanh lá là các ô neo đã nhận, vòng cam là ô neo máy ước tính.</p></div>';
+    h += '<div class="card" style="margin-top:14px"><h2>Kiểm tra từng câu</h2><p class="hint">Máy đọc sai chỗ nào thì chạm hoặc gõ lại chỗ đó, điểm tự tính lại.</p>';
     if (cfg.n1) h += '<h3 class="ph">Phần I</h3><div id="rev1"></div>';
     if (cfg.n2) h += '<h3 class="ph">Phần II</h3><div id="rev2"></div>';
     if (cfg.n3) h += '<h3 class="ph">Phần III</h3><div id="rev3"></div>';
@@ -5727,13 +5654,14 @@ function paintMarks(c, sc, g, ver, lw, ringFn) {
     $('#cvHost').appendChild(scan.view);
     drawOverlay();
     drawReview(g, ver);
+    
     $('#sbdIn').onchange = function () {
-      scan.sbdStr = this.value.replace(/[^0-9_?]/g, '').slice(0, SBD_X.length);
+      scan.sbdStr = this.value.replace(/[^0-9_?]/g, '').slice(0, (SHEET.SBD_LEN || SBD_X.length));
       scan.saved = false;
       renderScan();
     };
     $('#mdIn').onchange = function () {
-      scan.mdStr = this.value.replace(/[^0-9_?]/g, '').slice(0, MD_X.length);
+      scan.mdStr = this.value.replace(/[^0-9_?]/g, '').slice(0, (SHEET.MD_LEN || MD_X.length));
       pickVersion();
       scan.saved = false;
       renderScan();
@@ -5747,12 +5675,11 @@ function paintMarks(c, sc, g, ver, lw, ringFn) {
       };
     });
     const nb = $('#nextBtn');
-    if (nb)
-      nb.onclick = function () {
+    if (nb) nb.onclick = function () {
         if (camSupported()) startLive();
         else $('#cam').click();
-      };
-   // CHỨC NĂNG NẠP EXCEL NGAY TRÊN MÀN HÌNH CHẤM BÀI
+    };
+    
     const spScan = $('#studentPickScan');
     if (spScan) {
       spScan.onchange = async function () {
@@ -5760,34 +5687,32 @@ function paintMarks(c, sc, g, ver, lw, ringFn) {
         this.value = '';
         if (!f) return;
         try {
-          await loadScript('https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js');
-          const reader = new FileReader();
-          reader.onload = function (e) {
-            try {
-              const data = new Uint8Array(e.target.result);
-              const workbook = window.XLSX.read(data, { type: 'array' });
-              const rows = window.XLSX.utils.sheet_to_json(workbook.Sheets[workbook.SheetNames[0]]);
-              let students = LS.get('omr.students', {});
-              let added = 0;
-              rows.forEach(function(row) {
-                  let sbd = row['SBD'] || row['Số báo danh'] || row['sbd'] || row['Mã học sinh'];
-                  let name = row['HỌ VÀ TÊN'] || row['Họ và tên'] || row['Họ tên'] || row['Tên'];
-                  let cls = row['Lớp'] || row['LỚP'] || row['Class'] || '';
-                  if (sbd && name) {
-                      students[String(sbd).trim()] = { name: String(name).trim(), cls: String(cls).trim() };
-                      added++;
-                  }
-              });
-              LS.set('omr.students', students);
-              alert('Đã nạp thành công ' + added + ' học sinh vào hệ thống!');
-              renderScan(); // Render lại màn hình để hiển thị tên ngay lập tức
-            } catch (err) { alert('Lỗi định dạng file Excel: ' + err.message); }
-          };
-          reader.readAsArrayBuffer(f);
-        } catch (err) { alert('Vui lòng bật mạng để tải thư viện Excel.'); }
+          if (typeof window.XLSX === 'undefined') {
+             alert('Đang tải bộ đọc Excel, vui lòng chờ vài giây rồi thử lại...');
+             return;
+          }
+          const buf = await f.arrayBuffer();
+          const wb = window.XLSX.read(buf, { type: 'array' });
+          let best = null;
+          for (let i = 0; i < wb.SheetNames.length; i++) {
+            const r = parseRoster(window.XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[i]], { header: 1, raw: true, defval: '' }));
+            if (!best || r.list.length > best.list.length) best = r;
+          }
+          if(best && best.list.length) {
+            const activeList = curList();
+            activeList.students = best.list;
+            saveLists();
+            renderScan();
+            alert('Đã nạp thành công ' + best.list.length + ' thí sinh!');
+          } else {
+            alert('Không tìm thấy dữ liệu học sinh hợp lệ.');
+          }
+        } catch(e) {
+          alert('Lỗi nạp file Excel: ' + e.message);
+        }
       };
     }
-  }
+  }  
   function keepScroll(fn) {
     const y = window.scrollY;
     fn();
