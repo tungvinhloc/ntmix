@@ -1467,7 +1467,7 @@ const SHEET4_PDF="assets/bgd2025.pdf";
 /* ---- Phiếu 1: PHIẾU TLTN Nguyễn Huệ (mm, trang 208 x 297) ---- */
 const SHEET_NH = {
   id: 'nh',
-  name: 'Phiếu BGD Chuẩn 2025',
+  name: 'Phiếu BGD 2025 CV 1239',
   PW: 208,
   PH: 297,
   RB: 1.45,
@@ -3644,7 +3644,7 @@ function renderPhoto(sheetImg, cfg, marks, o) {
     e.innerHTML =
       '<span class="lbl">Loại phiếu</span><div class="vchips">' +
       [
-        ['nh', 'Phiếu BGD Chuẩn 2025'],
+        ['nh', 'Phiếu BGD 2025 CV 1239'],
         ['m', 'Phiếu NH-01'],
         ['kt', 'Phiếu NH-02'],
         ['bgd25', 'Phiếu TNMaker BGD 2025(4MĐ)']
@@ -4270,7 +4270,7 @@ function renderPhoto(sheetImg, cfg, marks, o) {
       $('#pdfBtn').onclick = async function () {
         const msg = $('#pdfMsg');
         this.disabled = true;
-        const st = await saveFile('phieu-bt-pro-m.jpg', await fetchBytes(SHEET3_JPG));
+        const st = await saveFile('phieu-nh-01.jpg', await fetchBytes(SHEET3_JPG));
         if (st === 'saved') msg.textContent = 'Đã lưu ảnh phiếu.';
         else if (st === 'declined') msg.textContent = 'Bạn đã huỷ lưu. Nhấn lại nút để tải.';
         else msg.textContent = 'Chế độ xem này không cho tải file. Nhấn giữ ảnh phiếu ở trên để lưu về máy.';
@@ -4294,7 +4294,7 @@ function renderPhoto(sheetImg, cfg, marks, o) {
       $('#pdfBtn').onclick = async function () {
         const msg = $('#pdfMsg');
         this.disabled = true;
-        const st = await saveFile('phieu-bt-pro-s.jpg', await fetchBytes(SHEET2_JPG));
+        const st = await saveFile('phieu-nh-02.jpg', await fetchBytes(SHEET2_JPG));
         if (st === 'saved') msg.textContent = 'Đã lưu ảnh phiếu.';
         else if (st === 'declined') msg.textContent = 'Bạn đã huỷ lưu. Nhấn lại nút để tải.';
         else msg.textContent = 'Chế độ xem này không cho tải file. Nhấn giữ ảnh phiếu ở trên để lưu về máy.';
@@ -4321,7 +4321,7 @@ function renderPhoto(sheetImg, cfg, marks, o) {
       return;
     }
     $('#sheetCard').innerHTML =
-      '<h2>Phiếu BGD Chuẩn 2025</h2>' +
+      '<h2>Phiếu BGD 2025 CV 1239</h2>' +
       '<p class="hint">Ứng dụng chấm đúng trên mẫu phiếu này: số báo danh 8 chữ số, mã đề 4 chữ ' +
       'số, Phần I tối đa 40 câu, Phần II tối đa 8 câu, Phần III tối đa 6 câu. Mỗi tờ có 4 ô ' +
       'vuông đen ở góc để căn ảnh.</p>' +
@@ -4336,7 +4336,7 @@ function renderPhoto(sheetImg, cfg, marks, o) {
     $('#pdfBtn').onclick = async function () {
       const msg = $('#pdfMsg');
       this.disabled = true;
-      const st = await saveFile('phieu-bt-pro-f.pdf', await fetchBytes(SHEET_PDF));
+      const st = await saveFile('phieu-bgd-2025-cv1239.pdf', await fetchBytes(SHEET_PDF));
       if (st === 'saved') msg.textContent = 'Đã lưu file PDF của phiếu.';
       else if (st === 'declined') msg.textContent = 'Bạn đã huỷ lưu. Nhấn lại nút để tải.';
       else
