@@ -5669,7 +5669,7 @@ function paintMarks(c, sc, g, ver, lw, ringFn) {
     const nameStr = info ? ' - <b><span style="color:var(--ink)">' + esc(info.name) + '</span> (' + esc(info.cls) + ')</b>' : '';
     // -----------------------------------------
 
-   h +=
+  h +=
       '<div class="fields"><div class="field"><label class="lbl" for="sbdIn">Số báo danh' + nameStr + '</label><input id="sbdIn" class="mono" maxlength="' + (SHEET.SBD_LEN || SBD_X.length) + '" inputmode="numeric" value="' +
       esc(scan.sbdStr) +
       '"></div>' +
