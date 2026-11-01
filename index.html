@@ -7520,11 +7520,7 @@ let qrState = { kind: 'idle' },
       '><summary>Hoặc dán nội dung mã QR</summary><div class="field"><textarea id="qrText" spellcheck="false" placeholder=\'[["0201","A","B",…],["0102",…]]\'></textarea></div>' +
       '<div class="actions"><button type="button" class="btn small" id="qrParse">Đọc nội ' +
       'dung</button></div></details>';
-      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 6px;">
-  <path d="M4 8V6a2 2 0 0 1 2-2h2M16 4h2a2 2 0 0 1 2 2v2M20 16v2a2 2 0 0 1-2 2h-2M8 20H6a2 2 0 0 1-2-2v-2"></path>
-  <rect x="9" y="9" width="6" height="6" rx="1"></rect>
-</svg>
-      
+            
     if (qrState.kind === 'busy') h += '<div class="busy"><span class="spin"></span>Đang xử lý dữ liệu…</div>';
     else if (qrState.kind === 'error')
       h += '<div class="note err"><b>' + esc(qrState.title) + '</b><br>' + esc(qrState.body) + '</div>';
