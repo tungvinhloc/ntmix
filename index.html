@@ -4248,7 +4248,7 @@ function renderPhoto(sheetImg, cfg, marks, o) {
     if (cfg.sheet === 'm') {
       $('#sheetCard').innerHTML =
         '<h2>Phiếu NTMIX - 1</h2>' +
-        '<p class="hint">Mẫu phiếu M: số báo danh 8 chữ số, mã đề 4 chữ số, Phần I tối đa 12 câu, ' +
+        '<p class="hint">Mẫu phiếu NH-01: số báo danh 8 chữ số, mã đề 4 chữ số, Phần I tối đa 12 câu, ' +
         'Phần II tối đa 2 câu, Phần III tối đa 4 câu. Ứng dụng căn ảnh theo 6 ô vuông đen (4 góc ' +
         'và 2 ô giữa hai mép bên), chiều của phiếu nhận ra nhờ các vòng tròn in sẵn.</p>' +
         '<img class="sheetimg" alt="Xem trước phiếu B&T Pro - M" src="' +
@@ -4273,7 +4273,7 @@ function renderPhoto(sheetImg, cfg, marks, o) {
     if (cfg.sheet === 'kt') {
       $('#sheetCard').innerHTML =
         '<h2>Phiếu NTMIX - 2</h2>' +
-        '<p class="hint">Mẫu phiếu S (ngắn): số thứ tự 2 chữ số, mã đề 3 chữ số, Phần I tối đa 10 ' +
+        '<p class="hint">Mẫu phiếu NH-02 (ngắn): số thứ tự 2 chữ số, mã đề 3 chữ số, Phần I tối đa 10 ' +
         'câu, Phần II tối đa 2 câu, Phần III tối đa 3 câu. Ứng dụng căn ảnh theo 4 ô vuông đen ở ' +
         'góc, ô vuông thứ năm giữa mép trên giúp nhận ra phiếu bị đặt ngược.</p>' +
         '<img class="sheetimg" alt="Xem trước phiếu B&T Pro - S" src="' +
@@ -4297,8 +4297,8 @@ function renderPhoto(sheetImg, cfg, marks, o) {
     if (cfg.sheet === 'bgd25') {
       $('#sheetCard').innerHTML =
         '<h2>Phiếu BGD 2025 (4 Mã Đề)</h2>' +
-        '<p class="hint">Mẫu phiếu chuẩn cấu trúc 2025 của Bộ GD&ĐT: SBD 8 số, Mã đề 4 số. Gồm 40 câu Phần I, 8 câu Phần II và 6 câu Phần III.</p>' +
-        '<img class="sheetimg" alt="Xem trước phiếu BGD 2025" src="' + SHEET4_JPG + '">' +
+        '<p class="hint">Mẫu phiếu chuẩn TNMaker BGD 2025 mã đề 4 số: SBD 8 số, Mã đề 4 số. Gồm 40 câu Phần I, 8 câu Phần II và 6 câu Phần III.</p>' +
+        '<img class="sheetimg" alt="Xem trước phiếu TNMaker BGD 2025" src="' + SHEET4_JPG + '">' +
         '<div class="actions"><button type="button" class="btn primary" id="pdfBtn">Tải phiếu gốc (PDF)</button></div>' +
         '<p class="hint" id="pdfMsg">In khổ A4 tỷ lệ 100%. Đảm bảo 4 ô vuông đen ở 4 góc hiển thị rõ ràng.</p>';
       $('#pdfBtn').onclick = async function () {
@@ -4314,7 +4314,7 @@ function renderPhoto(sheetImg, cfg, marks, o) {
     }
     $('#sheetCard').innerHTML =
       '<h2>Phiếu BGD 2025 CV 1239</h2>' +
-      '<p class="hint">Ứng dụng chấm đúng trên mẫu phiếu này: số báo danh 8 chữ số, mã đề 4 chữ ' +
+      '<p class="hint">Ứng dụng chấm đúng trên mẫu phiếu BGD 2025 CV 1239 này: số báo danh 8 chữ số, mã đề 4 chữ ' +
       'số, Phần I tối đa 40 câu, Phần II tối đa 8 câu, Phần III tối đa 6 câu. Mỗi tờ có 4 ô ' +
       'vuông đen ở góc để căn ảnh.</p>' +
       '<img class="sheetimg" alt="Xem trước phiếu B&T Pro - F" src="' +
