@@ -4061,6 +4061,35 @@ function renderPhoto(sheetImg, cfg, marks, o) {
         alert('Lỗi nạp file Excel: ' + e.message);
       }
     };
+        // --- BẮT ĐẦU: LỆNH CHO NÚT TẢI FILE MẪU ---
+    const btnTpl = $('#stuTpl');
+    if (btnTpl) {
+      btnTpl.onclick = function() {
+        if (typeof window.XLSX === 'undefined') {
+          alert('Thư viện Excel chưa tải xong, vui lòng đợi vài giây rồi bấm lại.');
+          return;
+        }
+        // Tạo cấu trúc dữ liệu theo đúng chuẩn Thầy yêu cầu
+        const data = [
+          ["STT", "SBD", "HỌ VÀ TÊN", "Lớp"],
+          [1, "46000001", "Nguyễn Văn A", "12A1"],
+          [2, "46000002", "Trần Thị B", "12A1"],
+          [3, "46000003", "Lê Văn C", "12A2"]
+        ];
+        
+        // Chuyển mảng dữ liệu thành Sheet Excel
+        const ws = window.XLSX.utils.aoa_to_sheet(data);
+        // Tự động căn chỉnh độ rộng cột cho đẹp
+        ws['!cols'] = [{wch: 5}, {wch: 15}, {wch: 25}, {wch: 10}];
+        
+        const wb = window.XLSX.utils.book_new();
+        window.XLSX.utils.book_append_sheet(wb, ws, "DanhSach");
+        
+        // Xuất file và tải về máy
+        window.XLSX.writeFile(wb, "DANH_SACH_HS_MAU.xlsx");
+      };
+    }
+    // --- KẾT THÚC: LỆNH CHO NÚT TẢI FILE MẪU ---
     const s1g = $('#stu1Go');
     if (s1g)
       s1g.onclick = function () {
