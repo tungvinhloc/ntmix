@@ -1424,6 +1424,10 @@ h3.ph {
       <div class="card" id="sheetCard"></div>
     </section>
 
+    <section id="v-students" class="view" hidden aria-label="Thí sinh">
+      <div class="card" id="studentCard"></div>
+    </section>
+
     <section id="v-res" class="view" hidden aria-label="Kết quả">
       <div class="card" id="resCard"></div>
     </section>
@@ -1438,6 +1442,9 @@ h3.ph {
     <button class="tab" type="button" data-tab="key">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 6.5l1.8 1.8L9 5M4 12.5l1.8 1.8L9 11M4 18.5l1.8 1.8L9 17"/><path d="M13 7h7M13 13h7M13 19h7"/></svg>
       Đáp án</button>
+    <button class="tab" type="button" data-tab="students">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
+      Thí sinh</button>
     <button class="tab" type="button" data-tab="sheet">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 3h8l4 4v14H6z"/><path d="M14 3v4h4"/><rect x="8.6" y="11" width="2.6" height="2.6"/><rect x="12.8" y="11" width="2.6" height="2.6" fill="currentColor"/><rect x="8.6" y="15.4" width="2.6" height="2.6"/></svg>
       Phiếu in</button>
@@ -3706,6 +3713,7 @@ function renderPhoto(sheetImg, cfg, marks, o) {
     if (t === 'key') renderKey();
     if (t === 'sheet') renderSheet();
     if (t === 'res') renderRes();
+    if (t === 'students') renderStudents();
     window.scrollTo(0, 0);
   }
   $$('.tab').forEach(function (b) {
@@ -3988,6 +3996,137 @@ function renderPhoto(sheetImg, cfg, marks, o) {
         renderKey();
       };
     renderPart();
+  }
+    function renderStudents() {
+    const list = curList(),
+      stds = list.students || [];
+    let h =
+      '<div class="row"><h2>Danh sách thí sinh</h2><span class="hint">' +
+      stds.length +
+      ' thí sinh</span></div>' +
+      '<p class="hint">Danh sách thuộc đợt “' +
+      esc(list.name || '') +
+      '”. Khi chấm, app đối chiếu số báo danh trên phiếu với danh sách này để hiện tên học sinh trong kết quả, bảng điểm CSV và file PDF. Số 0 đứng đầu được bỏ qua khi so khớp (ví dụ “01” khớp với “1”). Muốn đổi đợt, vào mục Kết quả.</p>' +
+      '<div class="actions"><label class="btn primary" style="flex:1" for="stuFile">Chọn file Excel / CSV</label><input class="vh" type="file" id="stuFile" accept=".xlsx, .xls, .csv">' +
+      '<button class="btn ghost" style="flex:1" type="button" id="stuTpl">Tải file mẫu</button></div>' +
+      '<details class="qrpaste"><summary>▶ Hoặc dán danh sách từ Excel</summary><div class="field"><textarea id="stuPasteIn" spellcheck="false" placeholder="Cột 1 là SBD, Cột 2 là Họ tên, Cột 3 là Lớp (tuỳ chọn)"></textarea></div><div class="actions"><button type="button" class="btn small primary" id="stuPasteGo">Đọc danh sách dán</button></div></details>' +
+      '<h3 class="ph" style="margin-top:8px">Thêm một thí sinh</h3><div class="fields"><div class="field"><input id="stu1k" class="mono" inputmode="numeric" placeholder="Số báo danh"></div><div class="field"><input id="stu1n" placeholder="Họ và tên"></div><div class="field"><input id="stu1c" placeholder="Lớp"></div></div>' +
+      '<button type="button" class="btn primary" id="stu1Go" style="width:100%; margin-top:8px">Thêm</button>';
+    if (stds.length) {
+      h +=
+        '<div class="actions" style="margin-top:20px"><button type="button" class="btn small danger ghost" id="stuClear">Xoá toàn bộ thí sinh đợt này</button></div>' +
+        '<div class="list" style="margin-top:14px">';
+      stds.slice(0, 100).forEach(function (s, i) {
+        h +=
+          '<div class="item"><div><div class="who">' +
+          esc(s.name) +
+          (s.cls ? ' <span class="meta">· ' + esc(s.cls) + '</span>' : '') +
+          '</div><div class="meta mono">SBD ' +
+          esc(s.k) +
+          '</div></div><span></span><button type="button" data-sx="' +
+          i +
+          '" aria-label="Xoá học sinh này">✕</button></div>';
+      });
+      if (stds.length > 100)
+        h += '<div class="empty">Và ' + (stds.length - 100) + ' thí sinh khác…</div>';
+      h += '</div>';
+    }
+    $('#studentCard').innerHTML = h;
+
+    $('#stuFile').onchange = async function () {
+      const f = this.files && this.files[0];
+      this.value = '';
+      if (!f) return;
+      try {
+        if (typeof window.XLSX === 'undefined') {
+          alert('Đang tải bộ đọc Excel, vui lòng chờ vài giây rồi thử lại...');
+          return;
+        }
+        const buf = await f.arrayBuffer();
+        const wb = window.XLSX.read(buf, { type: 'array' });
+        let best = null;
+        for (let i = 0; i < wb.SheetNames.length; i++) {
+            const r = parseRoster(window.XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[i]], { header: 1, raw: true, defval: '' }));
+            if (!best || r.list.length > best.list.length) best = r;
+        }
+        if (best && best.list.length) {
+          list.students = best.list;
+          saveLists();
+          renderStudents();
+          alert('Đã nạp thành công ' + best.list.length + ' thí sinh!');
+        } else {
+          alert('Không tìm thấy dữ liệu học sinh hợp lệ.');
+        }
+      } catch (e) {
+        alert('Lỗi nạp file Excel: ' + e.message);
+      }
+    };
+    const s1g = $('#stu1Go');
+    if (s1g)
+      s1g.onclick = function () {
+        const k = $('#stu1k').value.replace(/\D/g, '').replace(/^0+/, ''),
+          n = $('#stu1n').value.trim(),
+          c = $('#stu1c').value.trim();
+        if (!k || !n) return;
+        const o = { k: k, name: n };
+        if (c) o.cls = c;
+        const ex = stds.findIndex(function (s) { return s.k === k; });
+        if (ex >= 0) stds[ex] = o;
+        else stds.unshift(o);
+        list.students = stds;
+        saveLists();
+        renderStudents();
+      };
+    const scl = $('#stuClear');
+    if (scl)
+      scl.onclick = function () {
+        if (confirm('Xoá toàn bộ danh sách thí sinh của đợt này?')) {
+          list.students = [];
+          saveLists();
+          renderStudents();
+        }
+      };
+    $$('[data-sx]', $('#studentCard')).forEach(function (b) {
+      b.onclick = function () {
+        stds.splice(+b.dataset.sx, 1);
+        list.students = stds;
+        saveLists();
+        renderStudents();
+      };
+    });
+  }
+
+  // Đảm bảo hàm parseRoster có tồn tại
+  function parseRoster(rows) {
+    const list = [];
+    let hi = -1, si = -1, ni = -1, ci = -1;
+    function norm(s) {
+      return String(s).trim().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/đ/g, 'd').replace(/Đ/g, 'D').toLowerCase();
+    }
+    for (let r = 0; r < Math.min(rows.length, 12); r++) {
+      const row = rows[r];
+      let tSi = -1, tNi = -1, tCi = -1;
+      for (let c = 0; c < row.length; c++) {
+        const v = norm(row[c]);
+        if (/^(so )?bao danh$|^sbd$|so bao danh/.test(v)) tSi = c;
+        else if (tNi < 0 && /^ho (va )?ten|^ho ten|^ten (hoc sinh|thi sinh)|^(ho va ten|hoten)$|^ten$/.test(v) && v !== 'ten') tNi = c;
+        else if (tCi < 0 && /^lop/.test(v)) tCi = c;
+      }
+      if (tSi >= 0 && tNi >= 0) { hi = r; si = tSi; ni = tNi; ci = tCi; break; }
+    }
+    if (hi >= 0) {
+      for (let r = hi + 1; r < rows.length; r++) {
+        const row = rows[r];
+        if (!row || !row[si] || !row[ni]) continue;
+        const k = String(row[si]).replace(/\D/g, '').replace(/^0+/, ''),
+          n = String(row[ni]).trim();
+        if (!k || !n) continue;
+        const o = { k: k, name: n };
+        if (ci >= 0 && row[ci]) o.cls = String(row[ci]).trim();
+        list.push(o);
+      }
+    }
+    return { list: list };
   }
   function afterCfg() {
     saveCfg();
@@ -5595,8 +5734,7 @@ function paintMarks(c, sc, g, ver, lw, ringFn) {
       '" inputmode="numeric" value="' +
       esc(scan.mdStr) +
       '"></div></div>' +
-      '<div style="margin-top: 12px;"><label class="btn small ghost" for="studentPickScan" style="width: 100%; border: 1px dashed var(--ink); color: var(--ink); cursor:pointer;">+ Nạp danh sách học sinh từ Excel</label><input class="vh" type="file" id="studentPickScan" accept=".xlsx, .xls, .csv"></div>';
-    if (cfg.versions.length > 1 || !scan.matched) {
+     if (cfg.versions.length > 1 || !scan.matched) {
       h += '<div class="vchips"><span class="lbl">Chấm theo</span>';
       cfg.versions.forEach(function (v, i) {
         h +=
