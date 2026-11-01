@@ -3531,7 +3531,7 @@ function renderPhoto(sheetImg, cfg, marks, o) {
       /* bỏ qua */
     }
   }
-  /* Đổi đáp án / thang điểm → chấm lại toàn bộ bài trong đợt đang chọn */
+  /* Đổi đáp án / thang điểm → chấm lại toàn bộ bài trong lần đang chọn */
   function regradeList() {
     const id = lists.active,
       r2 = function (x) {
@@ -3570,7 +3570,7 @@ function renderPhoto(sheetImg, cfg, marks, o) {
       }
     }
   }
-  /* ---------- Danh sách chấm (các đợt) ---------- */
+  /* ---------- Danh sách chấm (các lần chấm) ---------- */
   let lists = LS.get('omr.lists', null);
   if (!lists || !Array.isArray(lists.items) || !lists.items.length)
     lists = { items: [{ id: 'l1', name: 'Lần 1' }], active: 'l1' };
@@ -3602,7 +3602,7 @@ function renderPhoto(sheetImg, cfg, marks, o) {
     curList().cfg = JSON.parse(JSON.stringify(cfg));
     saveLists();
   }
-  /* Mỗi đợt có bộ đáp án và cấu trúc đề riêng; chuyển đợt là chuyển luôn đáp án */
+  /* Mỗi lần chấm có bộ đáp án và cấu trúc đề riêng; chuyển lần chấm là chuyển luôn đáp án */
   function applyList(id) {
     lists.active = id;
     const c = sanitizeCfg(curList().cfg) || defaultCfg();
@@ -6182,16 +6182,16 @@ function paintMarks(c, sc, g, ver, lw, ringFn) {
       '</select>' +
      '<button type="button" class="btn small" id="listNew">＋ Lần mới</button><button type="button" class="btn small ghost" id="listRen">Đổi tên</button>' +
       (L.length > 1
-        ? '<button type="button" class="btn small ghost danger" id="listDel">Xoá đợt</button>'
+        ? '<button type="button" class="btn small ghost danger" id="listDel">Xoá lần chấm</button>'
         : '') +
       '</div>';
     if (listUI === 'new')
       h +=
         '<label class="listcopy"><input type="checkbox" id="listCopy"> Sao chép đáp án và cấu trúc ' +
-        'từ đợt đang chọn</label>';
+        'từ lần chấm đang chọn</label>';
     if (listUI === 'new' || listUI === 'ren')
       h +=
-        '<div class="listrow"><input id="listName" maxlength="40" placeholder="Tên đợt, ví dụ: 10A1 · 45 phút" value="' +
+        '<div class="listrow"><input id="listName" maxlength="40" placeholder="Tên lần chấm, ví dụ: 10A1 · 45 phút" value="' +
         (listUI === 'ren' ? esc(curList().name) : '') +
         '"><button type="button" class="btn small primary" id="listOk">Lưu</button><button type="button" class="btn small ghost" id="listNo">Huỷ</button></div>';
     return h + '</div>';
@@ -6220,7 +6220,7 @@ function paintMarks(c, sc, g, ver, lw, ringFn) {
     const dl = $('#listDel');
     if (dl)
       dl.onclick = function () {
-        this.textContent = 'Chạm lần nữa để xoá đợt này';
+        this.textContent = 'Chạm lần nữa để xoá lần chấm này';
         this.onclick = function () {
           const id = lists.active;
           listRes(id).forEach(function (r) {
@@ -6243,7 +6243,7 @@ function paintMarks(c, sc, g, ver, lw, ringFn) {
       const go = function () {
         const name =
           ($('#listName').value || '').trim().slice(0, 40) ||
-          (listUI === 'new' ? 'Đợt ' + (lists.items.length + 1) : curList().name);
+          (listUI === 'new' ? 'Lần ' + (lists.items.length + 1) : curList().name);
         if (listUI === 'new') {
           const id = 'l' + Date.now().toString(36),
             cp = $('#listCopy') && $('#listCopy').checked,
