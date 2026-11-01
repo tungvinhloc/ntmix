@@ -3573,7 +3573,7 @@ function renderPhoto(sheetImg, cfg, marks, o) {
   /* ---------- Danh sách chấm (các đợt) ---------- */
   let lists = LS.get('omr.lists', null);
   if (!lists || !Array.isArray(lists.items) || !lists.items.length)
-    lists = { items: [{ id: 'l1', name: 'Đợt 1' }], active: 'l1' };
+    lists = { items: [{ id: 'l1', name: 'Lần 1' }], active: 'l1' };
   if (
     !lists.items.some(function (l) {
       return l.id === lists.active;
@@ -6180,9 +6180,7 @@ function paintMarks(c, sc, g, ver, lw, ringFn) {
         );
       }).join('') +
       '</select>' +
-      '<button type="button" class="btn small" id="listNew">＋ Đợt mới</button><button type="button" class="btn small ghost" id="listRen">Đổi tên</button>' +
-      '<label class="btn small ghost" for="studentPick" style="margin:0; border: 1px solid var(--line); cursor:pointer; margin-left: 8px;">DS Học sinh</label>' +
-      '<input class="vh" type="file" id="studentPick" accept=".xlsx, .xls, .csv">' +
+     '<button type="button" class="btn small" id="listNew">＋ Lần mới</button><button type="button" class="btn small ghost" id="listRen">Đổi tên</button>' +
       (L.length > 1
         ? '<button type="button" class="btn small ghost danger" id="listDel">Xoá đợt</button>'
         : '') +
