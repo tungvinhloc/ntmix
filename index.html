@@ -6530,6 +6530,90 @@ function paintMarks(c, sc, g, ver, lw, ringFn) {
       };
     }
   }
+    // --- HÀM XỬ LÝ VÀ HIỂN THỊ THỐNG KÊ ---
+// Gắn vào window để thẻ HTML có thể gọi được
+window.showStats = function() {
+  const res = listRes(); // Lấy danh sách kết quả hiện tại
+  if (!res || res.length === 0) {
+    alert("Chưa có kết quả bài chấm nào trong đợt này!");
+    return;
+  }
+
+  let bins = new Array(11).fill(0); // Chứa phổ điểm từ 0 đến 10
+  let counts = { yeu: 0, tb: 0, kha: 0, tot: 0 };
+  let totalHs = res.length;
+
+  res.forEach(function(r) {
+    // Quy đổi điểm bài làm về thang 10
+    let score10 = (r.total / r.max) * 10;
+    
+    // Làm tròn số nguyên để vẽ biểu đồ cột phổ điểm
+    let roundScore = Math.round(score10);
+    if(roundScore >= 0 && roundScore <= 10) {
+        bins[roundScore]++;
+    }
+
+    // Phân loại xếp loại theo yêu cầu
+    if (score10 < 5.0) counts.yeu++;
+    else if (score10 < 6.5) counts.tb++;
+    else if (score10 < 8.0) counts.kha++;
+    else counts.tot++;
+  });
+
+  // 1. Render Biểu đồ cột (Phổ điểm)
+  let maxBin = Math.max(...bins);
+  if(maxBin === 0) maxBin = 1; // Tránh chia cho 0
+  let barHtml = '';
+  for (let i = 0; i <= 10; i++) {
+    let heightPct = (bins[i] / maxBin) * 100;
+    barHtml += `
+      <div class="bar-wrap">
+        ${bins[i] > 0 ? `<div class="bar-val">${bins[i]}</div>` : ''}
+        <div class="bar" style="height: ${heightPct}%"></div>
+        <div class="bar-lbl">${i}</div>
+      </div>
+    `;
+  }
+  document.getElementById('barChart').innerHTML = barHtml;
+
+  // 2. Render Biểu đồ tròn (Xếp loại)
+  let pYeu = (counts.yeu / totalHs) * 100;
+  let pTb = (counts.tb / totalHs) * 100;
+  let pKha = (counts.kha / totalHs) * 100;
+  let pTot = (counts.tot / totalHs) * 100;
+
+  // Tính góc để dùng conic-gradient vẽ hình tròn
+  let degYeu = pYeu * 3.6;
+  let degTb = degYeu + pTb * 3.6;
+  let degKha = degTb + pKha * 3.6;
+  
+  // Mã màu
+  let donutStyle = `conic-gradient(
+    #e91e63 0deg ${degYeu}deg,
+    #ff9800 ${degYeu}deg ${degTb}deg,
+    #cddc39 ${degTb}deg ${degKha}deg,
+    #4caf50 ${degKha}deg 360deg
+  )`;
+
+  document.getElementById('donutChart').style.background = donutStyle;
+  document.getElementById('donutTotal').innerText = totalHs;
+
+  // Render phần chú thích (Legend)
+  document.getElementById('donutLegend').innerHTML = `
+    <div class="leg-item"><div class="leg-dot" style="background:#e91e63"></div>Yếu: ${pYeu.toFixed(1)}%</div>
+    <div class="leg-item"><div class="leg-dot" style="background:#ff9800"></div>TB: ${pTb.toFixed(1)}%</div>
+    <div class="leg-item"><div class="leg-dot" style="background:#cddc39"></div>Khá: ${pKha.toFixed(1)}%</div>
+    <div class="leg-item"><div class="leg-dot" style="background:#4caf50"></div>Tốt: ${pTot.toFixed(1)}%</div>
+  `;
+
+  // Mở Modal
+  document.getElementById('statsModal').hidden = false;
+};
+
+// Bắt sự kiện đóng Modal
+document.getElementById('statsClose').onclick = function() {
+  document.getElementById('statsModal').hidden = true;
+};
   function renderRes() {
     const host = $('#resCard'),
       view = listRes();
