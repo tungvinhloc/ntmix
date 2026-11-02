@@ -6580,8 +6580,8 @@ function paintMarks(c, sc, g, ver, lw, ringFn) {
         '">Xem và sửa bài</button></div></div>';
     });
     h +=
-      '<div class="actions"><button type="button" class="btn primary" onclick="window.showStats()" style="background: var(--warn); border-color: var(--warn); margin-right: 8px;"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 4px; vertical-align: text-bottom;"><path d="M18 20V10M12 20V4M6 20v-6"/></svg> Thống kê</button><button type="button" class="btn primary" id="csvBtn">Tải bảng ' +
-      'điểm CSV</button><button type="button" class="btn" id="pdfBtn">Xuất PDF tất cả ' +
+      '<div class="actions"><button type="button" class="btn primary" id="statsBtn" style="background: var(--warn); border-color: var(--warn); margin-right: 8px;"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 4px; vertical-align: text-bottom;"><path d="M18 20V10M12 20V4M6 20v-6"/></svg> Thống kê</button><button type="button" class="btn primary" id="csvBtn">Tải bảng ' +
+      'điểm Excel</button><button type="button" class="btn" id="pdfBtn">Xuất PDF tất cả ' +
       'bài</button><button type="button" class="btn ghost danger" id="clrBtn">Xoá tất ' +
       'cả</button></div><p class="hint" id="resMsg">Kết quả được giữ trong trình duyệt này. Tải ' +
       'CSV để lưu lại hoặc mở bằng Excel, Google Sheets.</p>';
@@ -8294,6 +8294,17 @@ let qrState = { kind: 'idle' },
               
               const msg = document.getElementById('resMsg'); 
               if (msg) msg.textContent = '✅ Đã tải bảng điểm Excel thành công.';
+          };
+      }
+      // Kích hoạt nút Thống kê
+      const statsBtn = document.getElementById('statsBtn');
+      if (statsBtn) {
+          statsBtn.onclick = function() {
+              if (typeof window.showStats === 'function') {
+                  window.showStats();
+              } else {
+                  alert("Hàm thống kê chưa được tải!");
+              }
           };
       }
   }, 1000);
