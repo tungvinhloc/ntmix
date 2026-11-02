@@ -1429,6 +1429,33 @@ h3.ph {
     <section id="v-res" class="view" hidden aria-label="Kết quả">
       <div class="card" id="resCard"></div>
     </section>
+    <section id="v-stats" class="view" hidden aria-label="Thống kê">
+      <div class="card">
+        <div class="row">
+          <h2>Thống kê đợt chấm</h2>
+          <button type="button" class="btn small primary" id="btnRefreshStats" style="background: var(--warn); border-color: var(--warn);">Làm mới</button>
+        </div>
+        <p class="hint">Phổ điểm và xếp loại học sinh của đợt chấm hiện tại.</p>
+        
+        <div style="border: 1px solid var(--line); border-radius: 12px; padding: 20px 16px; margin-top: 10px;">
+          <div style="text-align: center; font-weight: bold; margin-bottom: 20px; font-size: 15px;">Phổ điểm (Thang 10)</div>
+          <div id="barChartPage" style="display: flex; align-items: flex-end; justify-content: space-between; height: 200px; padding-bottom: 25px; position: relative; border-bottom: 1px solid var(--line); border-left: 1px solid var(--line); background: repeating-linear-gradient(0deg, transparent, transparent 39px, var(--line) 40px);"></div>
+        </div>
+
+        <div style="border: 1px solid var(--line); border-radius: 12px; padding: 20px 16px; margin-top: 20px;">
+          <div style="text-align: center; font-weight: bold; margin-bottom: 20px; font-size: 15px;">Xếp loại học sinh</div>
+          <div style="display: flex; justify-content: center; position: relative; margin: 20px 0;">
+            <div id="donutChartPage" style="width: 200px; height: 200px; border-radius: 50%; position: relative; display: flex; align-items: center; justify-content: center;">
+              <div style="width: 100px; height: 100px; background: var(--card); border-radius: 50%; display: flex; flex-direction: column; align-items: center; justify-content: center;">
+                <span id="donutTotalPage" style="font-size: 24px; font-weight: bold;">0</span>
+                <small style="font-size: 11px; color: var(--muted); text-transform: uppercase;">Học sinh</small>
+              </div>
+            </div>
+          </div>
+          <div id="donutLegendPage" style="display: flex; flex-wrap: wrap; justify-content: center; gap: 12px;"></div>
+        </div>
+      </div>
+    </section>
   </main>
 </div>
 
@@ -1449,6 +1476,9 @@ h3.ph {
     <button class="tab" type="button" data-tab="res">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 20V11M12 20V4M19 20v-6"/></svg>
       Kết quả<span class="bd" id="resBadge" hidden>0</span></button>
+     <button class="tab" type="button" data-tab="stats">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 20V10M12 20V4M6 20v-6"/></svg>
+      Thống kê</button>
   </div>
 </nav>
 
@@ -3711,6 +3741,7 @@ function renderPhoto(sheetImg, cfg, marks, o) {
     if (t === 'sheet') renderSheet();
     if (t === 'res') renderRes();
     if (t === 'students') renderStudents();
+    if (t === 'stats') renderStats();
     window.scrollTo(0, 0);
   }
   $$('.tab').forEach(function (b) {
@@ -8272,7 +8303,79 @@ let qrState = { kind: 'idle' },
           };
       }
   }, 1000);
+const wb = XLSX.utils.book_new(); 
+              XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(rows), "BangDiem");
+              XLSX.writeFile(wb, `BangDiem_NTMIX_${Date.now()}.xlsx`);
+              
+              const msg = document.getElementById('resMsg'); 
+              if (msg) msg.textContent = '✅ Đã tải bảng điểm Excel thành công.';
+          };
+      }
+  }, 1000);
   
+  // --- BẮT ĐẦU DÁN ĐOẠN MÃ THỐNG KÊ TỪ ĐÂY ---
+  window.renderStats = function() {
+    const res = listRes();
+    if (!res || res.length === 0) { 
+      const chartElem = document.getElementById('barChartPage');
+      if(chartElem) chartElem.innerHTML = '<div style="width:100%;text-align:center;color:var(--muted);padding-top:80px;">Chưa có dữ liệu bài chấm</div>';
+      const donutElem = document.getElementById('donutChartPage');
+      if(donutElem) donutElem.style.background = 'var(--line)';
+      const donutTotal = document.getElementById('donutTotalPage');
+      if(donutTotal) donutTotal.innerText = '0';
+      const donutLegend = document.getElementById('donutLegendPage');
+      if(donutLegend) donutLegend.innerHTML = '';
+      return; 
+    }
+    
+    let bins = new Array(11).fill(0), counts = { yeu: 0, tb: 0, kha: 0, tot: 0 }, totalHs = res.length;
+    
+    res.forEach(function(r) {
+      let score10 = (r.total / r.max) * 10, roundScore = Math.round(score10);
+      if(roundScore >= 0 && roundScore <= 10) bins[roundScore]++;
+      if (score10 < 5.0) counts.yeu++; else if (score10 < 6.5) counts.tb++; else if (score10 < 8.0) counts.kha++; else counts.tot++;
+    });
+
+    let maxBin = Math.max(...bins); if(maxBin === 0) maxBin = 1;
+    let barHtml = '';
+    for (let i = 0; i <= 10; i++) {
+      barHtml += `<div style="flex: 1; display: flex; flex-direction: column; justify-content: flex-end; align-items: center; height: 100%; position: relative;">
+          ${bins[i] > 0 ? `<div style="font-size: 11px; font-weight: bold; margin-bottom: 4px; color: var(--fg);">${bins[i]}</div>` : ''}
+          <div style="width: 70%; background: #ff5722; border-radius: 2px 2px 0 0; transition: height 0.5s ease; height: ${(bins[i] / maxBin) * 100}%;"></div>
+          <div style="position: absolute; bottom: -20px; font-size: 11px; color: var(--muted);">${i}</div>
+      </div>`;
+    }
+    const chartElem = document.getElementById('barChartPage');
+    if(chartElem) chartElem.innerHTML = barHtml;
+
+    let pYeu = (counts.yeu / totalHs) * 100, pTb = (counts.tb / totalHs) * 100, pKha = (counts.kha / totalHs) * 100, pTot = (counts.tot / totalHs) * 100;
+    let degYeu = pYeu * 3.6, degTb = degYeu + pTb * 3.6, degKha = degTb + pKha * 3.6;
+    
+    const donutChartElem = document.getElementById('donutChartPage');
+    if(donutChartElem) donutChartElem.style.background = `conic-gradient(#e91e63 0deg ${degYeu}deg, #ff9800 ${degYeu}deg ${degTb}deg, #cddc39 ${degTb}deg ${degKha}deg, #4caf50 ${degKha}deg 360deg)`;
+    
+    const donutTotalElem = document.getElementById('donutTotalPage');
+    if(donutTotalElem) donutTotalElem.innerText = totalHs;
+    
+    const donutLegendElem = document.getElementById('donutLegendPage');
+    if(donutLegendElem) donutLegendElem.innerHTML = `
+      <div style="display: flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 600;"><div style="width: 12px; height: 12px; border-radius: 3px; background:#e91e63"></div>Yếu: ${pYeu.toFixed(1)}%</div>
+      <div style="display: flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 600;"><div style="width: 12px; height: 12px; border-radius: 3px; background:#ff9800"></div>TB: ${pTb.toFixed(1)}%</div>
+      <div style="display: flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 600;"><div style="width: 12px; height: 12px; border-radius: 3px; background:#cddc39"></div>Khá: ${pKha.toFixed(1)}%</div>
+      <div style="display: flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 600;"><div style="width: 12px; height: 12px; border-radius: 3px; background:#4caf50"></div>Tốt: ${pTot.toFixed(1)}%</div>`;
+  };
+
+  document.addEventListener('click', function(e) {
+      if (e.target.closest('#btnRefreshStats')) {
+          if (typeof window.renderStats === 'function') window.renderStats();
+      }
+  });
+  // --- KẾT THÚC ĐOẠN MÃ THỐNG KÊ ---
+
+</script>
+
+</body></html>
+    
 </script>
 
 </body></html>
