@@ -8296,23 +8296,28 @@ let qrState = { kind: 'idle' },
               if (msg) msg.textContent = '✅ Đã tải bảng điểm Excel thành công.';
           };
       }
-      // Kích hoạt nút Thống kê
-      const statsBtn = document.getElementById('statsBtn');
-      if (statsBtn) {
-          statsBtn.onclick = function() {
-              if (typeof window.showStats === 'function') {
-                  window.showStats();
-              } else {
-                  alert("Hàm thống kê chưa được tải!");
-              }
-          };
-      }
   }, 1000);
 
-  // --- HÀM THỐNG KÊ ---
+  // --- GIẢI PHÁP LẮNG NGHE SỰ KIỆN TOÀN CỤC (Không bao giờ bị lỗi khi chuyển tab) ---
+  document.addEventListener('click', function(e) {
+      // Nếu bấm trúng nút Thống kê (hoặc icon bên trong nó)
+      if (e.target.closest('#statsBtn')) {
+          if (typeof window.showStats === 'function') {
+              window.showStats();
+          }
+      }
+      // Nếu bấm trúng nút Đóng thống kê
+      if (e.target.closest('#statsClose')) {
+          const modal = document.getElementById('statsModal');
+          if (modal) modal.hidden = true;
+      }
+  });
+
+  // --- HÀM TÍNH TOÁN VÀ VẼ THỐNG KÊ ---
   window.showStats = function() {
     const res = listRes();
     if (!res || res.length === 0) { alert("Chưa có kết quả bài chấm nào trong đợt này!"); return; }
+    
     let bins = new Array(11).fill(0), counts = { yeu: 0, tb: 0, kha: 0, tot: 0 }, totalHs = res.length;
     
     res.forEach(function(r) {
@@ -8343,12 +8348,5 @@ let qrState = { kind: 'idle' },
     if (modalElem) modalElem.hidden = false;
   };
   
-  // Xử lý nút đóng thống kê
-  setTimeout(function() {
-      const closeBtn = document.getElementById('statsClose');
-      if (closeBtn) closeBtn.onclick = function() { document.getElementById('statsModal').hidden = true; };
-  }, 1000);
-  
 </script>
-
 </body></html>
