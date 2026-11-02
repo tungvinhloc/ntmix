@@ -8328,7 +8328,7 @@ let qrState = { kind: 'idle' },
       }
   }, 1000);
     /* ===================== TÍNH NĂNG THỐNG KÊ ===================== */
-  function showStats() {
+  window.showStats = function() {
     var res = listRes();
     if (!res || !res.length) {
       alert('Đợt này chưa có bài chấm nào để thống kê!');
@@ -8360,7 +8360,7 @@ let qrState = { kind: 'idle' },
 
     var maxBin = Math.max.apply(null, bins) || 1;
 
-    var modal = $('#statsModal');
+    var modal = document.getElementById('statsModal');
     if (!modal) {
       modal = document.createElement('div');
       modal.id = 'statsModal';
@@ -8381,17 +8381,48 @@ let qrState = { kind: 'idle' },
       '<div class="legend"><div class="leg-item"><div class="leg-dot" style="background:' + cTot + '"></div>Tốt (' + pTot + '%)</div><div class="leg-item"><div class="leg-dot" style="background:' + cKha + '"></div>Khá (' + pKha + '%)</div><div class="leg-item"><div class="leg-dot" style="background:' + cTB + '"></div>Trung bình (' + pTB + '%)</div><div class="leg-item"><div class="leg-dot" style="background:' + cYeu + '"></div>Yếu (' + pYeu + '%)</div></div></div></div>';
     
     modal.hidden = false;
+  };
+
+  // Bắt sự kiện click toàn cục cho nút thống kê
+  document.addEventListener('click', function(e) {
+    var btnStat = e.target.closest('#btnStats');
+    if (btnStat) {
+        e.preventDefault();
+        window.showStats();
+    }
+  });
+
+  function showTab(t) {
+    tab = t;
+    $$('.view').forEach(function (v) {
+      v.hidden = v.id !== 'v-' + t;
+    });
+    $$('.tab').forEach(function (b) {
+      if (b.dataset.tab === t) b.setAttribute('aria-current', 'page');
+      else b.removeAttribute('aria-current');
+    });
+    if (t === 'key') renderKey();
+    if (t === 'sheet') renderSheet();
+    if (t === 'res') renderRes();
+    if (t === 'students') renderStudents();
+    window.scrollTo(0, 0);
   }
 
-  // Bắt sự kiện toàn cục: đảm bảo nút Thống kê luôn nhận được lệnh click
-  document.addEventListener('click', function(e) {
-      var btnStat = e.target.closest('#btnStats');
-      if (btnStat) {
-          e.preventDefault();
-          showStats();
-      }
+  // Lắng nghe sự kiện click cho tất cả các nút Tab
+  $$('.tab').forEach(function (b) {
+    b.addEventListener('click', function () {
+      showTab(b.dataset.tab);
+    });
   });
-  
-</script>
 
-</body></html>
+  // Gọi thử hàm hiển thị tab "Chấm bài" ngay khi mới mở web
+  showTab('scan');
+  
+  // Khởi tạo các giao diện mặc định
+  renderSheetSel();
+  renderChip();
+
+})();
+</script>
+</body>
+</html>
