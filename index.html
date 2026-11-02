@@ -6425,9 +6425,17 @@ function paintMarks(c, sc, g, ver, lw, ringFn) {
       const btnStats = $('#btnStats');
     if (btnStats) {
         btnStats.onclick = function() {
-            if (typeof showStats === 'function') showStats();
-            else alert("Chưa tải xong module Thống kê!");
-        };
+            // Bắt sự kiện nút Thống kê bằng cách an toàn nhất
+    const btnStats = document.getElementById('btnStats');
+    if (btnStats) {
+      btnStats.addEventListener('click', function(e) {
+        e.preventDefault(); // Ngăn chặn các sự kiện mặc định chồng chéo
+        if (typeof showStats === 'function') {
+           showStats();
+        } else {
+           alert("Hệ thống đang tải bảng thống kê, vui lòng thử lại sau.");
+        }
+      });
     }
     $('#listNew').onclick = function () {
       listUI = 'new';
