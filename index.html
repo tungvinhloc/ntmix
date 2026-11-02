@@ -6544,143 +6544,154 @@ function paintMarks(c, sc, g, ver, lw, ringFn) {
     }
   }
   function renderRes() {
-    const host = $('#resCard'),
-      view = listRes();
-    if (!view.length) {
-      host.innerHTML =
-        '<h2>Kết quả đã lưu</h2>' +
-        listBar() +
-        '<div class="empty">Lần này chưa có bài nào. Chấm một phiếu, điểm sẽ tự lưu vào lần “' +
-        esc(curList().name) +
-        '”.</div>';
-      bindListBar(host);
-      return;
-    }
-    const pcts = view.map(function (r) {
-      return r.max ? r.total / r.max : 0;
+    const list = curList();
+    const res = listRes();
+    const e = $('#resCard');
+    if (!e) return;
+    let h = '<div class="row"><h2>Kết quả đã lưu</h2><span class="hint">' + res.length + ' bài</span></div>';
+    
+    h += '<div class="field"><label class="lbl" for="listSel">Danh sách chấm</label><div class="rowbtns"><select id="listSel">';
+    lists.items.forEach(function (l) {
+      h += '<option value="' + esc(l.id) + '"' + (l.id === lists.active ? ' selected' : '') + '>' + esc(l.name) + ' (' + listRes(l.id).length + ' b' + ')</option>';
     });
-    const avg =
-      pcts.reduce(function (a, b) {
-        return a + b;
-      }, 0) / pcts.length;
-    const bins = new Array(10).fill(0);
-    pcts.forEach(function (p) {
-      bins[Math.min(9, Math.floor(p * 10))]++;
-    });
-    const mx = Math.max.apply(null, bins),
-      sc = 10;
-    let h =
-      '<div class="row"><h2>Kết quả đã lưu</h2><span class="hint">' +
-      view.length +
-      ' bài</span></div>' +
-      listBar() +
-      '<div class="stats"><span>Trung bình <b>' +
-      fmt(avg * sc) +
-      '</b></span><span>Cao nhất <b>' +
-      fmt(Math.max.apply(null, pcts) * sc) +
-      '</b></span><span>Thấp nhất <b>' +
-      fmt(Math.min.apply(null, pcts) * sc) +
-      '</b></span><span class="hint">quy về thang 10</span></div>' +
-      '<div class="hist" role="img" aria-label="Phân bố điểm">' +
-      bins
-        .map(function (n) {
-          return '<i style="height:' + Math.max(3, (n / mx) * 100) + '%" title="' + n + ' bài"></i>';
-        })
-        .join('') +
-      '</div>' +
-      '<div class="hist-ax"><span>0</span><span>5</span><span>10</span></div><div class="list">';
-    view.forEach(function (r) {
-      const d = new Date(r.t),
-        tm =
-          d.toLocaleDateString('vi-VN') +
-          ' ' +
-          d.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' });
-      const pt = r.parts
-        ? ' · I ' + fmt(r.parts[0]) + ' · II ' + fmt(r.parts[1]) + ' · III ' + fmt(r.parts[2])
-        : '';
-      const info = getStudentInfo(r.sbd);
-      const nameStr = info ? ' - <span style="color:var(--ink)">' + esc(info.name) + '</span>' : '';
+    h += '</select><button type="button" class="btn small" id="listNew">＋ Đợt mới</button><button type="button" class="btn small ghost" id="listRen">Đổi tên</button><button type="button" class="btn small" id="btnStats" style="background:#ff9800; color:#fff; border-color:#ff9800; margin-left:8px;"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right:6px;"><path d="M21.21 15.89A10 10 0 1 1 8 2.83"></path><path d="M22 12A10 10 0 0 0 12 2v10z"></path></svg>Thống kê</button></div></div>';
+    
+    if (res.length) {
+      let sum = 0, mx = 0, mn = 1e9;
+      const bins = new Array(11).fill(0);
+      res.forEach(function(r) {
+        let sc10 = (r.max && r.max > 0) ? (r.total / r.max) * 10 : r.total;
+        sum += sc10;
+        if (sc10 > mx) mx = sc10;
+        if (sc10 < mn) mn = sc10;
+        bins[Math.min(10, Math.floor(sc10))]++;
+      });
+      const avg = sum / res.length;
+      h += '<div class="stats"><span>Trung bình <b>' + fmt(avg) + '</b></span><span>Cao nhất <b>' + fmt(mx) + '</b></span><span>Thấp nhất <b>' + fmt(mn) + '</b></span></div>';
+      h += '<p class="hint">quy về thang 10</p><div class="hist">';
+      const maxBin = Math.max.apply(null, bins) || 1;
+      bins.forEach(function(b) {
+        h += '<i style="height:' + Math.max(2, (b / maxBin) * 100) + '%"></i>';
+      });
+      h += '</div><div class="hist-ax"><span>0</span><span>5</span><span>10</span></div>';
       
-      h +=
-        '<div class="item"><div><div class="who">SBD ' +
-        esc(r.sbd || '—') + nameStr +
-        ' · Mã đề ' +
-        esc(r.md || '—') +
-        '</div><div class="meta">' +
-        tm +
-        pt +
-        (r.edited ? ' · đã sửa' : '') +
-        '</div></div><span class="sc">' +
-        fmt(r.total) +
-        '</span>' +
-        '<button type="button" data-del="' +
-        r.id +
-        '" aria-label="Xoá bài này">×</button>' +
-        '<div class="rowbtns">' +
-        (r.nm
-          ? '<img class="nmthumb" data-nm="' + r.id + '" data-edit="' + r.id + '" alt="Họ tên học sinh">'
-          : '') +
-        '<button type="button" class="viewimg" data-edit="' +
-        r.id +
-        '">Xem và sửa bài</button></div></div>';
-    });
-    h +=
-      '</div><div class="actions"><button type="button" class="btn primary" id="csvBtn">Tải bảng ' +
-      'điểm CSV</button><button type="button" class="btn" id="pdfBtn">Xuất PDF tất cả ' +
-      'bài</button><button type="button" class="btn ghost danger" id="clrBtn">Xoá tất ' +
-      'cả</button></div><p class="hint" id="resMsg">Kết quả được giữ trong trình duyệt này. Tải ' +
-      'CSV để lưu lại hoặc mở bằng Excel, Google Sheets.</p>';
-    host.innerHTML = h;
-    bindListBar(host);
-    $$('[data-del]', host).forEach(function (b) {
-      b.onclick = function () {
-        IMG.del(b.dataset.del);
-        IMG.del(b.dataset.del + 'n');
-        results = results.filter(function (r) {
-          return String(r.id) !== b.dataset.del;
-        });
-        saveResults();
-        renderChip();
-        renderRes();
+      h += '<div class="actions listbar"><button type="button" class="btn ghost small" id="resClear" style="color:var(--red)">Xoá đợt này</button><button type="button" class="btn ghost small" id="resCsv">Tải bảng điểm (CSV)</button></div><div class="list">';
+      
+      res.slice().reverse().forEach(function(r) {
+        const d = new Date(r.time || Date.now());
+        const ds = d.getDate() + '/' + (d.getMonth() + 1) + '/' + d.getFullYear() + ' ' + String(d.getHours()).padStart(2, '0') + ':' + String(d.getMinutes()).padStart(2, '0');
+        const scStr = r.parts ? ' · I ' + fmt(r.parts[0]) + ' · II ' + fmt(r.parts[1]) + ' · III ' + fmt(r.parts[2]) : '';
+        const bad = (r.sbd || '').indexOf('?') >= 0 || (r.md || '').indexOf('?') >= 0;
+        
+        let stuName = '';
+        if (list.students && list.students.length) {
+            const stu = list.students.find(s => s.k === String(r.sbd).replace(/^0+/, ''));
+            if (stu) stuName = ' - ' + esc(stu.name) + (stu.cls ? ' (' + esc(stu.cls) + ')' : '');
+        }
+        
+        h += '<div class="item"><div><div class="who' + (bad ? ' error' : '') + '">SBD ' + esc(r.sbd || '—') + stuName + ' · Mã đề ' + esc(r.md || '—') + '</div><div class="meta">' + ds + scStr + '</div></div><span class="sc">' + fmt(r.total) + '</span><button type="button" data-rdel="' + r.id + '">✕</button><button type="button" class="viewimg" data-rview="' + r.id + '">Xem và sửa bài</button></div>';
+      });
+      h += '</div>';
+    } else {
+      h += '<p class="empty" style="margin-top:20px">Đợt này chưa có bài nào. Chấm một phiếu, điểm sẽ tự lưu vào đợt “' + esc(list.name) + '”.</p>';
+    }
+    
+    e.innerHTML = h;
+    
+    const btnStats = document.getElementById('btnStats');
+    if (btnStats) {
+      btnStats.onclick = function() {
+        if (typeof showStats === 'function') {
+            showStats();
+        } else {
+            alert("Lỗi: Chưa tìm thấy khối lệnh thống kê. Vui lòng kiểm tra lại Bước 2.");
+        }
       };
-    });
-    $$('[data-edit]', host).forEach(function (b) {
-      b.onclick = function () {
-        openEdit(b.dataset.edit);
-      };
-    });
-    $$('[data-nm]', host).forEach(function (im) {
-      IMG.get(im.dataset.nm + 'n')
-        .then(function (bl) {
-          if (bl) {
-            im.src = URL.createObjectURL(bl);
-            im.onload = function () {
-              URL.revokeObjectURL(im.src);
-            };
-          } else im.remove();
-        })
-        .catch(function () {
-          im.remove();
-        });
-    });
-    $('#csvBtn').onclick = exportCsv;
-    $('#pdfBtn').onclick = exportPdf;
-    $('#clrBtn').onclick = function () {
-      this.textContent = 'Chạm lần nữa để xoá hết';
-      this.onclick = function () {
-        const id = lists.active;
-        view.forEach(function (r) {
-          IMG.del(r.id);
-          IMG.del(r.id + 'n');
-        });
-        results = results.filter(function (r) {
-          return lidOf(r) !== id;
-        });
-        saveResults();
-        renderChip();
-        renderRes();
-      };
+    }
+
+    const ls = $('#listSel');
+    if (ls) ls.onchange = function () {
+      applyList(this.value);
     };
+    const ln = $('#listNew');
+    if (ln) ln.onclick = function () {
+      const nm = prompt('Tên đợt chấm mới:');
+      if (nm) {
+        const id = 'l' + Date.now();
+        lists.items.push({ id: id, name: nm, cfg: JSON.parse(JSON.stringify(cfg)) });
+        applyList(id);
+      }
+    };
+    const lr = $('#listRen');
+    if (lr) lr.onclick = function () {
+      const nm = prompt('Đổi tên đợt chấm:', list.name);
+      if (nm) {
+        list.name = nm;
+        saveLists();
+        renderRes();
+      }
+    };
+    const rc = $('#resClear');
+    if (rc) rc.onclick = function () {
+      if (confirm('Xoá đợt chấm này và TẤT CẢ bài đã lưu trong đó?')) {
+        results = results.filter(function (r) { return lidOf(r) !== lists.active; });
+        saveResults();
+        if (lists.items.length > 1) {
+          const idx = lists.items.findIndex(function(x) { return x.id === lists.active; });
+          lists.items.splice(idx, 1);
+          applyList(lists.items[0].id);
+        } else {
+          renderRes();
+          renderChip();
+        }
+      }
+    };
+    const rv = $('#resCsv');
+    if (rv) rv.onclick = function () {
+      let csv = '\uFEFFSTT,SBD,Họ và tên,Lớp,Mã đề,Tổng điểm,Điểm thang 10,Phần I,Phần II,Phần III\n';
+      res.slice().reverse().forEach(function(r, i) {
+        let name = '', cls = '';
+        if (list.students) {
+            const stu = list.students.find(s => s.k === String(r.sbd).replace(/^0+/, ''));
+            if (stu) {
+                name = stu.name || '';
+                cls = stu.cls || '';
+            }
+        }
+        let sc10 = (r.max && r.max > 0) ? (r.total / r.max) * 10 : r.total;
+        csv += [
+            i + 1,
+            r.sbd || '',
+            '"' + name + '"',
+            '"' + cls + '"',
+            r.md || '',
+            String(r.total).replace('.', ','),
+            String(Math.round(sc10 * 100)/100).replace('.', ','),
+            r.parts ? String(r.parts[0]).replace('.', ',') : '',
+            r.parts ? String(r.parts[1]).replace('.', ',') : '',
+            r.parts ? String(r.parts[2]).replace('.', ',') : ''
+        ].join(',') + '\n';
+      });
+      saveFile('Diem_' + list.name + '.csv', new Blob([csv], { type: 'text/csv;charset=utf-8' }));
+    };
+    
+    $$('[data-rdel]', e).forEach(function (b) {
+      b.onclick = function () {
+        if (confirm('Xoá bài chấm này?')) {
+          results = results.filter(function (r) { return r.id !== b.dataset.rdel; });
+          saveResults();
+          renderRes();
+          renderChip();
+        }
+      };
+    });
+    
+    $$('[data-rview]', e).forEach(function (b) {
+      b.onclick = function () {
+        const r = results.find(function (x) { return x.id === b.dataset.rview; });
+        if (r) openEdit(r);
+      };
+    });
   }
   /* ---------- Sửa lại thông tin bài đã chấm ---------- */
   let ed = null;
@@ -8345,93 +8356,34 @@ let qrState = { kind: 'idle' },
     /* ===================== TÍNH NĂNG THỐNG KÊ ===================== */
 function showStats() {
   const res = listRes();
-  if (!res || !res.length) {
-    alert('Lần này chưa có bài chấm nào để thống kê!');
-    return;
-  }
-  
-  let tot_hs = 0, kha = 0, tb = 0, yeu = 0;
-  let bins = new Array(10).fill(0);
-  
+  if (!res || !res.length) { alert('Đợt này chưa có bài chấm nào để thống kê!'); return; }
+  let tot_hs = 0, kha = 0, tb = 0, yeu = 0; let bins = new Array(10).fill(0);
   res.forEach(r => {
-    // Quy đổi điểm về thang 10 (nếu cấu hình tổng điểm khác 10)
     let score10 = (r.max && r.max > 0) ? (r.total / r.max) * 10 : r.total;
-    
-    // Xếp loại theo chuẩn: Tốt (>=8), Khá (6.5 - <8), TB (5 - <6.5), Yếu (<5)
-    if (score10 >= 8) tot_hs++;
-    else if (score10 >= 6.5) kha++;
-    else if (score10 >= 5) tb++;
-    else yeu++;
-    
-    // Phổ điểm (Nhóm điểm: 0-<1, 1-<2, ..., 9-10)
-    let b = Math.min(9, Math.floor(score10));
-    bins[b]++;
+    if (score10 >= 8) tot_hs++; else if (score10 >= 6.5) kha++; else if (score10 >= 5) tb++; else yeu++;
+    bins[Math.min(9, Math.floor(score10))]++;
   });
-
   const tot = res.length;
-  // Tính tỷ lệ % dạng số thực để cộng dồn chính xác
   const pTot = parseFloat((tot_hs / tot * 100).toFixed(1));
   const pKha = parseFloat((kha / tot * 100).toFixed(1));
   const pTB = parseFloat((tb / tot * 100).toFixed(1));
   const pYeu = parseFloat((yeu / tot * 100).toFixed(1));
-
-  // Gradient cho biểu đồ tròn
   const cTot = '#12794a', cKha = '#cddc39', cTB = '#ff9800', cYeu = '#e91e63';
   const grad = `conic-gradient(${cTot} 0% ${pTot}%, ${cKha} ${pTot}% ${pTot + pKha}%, ${cTB} ${pTot + pKha}% ${pTot + pKha + pTB}%, ${cYeu} ${pTot + pKha + pTB}% 100%)`;
-
   const maxBin = Math.max(...bins) || 1;
-
   let modal = $('#statsModal');
-  if (!modal) {
-    modal = document.createElement('div');
-    modal.id = 'statsModal';
-    modal.className = 'stats-modal';
-    document.body.appendChild(modal);
-  }
-
+  if (!modal) { modal = document.createElement('div'); modal.id = 'statsModal'; modal.className = 'stats-modal'; document.body.appendChild(modal); }
   let barHtml = '';
   for (let i = 0; i < 10; i++) {
     const ht = (bins[i] / maxBin) * 100;
-    barHtml += `
-      <div class="bar-wrap">
-        ${bins[i] > 0 ? `<div class="bar-val">${bins[i]}</div>` : ''}
-        <div class="bar" style="height: ${ht}%;"></div>
-        <div class="bar-lbl">${i}</div>
-      </div>`;
+    barHtml += `<div class="bar-wrap">${bins[i] > 0 ? `<div class="bar-val">${bins[i]}</div>` : ''}<div class="bar" style="height: ${ht}%;"></div><div class="bar-lbl">${i}</div></div>`;
   }
-  // Thêm mốc 10
   barHtml += `<div class="bar-wrap" style="flex: 0.1;"><div class="bar-lbl">10</div></div>`;
-
   modal.innerHTML = `
-    <div class="sm-top">
-      <h2>Thống kê: ${esc(curList().name)}</h2>
-      <button class="sm-close" onclick="document.getElementById('statsModal').hidden = true;">✕</button>
-    </div>
-    <div class="sm-body">
-      <div class="chart-card">
-        <div class="chart-title">PHỔ ĐIỂM (Số lượng: ${tot} học sinh)</div>
-        <div class="bar-chart">${barHtml}</div>
-      </div>
-      
-      <div class="chart-card">
-        <div class="chart-title">TỶ LỆ XẾP LOẠI</div>
-        <div class="donut-wrap">
-          <div class="donut-chart" style="background: ${grad};">
-            <div class="donut-hole">
-              <span>${tot}</span>
-              <small>Bài thi</small>
-            </div>
-          </div>
-        </div>
-        <div class="legend">
-          <div class="leg-item"><div class="leg-dot" style="background:${cTot}"></div>Tốt (${pTot}%)</div>
-          <div class="leg-item"><div class="leg-dot" style="background:${cKha}"></div>Khá (${pKha}%)</div>
-          <div class="leg-item"><div class="leg-dot" style="background:${cTB}"></div>Trung bình (${pTB}%)</div>
-          <div class="leg-item"><div class="leg-dot" style="background:${cYeu}"></div>Yếu (${pYeu}%)</div>
-        </div>
-      </div>
-    </div>
-  `;
+    <div class="sm-top"><h2>Thống kê: ${esc(curList().name)}</h2><button class="sm-close" onclick="document.getElementById('statsModal').hidden = true;">✕</button></div>
+    <div class="sm-body"><div class="chart-card"><div class="chart-title">PHỔ ĐIỂM (Số lượng: ${tot} học sinh)</div><div class="bar-chart">${barHtml}</div></div>
+    <div class="chart-card"><div class="chart-title">TỶ LỆ XẾP LOẠI</div><div class="donut-wrap"><div class="donut-chart" style="background: ${grad};"><div class="donut-hole"><span>${tot}</span><small>Bài thi</small></div></div></div>
+    <div class="legend"><div class="leg-item"><div class="leg-dot" style="background:${cTot}"></div>Tốt (${pTot}%)</div><div class="leg-item"><div class="leg-dot" style="background:${cKha}"></div>Khá (${pKha}%)</div><div class="leg-item"><div class="leg-dot" style="background:${cTB}"></div>Trung bình (${pTB}%)</div><div class="leg-item"><div class="leg-dot" style="background:${cYeu}"></div>Yếu (${pYeu}%)</div></div></div></div>`;
   modal.hidden = false;
 }
   
