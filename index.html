@@ -8263,7 +8263,7 @@ let qrState = { kind: 'idle' },
           };
       }
 
-      // 2. Ghi đè chức năng của nút tải CSV thành Xuất File Excel (.xlsx) chuẩn
+      // 2. Ghi đè chức năng của nút tải CSV thành Xuất Excel VÀ tự động chèn nút Thống Kê
       if (csvBtn) {
           csvBtn.innerHTML = '📥 Xuất Excel Điểm';
           csvBtn.onclick = function() {
@@ -8275,14 +8275,14 @@ let qrState = { kind: 'idle' },
               const rows = [['STT', 'Thời gian', 'Số báo danh', 'Họ và tên', 'Lớp', 'Mã đề', 'Điểm P.I', 'Điểm P.II', 'Điểm P.III', 'Tổng điểm', 'Điểm tối đa']];
               view.forEach(function (r, index) {
                   const p = r.parts || ['', '', ''];
-                  const info = getStudentInfo(r.sbd) || {name: '', cls: ''};
+                  const info = getStudentInfo(r.sbdStr || r.sbd) || {name: '', cls: ''};
                   rows.push([
                       index + 1,
                       new Date(r.t).toLocaleString('vi-VN'), 
-                      r.sbd, 
+                      r.sbdStr || r.sbd, 
                       info.name, 
                       info.cls, 
-                      r.md, 
+                      r.mdStr || r.md, 
                       p[0], p[1], p[2], 
                       r.total, 
                       r.max
@@ -8295,6 +8295,91 @@ let qrState = { kind: 'idle' },
               const msg = document.getElementById('resMsg'); 
               if (msg) msg.textContent = '✅ Đã tải bảng điểm Excel thành công.';
           };
+
+          // TẠO VÀ CHÈN NÚT THỐNG KÊ NGAY CẠNH NÚT EXCEL
+          if (!document.getElementById('statsBtnNTMIX')) {
+              const statsBtn = document.createElement('button');
+              statsBtn.type = 'button';
+              statsBtn.id = 'statsBtnNTMIX';
+              statsBtn.className = 'btn primary';
+              statsBtn.style.cssText = 'background: var(--warn); border-color: var(--warn); margin-right: 8px; flex: 1; color: white;';
+              statsBtn.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 4px; vertical-align: text-bottom;"><path d="M18 20V10M12 20V4M6 20v-6"/></svg> Thống kê';
+              
+              // Cài đặt logic khi bấm Thống kê
+              statsBtn.onclick = function() {
+                  const res = listRes();
+                  if (!res || res.length === 0) { alert("Chưa có kết quả bài chấm nào trong đợt này!"); return; }
+                  
+                  // Sinh Modal giao diện nếu chưa có
+                  if (!document.getElementById('statsModalNTMIX')) {
+                      const modalHtml = `
+                      <div id="statsModalNTMIX" style="position: fixed; inset: 0; z-index: 9999; background: var(--bg); display: flex; flex-direction: column; overflow-y: auto; padding-bottom: 30px; color: var(--fg); font-family: var(--f-body);">
+                        <div style="display: flex; align-items: center; justify-content: space-between; padding: 14px 16px; background: var(--ink); color: #fff; position: sticky; top: 0; z-index: 101;">
+                          <h2 style="font-size: 18px; margin: 0; color: #fff;">Thống kê đợt chấm</h2>
+                          <button id="statsCloseNTMIX" style="background: transparent; border: none; color: #fff; font-size: 24px; font-weight: bold; cursor: pointer; padding: 0 10px;">✕</button>
+                        </div>
+                        <div style="padding: 16px; max-width: 640px; margin: 0 auto; width: 100%;">
+                          <div style="background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 20px 16px; margin-bottom: 20px; box-shadow: 0 4px 6px rgba(0,0,0,0.05);">
+                            <div style="text-align: center; font-weight: bold; margin-bottom: 20px; font-size: 15px;">Phổ điểm (Thang 10)</div>
+                            <div id="barChartNTMIX" style="display: flex; align-items: flex-end; justify-content: space-between; height: 200px; padding-bottom: 25px; position: relative; border-bottom: 1px solid var(--line); border-left: 1px solid var(--line); background: repeating-linear-gradient(0deg, transparent, transparent 39px, var(--line) 40px);"></div>
+                          </div>
+                          <div style="background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 20px 16px; margin-bottom: 20px; box-shadow: 0 4px 6px rgba(0,0,0,0.05);">
+                            <div style="text-align: center; font-weight: bold; margin-bottom: 20px; font-size: 15px;">Xếp loại học sinh</div>
+                            <div style="display: flex; justify-content: center; position: relative; margin: 20px 0;">
+                              <div id="donutChartNTMIX" style="width: 220px; height: 220px; border-radius: 50%; position: relative; display: flex; align-items: center; justify-content: center;">
+                                <div style="width: 110px; height: 110px; background: var(--card); border-radius: 50%; display: flex; flex-direction: column; align-items: center; justify-content: center;">
+                                  <span id="donutTotalNTMIX" style="font-size: 24px; font-weight: bold;">0</span>
+                                  <small style="font-size: 11px; color: var(--muted); text-transform: uppercase;">Học sinh</small>
+                                </div>
+                              </div>
+                            </div>
+                            <div id="donutLegendNTMIX" style="display: flex; flex-wrap: wrap; justify-content: center; gap: 12px;"></div>
+                          </div>
+                        </div>
+                      </div>`;
+                      document.body.insertAdjacentHTML('beforeend', modalHtml);
+                      // Xử lý đóng modal
+                      document.getElementById('statsCloseNTMIX').onclick = function() {
+                          document.getElementById('statsModalNTMIX').hidden = true;
+                      };
+                  }
+                  
+                  // Tính toán và vẽ biểu đồ
+                  let bins = new Array(11).fill(0), counts = { yeu: 0, tb: 0, kha: 0, tot: 0 }, totalHs = res.length;
+                  res.forEach(function(r) {
+                      let score10 = (r.total / r.max) * 10, roundScore = Math.round(score10);
+                      if(roundScore >= 0 && roundScore <= 10) bins[roundScore]++;
+                      if (score10 < 5.0) counts.yeu++; else if (score10 < 6.5) counts.tb++; else if (score10 < 8.0) counts.kha++; else counts.tot++;
+                  });
+
+                  let maxBin = Math.max(...bins); if(maxBin === 0) maxBin = 1;
+                  let barHtml = '';
+                  for (let i = 0; i <= 10; i++) {
+                      barHtml += `<div style="flex: 1; display: flex; flex-direction: column; justify-content: flex-end; align-items: center; height: 100%; position: relative;">
+                          ${bins[i] > 0 ? `<div style="font-size: 11px; font-weight: bold; margin-bottom: 4px; color: var(--fg);">${bins[i]}</div>` : ''}
+                          <div style="width: 70%; background: #ff5722; border-radius: 2px 2px 0 0; transition: height 0.5s ease; height: ${(bins[i] / maxBin) * 100}%;"></div>
+                          <div style="position: absolute; bottom: -20px; font-size: 11px; color: var(--muted);">${i}</div>
+                      </div>`;
+                  }
+                  document.getElementById('barChartNTMIX').innerHTML = barHtml;
+
+                  let pYeu = (counts.yeu / totalHs) * 100, pTb = (counts.tb / totalHs) * 100, pKha = (counts.kha / totalHs) * 100, pTot = (counts.tot / totalHs) * 100;
+                  let degYeu = pYeu * 3.6, degTb = degYeu + pTb * 3.6, degKha = degTb + pKha * 3.6;
+                  
+                  document.getElementById('donutChartNTMIX').style.background = `conic-gradient(#e91e63 0deg ${degYeu}deg, #ff9800 ${degYeu}deg ${degTb}deg, #cddc39 ${degTb}deg ${degKha}deg, #4caf50 ${degKha}deg 360deg)`;
+                  document.getElementById('donutTotalNTMIX').innerText = totalHs;
+                  document.getElementById('donutLegendNTMIX').innerHTML = `
+                      <div style="display: flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 600;"><div style="width: 12px; height: 12px; border-radius: 3px; background:#e91e63"></div>Yếu: ${pYeu.toFixed(1)}%</div>
+                      <div style="display: flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 600;"><div style="width: 12px; height: 12px; border-radius: 3px; background:#ff9800"></div>TB: ${pTb.toFixed(1)}%</div>
+                      <div style="display: flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 600;"><div style="width: 12px; height: 12px; border-radius: 3px; background:#cddc39"></div>Khá: ${pKha.toFixed(1)}%</div>
+                      <div style="display: flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 600;"><div style="width: 12px; height: 12px; border-radius: 3px; background:#4caf50"></div>Tốt: ${pTot.toFixed(1)}%</div>`;
+                  
+                  document.getElementById('statsModalNTMIX').hidden = false;
+              };
+              
+              // Chèn nút Thống kê vào sát trước nút Excel
+              csvBtn.parentNode.insertBefore(statsBtn, csvBtn);
+          }
       }
   }, 1000);
 
