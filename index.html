@@ -3766,11 +3766,19 @@ function renderPhoto(sheetImg, cfg, marks, o) {
     if (t === 'students') renderStudents();
     window.scrollTo(0, 0);
   }
+  // Lắng nghe sự kiện click cho tất cả các nút Tab
   $$('.tab').forEach(function (b) {
     b.addEventListener('click', function () {
       showTab(b.dataset.tab);
     });
   });
+
+  // Gọi thử hàm hiển thị tab "Chấm bài" ngay khi mới mở web
+  showTab('scan');
+  
+  // Khởi tạo các giao diện mặc định
+  renderSheetSel();
+  renderChip();
   function renderChip() {
     $('#cfgChip').textContent = cfg.n1 + ' · ' + cfg.n2 + ' · ' + cfg.n3 + ' câu';
     const bd = $('#resBadge');
