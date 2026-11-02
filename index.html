@@ -4054,9 +4054,9 @@ function renderPhoto(sheetImg, cfg, marks, o) {
       '<div class="row"><h2>Danh sách thí sinh</h2><span class="hint">' +
       stds.length +
       ' thí sinh</span></div>' +
-      '<p class="hint">Danh sách thuộc đợt “' +
+      '<p class="hint">Danh sách thuộc lần chấm “' +
       esc(list.name || '') +
-      '”. Khi chấm, app đối chiếu số báo danh trên phiếu với danh sách này để hiện tên học sinh trong kết quả, bảng điểm CSV và file PDF. Số 0 đứng đầu được bỏ qua khi so khớp (ví dụ “01” khớp với “1”). Muốn đổi đợt, vào mục Kết quả.</p>' +
+      '”. Khi chấm, app đối chiếu số báo danh trên phiếu với danh sách này để hiện tên học sinh trong kết quả, bảng điểm CSV và file PDF. Số 0 đứng đầu được bỏ qua khi so khớp (ví dụ “01” khớp với “1”). Muốn đổi lần chấm, vào mục Kết quả.</p>' +
       '<div class="actions"><label class="btn primary" style="flex:1; border: 1px dashed var(--ink); background: transparent; color: var(--ink);" for="stuFile">' +
       '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 6px;"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>' +
       'Nạp Danh Sách Học Sinh (.xlsx)</label><input class="vh" type="file" id="stuFile" accept=".xlsx, .xls, .csv">' +
@@ -4066,7 +4066,7 @@ function renderPhoto(sheetImg, cfg, marks, o) {
       '<button type="button" class="btn primary" id="stu1Go" style="width:100%; margin-top:8px">Thêm</button>';
     if (stds.length) {
       h +=
-        '<div class="actions" style="margin-top:20px"><button type="button" class="btn small danger ghost" id="stuClear">Xoá toàn bộ thí sinh đợt này</button></div>' +
+        '<div class="actions" style="margin-top:20px"><button type="button" class="btn small danger ghost" id="stuClear">Xoá toàn bộ thí sinh lần chấm này</button></div>' +
         '<div class="list" style="margin-top:14px">';
       stds.slice(0, 100).forEach(function (s, i) {
         h +=
@@ -4161,7 +4161,7 @@ function renderPhoto(sheetImg, cfg, marks, o) {
     const scl = $('#stuClear');
     if (scl)
       scl.onclick = function () {
-        if (confirm('Xoá toàn bộ danh sách thí sinh của đợt này?')) {
+        if (confirm('Xoá toàn bộ danh sách thí sinh của lần chấm này?')) {
           list.students = [];
           saveLists();
           renderStudents();
@@ -6425,11 +6425,12 @@ function paintMarks(c, sc, g, ver, lw, ringFn) {
       const btnStats = $('#btnStats');
     if (btnStats) {
         btnStats.onclick = function() {
-            // Bắt sự kiện nút Thống kê bằng cách an toàn nhất
+            
+            // Kích hoạt sự kiện nút Thống kê một cách an toàn nhất
     const btnStats = document.getElementById('btnStats');
     if (btnStats) {
       btnStats.addEventListener('click', function(e) {
-        e.preventDefault(); // Ngăn chặn các sự kiện mặc định chồng chéo
+        e.preventDefault();
         if (typeof showStats === 'function') {
            showStats();
         } else {
@@ -8345,7 +8346,7 @@ let qrState = { kind: 'idle' },
 function showStats() {
   const res = listRes();
   if (!res || !res.length) {
-    alert('Đợt này chưa có bài chấm nào để thống kê!');
+    alert('Lần này chưa có bài chấm nào để thống kê!');
     return;
   }
   
