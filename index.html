@@ -8423,5 +8423,31 @@ function showStats() {
 }
   
 </script>
-
+<!-- GIAO DIỆN THỐNG KÊ (Ẩn mặc định) -->
+<div id="statsModal" class="stats-modal" hidden>
+  <div class="sm-top">
+    <h2>Thống kê đợt chấm</h2>
+    <button class="sm-close" id="statsClose" aria-label="Đóng">✕</button>
+  </div>
+  <div class="sm-body">
+    <!-- Biểu đồ cột: Phổ điểm -->
+    <div class="chart-card">
+      <div class="chart-title">Phổ điểm (Thang 10)</div>
+      <div class="bar-chart" id="barChart"></div>
+    </div>
+    <!-- Biểu đồ tròn: Xếp loại -->
+    <div class="chart-card">
+      <div class="chart-title">Xếp loại học sinh</div>
+      <div class="donut-wrap">
+        <div class="donut-chart" id="donutChart">
+          <div class="donut-hole">
+            <span id="donutTotal">0</span>
+            <small>Học sinh</small>
+          </div>
+        </div>
+      </div>
+      <div class="legend" id="donutLegend"></div>
+    </div>
+  </div>
+</div>
 </body></html>
