@@ -3329,11 +3329,10 @@ function renderPhoto(sheetImg, cfg, marks, o) {
         g *= 0.97;
         b *= 0.94;
       } else {
-        const s = 0.88 + 0.12 * Math.sin(v / 9 + u / 210);
-        r = 96 * s;
-        g = 74 * s;
-        b = 58 * s;
-      }
+    r = 30;
+    g = 65;
+    b = 90;
+  }
       const lf = 1 - light * ((u / DW) * 0.5 + (v / DH) * 0.5),
         nz = (rng() - 0.5) * noise;
       od[p] = r * lf + nz;
