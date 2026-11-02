@@ -8295,7 +8295,7 @@ let qrState = { kind: 'idle' },
                       r.max
                   ]);
               });
-              const wb = XLSX.utils.book_new(); 
+             const wb = XLSX.utils.book_new(); 
               XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(rows), "BangDiem");
               XLSX.writeFile(wb, `BangDiem_NTMIX_${Date.now()}.xlsx`);
               
@@ -8304,78 +8304,77 @@ let qrState = { kind: 'idle' },
           };
       }
   }, 1000);
-const wb = XLSX.utils.book_new(); 
-              XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(rows), "BangDiem");
-              XLSX.writeFile(wb, `BangDiem_NTMIX_${Date.now()}.xlsx`);
-              
-              const msg = document.getElementById('resMsg'); 
-              if (msg) msg.textContent = '✅ Đã tải bảng điểm Excel thành công.';
-          };
-      }
-  }, 1000);
-  
-  // --- BẮT ĐẦU DÁN ĐOẠN MÃ THỐNG KÊ TỪ ĐÂY ---
-  window.renderStats = function() {
-    const res = listRes();
-    if (!res || res.length === 0) { 
-      const chartElem = document.getElementById('barChartPage');
-      if(chartElem) chartElem.innerHTML = '<div style="width:100%;text-align:center;color:var(--muted);padding-top:80px;">Chưa có dữ liệu bài chấm</div>';
-      const donutElem = document.getElementById('donutChartPage');
-      if(donutElem) donutElem.style.background = 'var(--line)';
-      const donutTotal = document.getElementById('donutTotalPage');
-      if(donutTotal) donutTotal.innerText = '0';
-      const donutLegend = document.getElementById('donutLegendPage');
-      if(donutLegend) donutLegend.innerHTML = '';
-      return; 
-    }
-    
-    let bins = new Array(11).fill(0), counts = { yeu: 0, tb: 0, kha: 0, tot: 0 }, totalHs = res.length;
-    
-    res.forEach(function(r) {
-      let score10 = (r.total / r.max) * 10, roundScore = Math.round(score10);
-      if(roundScore >= 0 && roundScore <= 10) bins[roundScore]++;
-      if (score10 < 5.0) counts.yeu++; else if (score10 < 6.5) counts.tb++; else if (score10 < 8.0) counts.kha++; else counts.tot++;
-    });
 
-    let maxBin = Math.max(...bins); if(maxBin === 0) maxBin = 1;
-    let barHtml = '';
-    for (let i = 0; i <= 10; i++) {
-      barHtml += `<div style="flex: 1; display: flex; flex-direction: column; justify-content: flex-end; align-items: center; height: 100%; position: relative;">
-          ${bins[i] > 0 ? `<div style="font-size: 11px; font-weight: bold; margin-bottom: 4px; color: var(--fg);">${bins[i]}</div>` : ''}
-          <div style="width: 70%; background: #ff5722; border-radius: 2px 2px 0 0; transition: height 0.5s ease; height: ${(bins[i] / maxBin) * 100}%;"></div>
-          <div style="position: absolute; bottom: -20px; font-size: 11px; color: var(--muted);">${i}</div>
-      </div>`;
-    }
-    const chartElem = document.getElementById('barChartPage');
-    if(chartElem) chartElem.innerHTML = barHtml;
-
-    let pYeu = (counts.yeu / totalHs) * 100, pTb = (counts.tb / totalHs) * 100, pKha = (counts.kha / totalHs) * 100, pTot = (counts.tot / totalHs) * 100;
-    let degYeu = pYeu * 3.6, degTb = degYeu + pTb * 3.6, degKha = degTb + pKha * 3.6;
-    
-    const donutChartElem = document.getElementById('donutChartPage');
-    if(donutChartElem) donutChartElem.style.background = `conic-gradient(#e91e63 0deg ${degYeu}deg, #ff9800 ${degYeu}deg ${degTb}deg, #cddc39 ${degTb}deg ${degKha}deg, #4caf50 ${degKha}deg 360deg)`;
-    
-    const donutTotalElem = document.getElementById('donutTotalPage');
-    if(donutTotalElem) donutTotalElem.innerText = totalHs;
-    
-    const donutLegendElem = document.getElementById('donutLegendPage');
-    if(donutLegendElem) donutLegendElem.innerHTML = `
-      <div style="display: flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 600;"><div style="width: 12px; height: 12px; border-radius: 3px; background:#e91e63"></div>Yếu: ${pYeu.toFixed(1)}%</div>
-      <div style="display: flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 600;"><div style="width: 12px; height: 12px; border-radius: 3px; background:#ff9800"></div>TB: ${pTb.toFixed(1)}%</div>
-      <div style="display: flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 600;"><div style="width: 12px; height: 12px; border-radius: 3px; background:#cddc39"></div>Khá: ${pKha.toFixed(1)}%</div>
-      <div style="display: flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 600;"><div style="width: 12px; height: 12px; border-radius: 3px; background:#4caf50"></div>Tốt: ${pTot.toFixed(1)}%</div>`;
-  };
-
+  // --- BẮT ĐẦU MÃ THỐNG KÊ ĐỘC LẬP ---
   document.addEventListener('click', function(e) {
-      if (e.target.closest('#btnRefreshStats')) {
-          if (typeof window.renderStats === 'function') window.renderStats();
+      const tabBtn = e.target.closest('.tab[data-tab="stats"]');
+      const refreshBtn = e.target.closest('#btnRefreshStats');
+      
+      if (tabBtn || refreshBtn) {
+          if (tabBtn) {
+              document.querySelectorAll('.view').forEach(function(v) { v.hidden = true; });
+              const vStats = document.getElementById('v-stats');
+              if (vStats) vStats.hidden = false;
+              document.querySelectorAll('.tab').forEach(function(b) { b.removeAttribute('aria-current'); });
+              tabBtn.setAttribute('aria-current', 'page');
+              window.scrollTo(0, 0);
+          }
+          
+          // Lấy dữ liệu bài chấm trực tiếp từ bộ nhớ cục bộ
+          let res = [];
+          try {
+              let saved = localStorage.getItem('omr.results2');
+              if(saved) {
+                  let parsed = JSON.parse(saved);
+                  let lists = localStorage.getItem('omr.lists');
+                  let activeId = lists ? (JSON.parse(lists).active || 'l1') : 'l1';
+                  res = parsed.filter(r => (r.lid || 'l1') === activeId);
+              }
+          } catch(err) {}
+
+          if (!res || res.length === 0) { 
+              const chartElem = document.getElementById('barChartPage');
+              if(chartElem) chartElem.innerHTML = '<div style="width:100%;text-align:center;color:var(--muted);padding-top:80px;">Chưa có dữ liệu bài chấm</div>';
+              return; 
+          }
+          
+          let bins = new Array(11).fill(0), counts = { yeu: 0, tb: 0, kha: 0, tot: 0 }, totalHs = res.length;
+          res.forEach(function(r) {
+              let score10 = (r.total / r.max) * 10, roundScore = Math.round(score10);
+              if(roundScore >= 0 && roundScore <= 10) bins[roundScore]++;
+              if (score10 < 5.0) counts.yeu++; else if (score10 < 6.5) counts.tb++; else if (score10 < 8.0) counts.kha++; else counts.tot++;
+          });
+
+          let maxBin = Math.max(...bins); if(maxBin === 0) maxBin = 1;
+          let barHtml = '';
+          for (let i = 0; i <= 10; i++) {
+              barHtml += `<div style="flex: 1; display: flex; flex-direction: column; justify-content: flex-end; align-items: center; height: 100%; position: relative;">
+                  ${bins[i] > 0 ? `<div style="font-size: 11px; font-weight: bold; margin-bottom: 4px; color: var(--fg);">${bins[i]}</div>` : ''}
+                  <div style="width: 70%; background: #ff5722; border-radius: 2px 2px 0 0; transition: height 0.5s ease; height: ${(bins[i] / maxBin) * 100}%;"></div>
+                  <div style="position: absolute; bottom: -20px; font-size: 11px; color: var(--muted);">${i}</div>
+              </div>`;
+          }
+          const chartElem = document.getElementById('barChartPage');
+          if(chartElem) chartElem.innerHTML = barHtml;
+
+          let pYeu = (counts.yeu / totalHs) * 100, pTb = (counts.tb / totalHs) * 100, pKha = (counts.kha / totalHs) * 100, pTot = (counts.tot / totalHs) * 100;
+          let degYeu = pYeu * 3.6, degTb = degYeu + pTb * 3.6, degKha = degTb + pKha * 3.6;
+          
+          const donutChartElem = document.getElementById('donutChartPage');
+          if(donutChartElem) donutChartElem.style.background = `conic-gradient(#e91e63 0deg ${degYeu}deg, #ff9800 ${degYeu}deg ${degTb}deg, #cddc39 ${degTb}deg ${degKha}deg, #4caf50 ${degKha}deg 360deg)`;
+          const donutTotalElem = document.getElementById('donutTotalPage');
+          if(donutTotalElem) donutTotalElem.innerText = totalHs;
+          const donutLegendElem = document.getElementById('donutLegendPage');
+          if(donutLegendElem) donutLegendElem.innerHTML = `
+              <div style="display: flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 600;"><div style="width: 12px; height: 12px; border-radius: 3px; background:#e91e63"></div>Yếu: ${pYeu.toFixed(1)}%</div>
+              <div style="display: flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 600;"><div style="width: 12px; height: 12px; border-radius: 3px; background:#ff9800"></div>TB: ${pTb.toFixed(1)}%</div>
+              <div style="display: flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 600;"><div style="width: 12px; height: 12px; border-radius: 3px; background:#cddc39"></div>Khá: ${pKha.toFixed(1)}%</div>
+              <div style="display: flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 600;"><div style="width: 12px; height: 12px; border-radius: 3px; background:#4caf50"></div>Tốt: ${pTot.toFixed(1)}%</div>`;
       }
   });
-  // --- KẾT THÚC ĐOẠN MÃ THỐNG KÊ ---
-
 </script>
-
-</body></html>
+</body>
+</html>
 <script>
 (function() {
     function getSavedResults() {
