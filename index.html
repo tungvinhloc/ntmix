@@ -8338,7 +8338,7 @@ let qrState = { kind: 'idle' },
               return; 
           }
           
-          let bins = new Array(11).fill(0), counts = { yeu: 0, tb: 0, kha: 0, tot: 0 }, totalHs = res.length;
+          let bins = new Array(11).fill(0), counts = { yeu: 0, đạt: 0, kha: 0, tot: 0 }, totalHs = res.length;
           res.forEach(function(r) {
               let score10 = (r.total / r.max) * 10, roundScore = Math.round(score10);
               if(roundScore >= 0 && roundScore <= 10) bins[roundScore]++;
@@ -8367,7 +8367,7 @@ let qrState = { kind: 'idle' },
           const donutLegendElem = document.getElementById('donutLegendPage');
           if(donutLegendElem) donutLegendElem.innerHTML = `
               <div style="display: flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 600;"><div style="width: 12px; height: 12px; border-radius: 3px; background:#e91e63"></div>Yếu: ${pYeu.toFixed(1)}%</div>
-              <div style="display: flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 600;"><div style="width: 12px; height: 12px; border-radius: 3px; background:#ff9800"></div>TB: ${pTb.toFixed(1)}%</div>
+              <div style="display: flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 600;"><div style="width: 12px; height: 12px; border-radius: 3px; background:#ff9800"></div>Đạt: ${pTb.toFixed(1)}%</div>
               <div style="display: flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 600;"><div style="width: 12px; height: 12px; border-radius: 3px; background:#cddc39"></div>Khá: ${pKha.toFixed(1)}%</div>
               <div style="display: flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 600;"><div style="width: 12px; height: 12px; border-radius: 3px; background:#4caf50"></div>Tốt: ${pTot.toFixed(1)}%</div>`;
       }
