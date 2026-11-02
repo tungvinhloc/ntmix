@@ -8409,7 +8409,7 @@ let qrState = { kind: 'idle' },
             return; 
         }
         
-        let bins = new Array(11).fill(0), counts = { yeu: 0, dat: 0, kha: 0, tot: 0 }, totalHs = res.length;
+        let bins = new Array(11).fill(0), counts = { yeu: 0, tb: 0, kha: 0, tot: 0 }, totalHs = res.length;
         
         res.forEach(function(r) {
             let score10 = (r.total / r.max) * 10, roundScore = Math.round(score10);
