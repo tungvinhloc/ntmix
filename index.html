@@ -4056,7 +4056,7 @@ function renderPhoto(sheetImg, cfg, marks, o) {
       ' thí sinh</span></div>' +
       '<p class="hint">Danh sách thuộc đợt “' +
       esc(list.name || '') +
-      '”. Khi chấm, app đối chiếu số báo danh trên phiếu với danh sách này để hiện tên học sinh trong kết quả, bảng điểm CSV và file PDF. Số 0 đứng đầu được bỏ qua khi so khớp (ví dụ “01” khớp với “1”). Muốn đổi đợt, vào mục Kết quả.</p>' +
+      '”. Khi chấm, app đối chiếu số báo danh trên phiếu với danh sách này để hiện tên học sinh trong kết quả, bảng điểm Excel và file PDF. Số 0 đứng đầu được bỏ qua khi so khớp (ví dụ “01” khớp với “1”). Muốn đổi đợt, vào mục Kết quả.</p>' +
       '<div class="actions"><label class="btn primary" style="flex:1; border: 1px dashed var(--ink); background: transparent; color: var(--ink);" for="stuFile">' +
       '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 6px;"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>' +
       'Nạp Danh Sách Học Sinh (.xlsx)</label><input class="vh" type="file" id="stuFile" accept=".xlsx, .xls, .csv">' +
@@ -6611,7 +6611,7 @@ function paintMarks(c, sc, g, ver, lw, ringFn) {
     });
     h +=
       '</div><div class="actions"><button type="button" class="btn primary" id="csvBtn">Tải bảng ' +
-      'điểm CSV</button><button type="button" class="btn" id="pdfBtn">Xuất PDF tất cả ' +
+      'điểm Excel</button><button type="button" class="btn" id="pdfBtn">Xuất PDF tất cả ' +
       'bài</button><button type="button" class="btn ghost danger" id="clrBtn">Xoá tất ' +
       'cả</button></div><p class="hint" id="resMsg">Kết quả được giữ trong trình duyệt này. Tải ' +
       'CSV để lưu lại hoặc mở bằng Excel, Google Sheets.</p>';
@@ -8328,97 +8328,69 @@ let qrState = { kind: 'idle' },
       }
   }, 1000);
     /* ===================== TÍNH NĂNG THỐNG KÊ ===================== */
-function showStats() {
-  const res = listRes();
-  if (!res || !res.length) {
-    alert('Đợt này chưa có bài chấm nào để thống kê!');
-    return;
-  }
-  
-  let tot_hs = 0, kha = 0, tb = 0, yeu = 0;
-  let bins = new Array(10).fill(0);
-  
-  res.forEach(r => {
-    // Quy đổi điểm về thang 10 (nếu cấu hình tổng điểm khác 10)
-    let score10 = (r.max && r.max > 0) ? (r.total / r.max) * 10 : r.total;
+  function showStats() {
+    var res = listRes();
+    if (!res || !res.length) {
+      alert('Đợt này chưa có bài chấm nào để thống kê!');
+      return;
+    }
     
-    // Xếp loại theo chuẩn: Tốt (>=8), Khá (6.5 - <8), TB (5 - <6.5), Yếu (<5)
-    if (score10 >= 8) tot_hs++;
-    else if (score10 >= 6.5) kha++;
-    else if (score10 >= 5) tb++;
-    else yeu++;
+    var tot_hs = 0, kha = 0, tb = 0, yeu = 0;
+    var bins = [0,0,0,0,0,0,0,0,0,0];
     
-    // Phổ điểm (Nhóm điểm: 0-<1, 1-<2, ..., 9-10)
-    let b = Math.min(9, Math.floor(score10));
-    bins[b]++;
-  });
-
-  const tot = res.length;
-  // Tính tỷ lệ % dạng số thực để cộng dồn chính xác
-  const pTot = parseFloat((tot_hs / tot * 100).toFixed(1));
-  const pKha = parseFloat((kha / tot * 100).toFixed(1));
-  const pTB = parseFloat((tb / tot * 100).toFixed(1));
-  const pYeu = parseFloat((yeu / tot * 100).toFixed(1));
-
-  // Gradient cho biểu đồ tròn
-  const cTot = '#12794a', cKha = '#cddc39', cTB = '#ff9800', cYeu = '#e91e63';
-  const grad = `conic-gradient(${cTot} 0% ${pTot}%, ${cKha} ${pTot}% ${pTot + pKha}%, ${cTB} ${pTot + pKha}% ${pTot + pKha + pTB}%, ${cYeu} ${pTot + pKha + pTB}% 100%)`;
-
-  const maxBin = Math.max(...bins) || 1;
-
-  let modal = $('#statsModal');
-  if (!modal) {
-    modal = document.createElement('div');
-    modal.id = 'statsModal';
-    modal.className = 'stats-modal';
-    document.body.appendChild(modal);
-  }
-
-  let barHtml = '';
-  for (let i = 0; i < 10; i++) {
-    const ht = (bins[i] / maxBin) * 100;
-    barHtml += `
-      <div class="bar-wrap">
-        ${bins[i] > 0 ? `<div class="bar-val">${bins[i]}</div>` : ''}
-        <div class="bar" style="height: ${ht}%;"></div>
-        <div class="bar-lbl">${i}</div>
-      </div>`;
-  }
-  // Thêm mốc 10
-  barHtml += `<div class="bar-wrap" style="flex: 0.1;"><div class="bar-lbl">10</div></div>`;
-
-  modal.innerHTML = `
-    <div class="sm-top">
-      <h2>Thống kê: ${esc(curList().name)}</h2>
-      <button class="sm-close" onclick="document.getElementById('statsModal').hidden = true;">✕</button>
-    </div>
-    <div class="sm-body">
-      <div class="chart-card">
-        <div class="chart-title">PHỔ ĐIỂM (Số lượng: ${tot} học sinh)</div>
-        <div class="bar-chart">${barHtml}</div>
-      </div>
+    res.forEach(function(r) {
+      var score10 = (r.max && r.max > 0) ? (r.total / r.max) * 10 : r.total;
+      if (score10 >= 8) tot_hs++;
+      else if (score10 >= 6.5) kha++;
+      else if (score10 >= 5) tb++;
+      else yeu++;
       
-      <div class="chart-card">
-        <div class="chart-title">TỶ LỆ XẾP LOẠI</div>
-        <div class="donut-wrap">
-          <div class="donut-chart" style="background: ${grad};">
-            <div class="donut-hole">
-              <span>${tot}</span>
-              <small>Bài thi</small>
-            </div>
-          </div>
-        </div>
-        <div class="legend">
-          <div class="leg-item"><div class="leg-dot" style="background:${cTot}"></div>Tốt (${pTot}%)</div>
-          <div class="leg-item"><div class="leg-dot" style="background:${cKha}"></div>Khá (${pKha}%)</div>
-          <div class="leg-item"><div class="leg-dot" style="background:${cTB}"></div>Trung bình (${pTB}%)</div>
-          <div class="leg-item"><div class="leg-dot" style="background:${cYeu}"></div>Yếu (${pYeu}%)</div>
-        </div>
-      </div>
-    </div>
-  `;
-  modal.hidden = false;
-}
+      var b = Math.min(9, Math.floor(score10));
+      bins[b]++;
+    });
+
+    var tot = res.length;
+    var pTot = parseFloat((tot_hs / tot * 100).toFixed(1));
+    var pKha = parseFloat((kha / tot * 100).toFixed(1));
+    var pTB = parseFloat((tb / tot * 100).toFixed(1));
+    var pYeu = parseFloat((yeu / tot * 100).toFixed(1));
+
+    var cTot = '#12794a', cKha = '#cddc39', cTB = '#ff9800', cYeu = '#e91e63';
+    var grad = 'conic-gradient(' + cTot + ' 0% ' + pTot + '%, ' + cKha + ' ' + pTot + '% ' + (pTot + pKha) + '%, ' + cTB + ' ' + (pTot + pKha) + '% ' + (pTot + pKha + pTB) + '%, ' + cYeu + ' ' + (pTot + pKha + pTB) + '% 100%)';
+
+    var maxBin = Math.max.apply(null, bins) || 1;
+
+    var modal = $('#statsModal');
+    if (!modal) {
+      modal = document.createElement('div');
+      modal.id = 'statsModal';
+      modal.className = 'stats-modal';
+      document.body.appendChild(modal);
+    }
+
+    var barHtml = '';
+    for (var i = 0; i < 10; i++) {
+      var ht = (bins[i] / maxBin) * 100;
+      barHtml += '<div class="bar-wrap">' + (bins[i] > 0 ? '<div class="bar-val">' + bins[i] + '</div>' : '') + '<div class="bar" style="height: ' + ht + '%;"></div><div class="bar-lbl">' + i + '</div></div>';
+    }
+    barHtml += '<div class="bar-wrap" style="flex: 0.1;"><div class="bar-lbl">10</div></div>';
+
+    modal.innerHTML = '<div class="sm-top"><h2>Thống kê: ' + esc(curList().name) + '</h2><button class="sm-close" onclick="document.getElementById(\'statsModal\').hidden = true;">✕</button></div>' +
+      '<div class="sm-body"><div class="chart-card"><div class="chart-title">PHỔ ĐIỂM (Số lượng: ' + tot + ' học sinh)</div><div class="bar-chart">' + barHtml + '</div></div>' +
+      '<div class="chart-card"><div class="chart-title">TỶ LỆ XẾP LOẠI</div><div class="donut-wrap"><div class="donut-chart" style="background: ' + grad + ';"><div class="donut-hole"><span>' + tot + '</span><small>Bài thi</small></div></div></div>' +
+      '<div class="legend"><div class="leg-item"><div class="leg-dot" style="background:' + cTot + '"></div>Tốt (' + pTot + '%)</div><div class="leg-item"><div class="leg-dot" style="background:' + cKha + '"></div>Khá (' + pKha + '%)</div><div class="leg-item"><div class="leg-dot" style="background:' + cTB + '"></div>Trung bình (' + pTB + '%)</div><div class="leg-item"><div class="leg-dot" style="background:' + cYeu + '"></div>Yếu (' + pYeu + '%)</div></div></div></div>';
+    
+    modal.hidden = false;
+  }
+
+  // Bắt sự kiện toàn cục: đảm bảo nút Thống kê luôn nhận được lệnh click
+  document.addEventListener('click', function(e) {
+      var btnStat = e.target.closest('#btnStats');
+      if (btnStat) {
+          e.preventDefault();
+          showStats();
+      }
+  });
   
 </script>
 
