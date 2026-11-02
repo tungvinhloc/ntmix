@@ -6588,10 +6588,10 @@ function paintMarks(c, sc, g, ver, lw, ringFn) {
     });
     h +=
       '</div><div class="actions"><button type="button" class="btn primary" id="csvBtn">Tải bảng ' +
-      'điểm CSV</button><button type="button" class="btn" id="pdfBtn">Xuất PDF tất cả ' +
+      'điểm Excel</button><button type="button" class="btn" id="pdfBtn">Xuất PDF tất cả ' +
       'bài</button><button type="button" class="btn ghost danger" id="clrBtn">Xoá tất ' +
       'cả</button></div><p class="hint" id="resMsg">Kết quả được giữ trong trình duyệt này. Tải ' +
-      'CSV để lưu lại hoặc mở bằng Excel, Google Sheets.</p>';
+      'Excel để lưu lại hoặc mở bằng Google Sheets.</p>';
     host.innerHTML = h;
     bindListBar(host);
     $$('[data-del]', host).forEach(function (b) {
