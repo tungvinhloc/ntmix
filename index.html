@@ -1429,6 +1429,31 @@ h3.ph {
     <section id="v-res" class="view" hidden aria-label="Kết quả">
       <div class="card" id="resCard"></div>
     </section>
+  <!-- GIAO DIỆN THỐNG KÊ -->
+    <div id="statsModal" class="stats-modal" hidden>
+      <div class="sm-top">
+        <h2>Thống kê đợt chấm</h2>
+        <button class="sm-close" id="statsClose" aria-label="Đóng">✕</button>
+      </div>
+      <div class="sm-body">
+        <div class="chart-card">
+          <div class="chart-title">Phổ điểm (Thang 10)</div>
+          <div class="bar-chart" id="barChart"></div>
+        </div>
+        <div class="chart-card">
+          <div class="chart-title">Xếp loại học sinh</div>
+          <div class="donut-wrap">
+            <div class="donut-chart" id="donutChart">
+              <div class="donut-hole">
+                <span id="donutTotal">0</span>
+                <small>Học sinh</small>
+              </div>
+            </div>
+          </div>
+          <div class="legend" id="donutLegend"></div>
+        </div>
+      </div>
+    </div>
   </main>
 </div>
 
@@ -8271,6 +8296,46 @@ let qrState = { kind: 'idle' },
               if (msg) msg.textContent = '✅ Đã tải bảng điểm Excel thành công.';
           };
       }
+  }, 1000);
+
+  // --- HÀM THỐNG KÊ ---
+  window.showStats = function() {
+    const res = listRes();
+    if (!res || res.length === 0) { alert("Chưa có kết quả bài chấm nào trong đợt này!"); return; }
+    let bins = new Array(11).fill(0), counts = { yeu: 0, tb: 0, kha: 0, tot: 0 }, totalHs = res.length;
+    
+    res.forEach(function(r) {
+      let score10 = (r.total / r.max) * 10, roundScore = Math.round(score10);
+      if(roundScore >= 0 && roundScore <= 10) bins[roundScore]++;
+      if (score10 < 5.0) counts.yeu++; else if (score10 < 6.5) counts.tb++; else if (score10 < 8.0) counts.kha++; else counts.tot++;
+    });
+
+    let maxBin = Math.max(...bins); if(maxBin === 0) maxBin = 1;
+    let barHtml = '';
+    for (let i = 0; i <= 10; i++) {
+      barHtml += `<div class="bar-wrap">${bins[i] > 0 ? `<div class="bar-val">${bins[i]}</div>` : ''}<div class="bar" style="height: ${(bins[i] / maxBin) * 100}%"></div><div class="bar-lbl">${i}</div></div>`;
+    }
+    const chartElem = document.getElementById('barChart');
+    if (chartElem) chartElem.innerHTML = barHtml;
+
+    let pYeu = (counts.yeu / totalHs) * 100, pTb = (counts.tb / totalHs) * 100, pKha = (counts.kha / totalHs) * 100, pTot = (counts.tot / totalHs) * 100;
+    let degYeu = pYeu * 3.6, degTb = degYeu + pTb * 3.6, degKha = degTb + pKha * 3.6;
+    
+    const donutChartElem = document.getElementById('donutChart');
+    if (donutChartElem) donutChartElem.style.background = `conic-gradient(#e91e63 0deg ${degYeu}deg, #ff9800 ${degYeu}deg ${degTb}deg, #cddc39 ${degTb}deg ${degKha}deg, #4caf50 ${degKha}deg 360deg)`;
+    const donutTotalElem = document.getElementById('donutTotal');
+    if (donutTotalElem) donutTotalElem.innerText = totalHs;
+    const donutLegendElem = document.getElementById('donutLegend');
+    if (donutLegendElem) donutLegendElem.innerHTML = `<div class="leg-item"><div class="leg-dot" style="background:#e91e63"></div>Yếu: ${pYeu.toFixed(1)}%</div><div class="leg-item"><div class="leg-dot" style="background:#ff9800"></div>TB: ${pTb.toFixed(1)}%</div><div class="leg-item"><div class="leg-dot" style="background:#cddc39"></div>Khá: ${pKha.toFixed(1)}%</div><div class="leg-item"><div class="leg-dot" style="background:#4caf50"></div>Tốt: ${pTot.toFixed(1)}%</div>`;
+    
+    const modalElem = document.getElementById('statsModal');
+    if (modalElem) modalElem.hidden = false;
+  };
+  
+  // Xử lý nút đóng thống kê
+  setTimeout(function() {
+      const closeBtn = document.getElementById('statsClose');
+      if (closeBtn) closeBtn.onclick = function() { document.getElementById('statsModal').hidden = true; };
   }, 1000);
   
 </script>
