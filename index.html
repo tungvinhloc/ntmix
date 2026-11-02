@@ -1339,7 +1339,60 @@ h3.ph {
   flex: 0 0 auto;
   padding: 0 14px;
 }
-
+/* ---- GIAO DIỆN THỐNG KÊ ---- */
+.stats-modal {
+  position: fixed; inset: 0; z-index: 100;
+  background: var(--bg); display: flex; flex-direction: column;
+  overflow-y: auto; padding-bottom: 30px;
+}
+.stats-modal[hidden] { display: none; }
+.sm-top {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 14px 16px; background: var(--ink); color: #fff;
+  position: sticky; top: 0; z-index: 101;
+}
+.sm-top h2 { font-size: 18px; margin: 0; }
+.sm-close {
+  background: transparent; border: none; color: #fff;
+  font-size: 24px; font-weight: bold; cursor: pointer; padding: 0 10px;
+}
+.sm-body { padding: 16px; max-width: 640px; margin: 0 auto; width: 100%; }
+.chart-card {
+  background: var(--card); border: 1px solid var(--line);
+  border-radius: 12px; padding: 20px 16px; margin-bottom: 20px;
+  box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+}
+.chart-title { text-align: center; font-weight: bold; margin-bottom: 20px; color: var(--fg); }
+/* Biểu đồ cột */
+.bar-chart {
+  display: flex; align-items: flex-end; justify-content: space-between;
+  height: 200px; padding-bottom: 25px; position: relative;
+  border-bottom: 1px solid var(--line); border-left: 1px solid var(--line);
+  background: repeating-linear-gradient(0deg, transparent, transparent 39px, var(--line) 40px);
+}
+.bar-wrap { flex: 1; display: flex; flex-direction: column; justify-content: flex-end; align-items: center; height: 100%; position: relative;}
+.bar {
+  width: 70%; background: #ff5722; border-radius: 2px 2px 0 0;
+  transition: height 0.5s ease;
+}
+.bar-val { font-size: 11px; font-weight: bold; margin-bottom: 4px; color: var(--fg); }
+.bar-lbl { position: absolute; bottom: -20px; font-size: 11px; color: var(--muted); }
+/* Biểu đồ tròn */
+.donut-wrap { display: flex; justify-content: center; position: relative; margin: 20px 0; }
+.donut-chart {
+  width: 220px; height: 220px; border-radius: 50%;
+  position: relative; display: flex; align-items: center; justify-content: center;
+}
+.donut-hole {
+  width: 110px; height: 110px; background: var(--card); border-radius: 50%;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+}
+.donut-hole span { font-size: 24px; font-weight: bold; color: var(--fg); }
+.donut-hole small { font-size: 11px; color: var(--muted); text-transform: uppercase; }
+.legend { display: flex; flex-wrap: wrap; justify-content: center; gap: 12px; }
+.leg-item { display: flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 600;}
+.leg-dot { width: 12px; height: 12px; border-radius: 3px; }
+    
 </style>
 
 <div class="wrap">
@@ -6347,6 +6400,8 @@ function paintMarks(c, sc, g, ver, lw, ringFn) {
       }).join('') +
       '</select>' +
      '<button type="button" class="btn small" id="listNew">＋ Lần mới</button><button type="button" class="btn small ghost" id="listRen">Đổi tên</button>' +
+     '<button type="button" class="btn small" id="btnStats" style="background:#ff9800; color:#fff; border-color:#ff9800;"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right:6px;"><path d="M21.21 15.89A10 10 0 1 1 8 2.83"></path><path d="M22 12A10 10 0 0 0 12 2v10z"></path></svg>Thống kê</button>' +
+'<button type="button" class="btn small" id="listNew">＋ Đợt mới</button><button type="button" class="btn small ghost" id="listRen">Đổi tên</button>' +
       (L.length > 1
         ? '<button type="button" class="btn small ghost danger" id="listDel">Xoá lần chấm</button>'
         : '') +
@@ -6368,6 +6423,8 @@ function paintMarks(c, sc, g, ver, lw, ringFn) {
       applyList(this.value);
       renderRes();
     };
+      const btnStats = $('#btnStats');
+    if (btnStats) btnStats.onclick = showStats;
     $('#listNew').onclick = function () {
       listUI = 'new';
       renderRes();
@@ -8272,6 +8329,98 @@ let qrState = { kind: 'idle' },
           };
       }
   }, 1000);
+    /* ===================== TÍNH NĂNG THỐNG KÊ ===================== */
+function showStats() {
+  const res = listRes();
+  if (!res || !res.length) {
+    alert('Đợt này chưa có bài chấm nào để thống kê!');
+    return;
+  }
+  
+  let tot_hs = 0, kha = 0, tb = 0, yeu = 0;
+  let bins = new Array(10).fill(0);
+  
+  res.forEach(r => {
+    // Quy đổi điểm về thang 10 (nếu cấu hình tổng điểm khác 10)
+    let score10 = (r.max && r.max > 0) ? (r.total / r.max) * 10 : r.total;
+    
+    // Xếp loại theo chuẩn: Tốt (>=8), Khá (6.5 - <8), TB (5 - <6.5), Yếu (<5)
+    if (score10 >= 8) tot_hs++;
+    else if (score10 >= 6.5) kha++;
+    else if (score10 >= 5) tb++;
+    else yeu++;
+    
+    // Phổ điểm (Nhóm điểm: 0-<1, 1-<2, ..., 9-10)
+    let b = Math.min(9, Math.floor(score10));
+    bins[b]++;
+  });
+
+  const tot = res.length;
+  // Tính tỷ lệ % dạng số thực để cộng dồn chính xác
+  const pTot = parseFloat((tot_hs / tot * 100).toFixed(1));
+  const pKha = parseFloat((kha / tot * 100).toFixed(1));
+  const pTB = parseFloat((tb / tot * 100).toFixed(1));
+  const pYeu = parseFloat((yeu / tot * 100).toFixed(1));
+
+  // Gradient cho biểu đồ tròn
+  const cTot = '#12794a', cKha = '#cddc39', cTB = '#ff9800', cYeu = '#e91e63';
+  const grad = `conic-gradient(${cTot} 0% ${pTot}%, ${cKha} ${pTot}% ${pTot + pKha}%, ${cTB} ${pTot + pKha}% ${pTot + pKha + pTB}%, ${cYeu} ${pTot + pKha + pTB}% 100%)`;
+
+  const maxBin = Math.max(...bins) || 1;
+
+  let modal = $('#statsModal');
+  if (!modal) {
+    modal = document.createElement('div');
+    modal.id = 'statsModal';
+    modal.className = 'stats-modal';
+    document.body.appendChild(modal);
+  }
+
+  let barHtml = '';
+  for (let i = 0; i < 10; i++) {
+    const ht = (bins[i] / maxBin) * 100;
+    barHtml += `
+      <div class="bar-wrap">
+        ${bins[i] > 0 ? `<div class="bar-val">${bins[i]}</div>` : ''}
+        <div class="bar" style="height: ${ht}%;"></div>
+        <div class="bar-lbl">${i}</div>
+      </div>`;
+  }
+  // Thêm mốc 10
+  barHtml += `<div class="bar-wrap" style="flex: 0.1;"><div class="bar-lbl">10</div></div>`;
+
+  modal.innerHTML = `
+    <div class="sm-top">
+      <h2>Thống kê: ${esc(curList().name)}</h2>
+      <button class="sm-close" onclick="document.getElementById('statsModal').hidden = true;">✕</button>
+    </div>
+    <div class="sm-body">
+      <div class="chart-card">
+        <div class="chart-title">PHỔ ĐIỂM (Số lượng: ${tot} học sinh)</div>
+        <div class="bar-chart">${barHtml}</div>
+      </div>
+      
+      <div class="chart-card">
+        <div class="chart-title">TỶ LỆ XẾP LOẠI</div>
+        <div class="donut-wrap">
+          <div class="donut-chart" style="background: ${grad};">
+            <div class="donut-hole">
+              <span>${tot}</span>
+              <small>Bài thi</small>
+            </div>
+          </div>
+        </div>
+        <div class="legend">
+          <div class="leg-item"><div class="leg-dot" style="background:${cTot}"></div>Tốt (${pTot}%)</div>
+          <div class="leg-item"><div class="leg-dot" style="background:${cKha}"></div>Khá (${pKha}%)</div>
+          <div class="leg-item"><div class="leg-dot" style="background:${cTB}"></div>Trung bình (${pTB}%)</div>
+          <div class="leg-item"><div class="leg-dot" style="background:${cYeu}"></div>Yếu (${pYeu}%)</div>
+        </div>
+      </div>
+    </div>
+  `;
+  modal.hidden = false;
+}
   
 </script>
 
