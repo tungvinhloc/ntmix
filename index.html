@@ -5661,10 +5661,23 @@ function paintMarks(c, sc, g, ver, lw, ringFn) {
     c.lineWidth = Math.max(2, lw);
     c.setLineDash([]);
     c.beginPath();
-    scan.P.forEach(function (p, i) {
+    
+    // Tạo bản sao của 4 góc và tự động sắp xếp lại theo chiều kim đồng hồ xung quanh tâm
+    let pts = scan.P.slice();
+    let cx = 0, cy = 0;
+    pts.forEach(function(p) { cx += p[0]; cy += p[1]; });
+    cx /= (pts.length || 1);
+    cy /= (pts.length || 1);
+    pts.sort(function(a, b) {
+        return Math.atan2(a[1] - cy, a[0] - cx) - Math.atan2(b[1] - cy, b[0] - cx);
+    });
+
+    // Nối các điểm đã được sắp xếp chuẩn xác
+    pts.forEach(function (p, i) {
       if (i) c.lineTo(p[0], p[1]);
       else c.moveTo(p[0], p[1]);
     });
+    
     c.closePath();
     c.stroke();
     paintMarks(c, scan, g, ver, lw);
