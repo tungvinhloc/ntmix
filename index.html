@@ -5660,26 +5660,29 @@ function paintMarks(c, sc, g, ver, lw, ringFn) {
     c.strokeStyle = 'rgba(60,130,255,0.9)';
     c.lineWidth = Math.max(2, lw);
     c.setLineDash([]);
-    c.beginPath();
     
-    // Tạo bản sao của 4 góc và tự động sắp xếp lại theo chiều kim đồng hồ xung quanh tâm
-    let pts = scan.P.slice();
-    let cx = 0, cy = 0;
-    pts.forEach(function(p) { cx += p[0]; cy += p[1]; });
-    cx /= (pts.length || 1);
-    cy /= (pts.length || 1);
-    pts.sort(function(a, b) {
-        return Math.atan2(a[1] - cy, a[0] - cx) - Math.atan2(b[1] - cy, b[0] - cx);
-    });
-
-    // Nối các điểm đã được sắp xếp chuẩn xác
-    pts.forEach(function (p, i) {
-      if (i) c.lineTo(p[0], p[1]);
-      else c.moveTo(p[0], p[1]);
-    });
-    
-    c.closePath();
-    c.stroke();
+    // Bám viền xanh dương vào đúng 4 nút neo ở góc của tờ phiếu
+    if (scan.anchors && scan.anchors.length >= 4) {
+        let TL, TR, BR, BL;
+        let A = scan.anchors;
+        
+        if (A.length === 4) {
+            // Trường hợp phiếu chỉ có 4 neo góc (phiếu ngắn)
+            TL = A[0]; TR = A[1]; BR = A[2]; BL = A[3];
+        } else {
+            // Trường hợp phiếu có cả neo giữa (2 điểm đầu là góc trên, 2 điểm cuối là góc dưới)
+            TL = A[0]; TR = A[1];
+            BL = A[A.length - 2]; BR = A[A.length - 1];
+        }
+        
+        c.beginPath();
+        c.moveTo(TL[0], TL[1]); // Nối góc trên trái
+        c.lineTo(TR[0], TR[1]); // Nối góc trên phải
+        c.lineTo(BR[0], BR[1]); // Nối góc dưới phải
+        c.lineTo(BL[0], BL[1]); // Nối góc dưới trái
+        c.closePath();
+        c.stroke();
+    }
     paintMarks(c, scan, g, ver, lw);
     (scan.anchors || []).forEach(function (a) {
       c.beginPath();
