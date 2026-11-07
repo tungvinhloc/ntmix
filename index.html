@@ -5660,12 +5660,13 @@ function paintMarks(c, sc, g, ver, lw, ringFn) {
     c.strokeStyle = 'rgba(60,130,255,0.9)';
     c.lineWidth = Math.max(2, lw);
     c.setLineDash([]);
-    // Dựng khung hình chữ nhật bao quanh 4 góc phiếu
-    let minX = Math.min(scan.P[0][0], scan.P[1][0], scan.P[2][0], scan.P[3][0]);
-    let maxX = Math.max(scan.P[0][0], scan.P[1][0], scan.P[2][0], scan.P[3][0]);
-    let minY = Math.min(scan.P[0][1], scan.P[1][1], scan.P[2][1], scan.P[3][1]);
-    let maxY = Math.max(scan.P[0][1], scan.P[1][1], scan.P[2][1], scan.P[3][1]);
-    c.strokeRect(minX, minY, maxX - minX, maxY - minY);
+    c.beginPath();
+    scan.P.forEach(function (p, i) {
+      if (i) c.lineTo(p[0], p[1]);
+      else c.moveTo(p[0], p[1]);
+    });
+    c.closePath();
+    c.stroke();
     paintMarks(c, scan, g, ver, lw);
     (scan.anchors || []).forEach(function (a) {
       c.beginPath();
