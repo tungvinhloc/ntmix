@@ -1691,22 +1691,10 @@ const SHEET_BGD25 = {
   ],
   NAME: [74, 52, 66, 16],
   
-  // Đóng băng nguyên trạng các dải neo ngang hiện tại
-  MARK_ROWS: [
-    [[10.0, 10.0], [197.0, 10.0]],
-    [[10.0, 93.0], [197.0, 93.0]],
-    [[10.0, 172.0], [197.0, 172.0]],
-    [[10.0, 215.0], [197.0, 215.0]],
-    [[10.0, 287.0], [197.0, 287.0]]
-  ],
-  BAND_Y: [93.0, 172.0, 215.0],
-  bands: true,
-  ORIENT: 'bands',
-  
-  BARS_Y: [31.75, 37.63, 43.34, 49.19, 55.03, 60.87, 66.71, 72.55, 78.26, 84.23],
-  BAR_X: 197.0,
-  BAR_W: 3.72,
-  BAR_H: 1.4,
+  // ĐÃ SỬA: Tắt tìm dải neo ngang vì phiếu này chỉ có 4 ô góc
+  bands: false,
+  // ĐÃ SỬA: Nhận diện chiều phiếu (tránh bị ngược) dựa vào vòng tròn in sẵn (rings)
+  ORIENT: 'rings',
   
   // --- TỌA ĐỘ SBD & MÃ ĐỀ: BƯỚC NHẢY CỘT CHUẨN XÁC 4.3MM ---
   SBD_X: [140.8, 144.8, 149.1, 153.1, 157.2, 161.2, 165.3, 169.3],
