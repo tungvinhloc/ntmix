@@ -5660,37 +5660,13 @@ function paintMarks(c, sc, g, ver, lw, ringFn) {
     c.strokeStyle = 'rgba(60,130,255,0.9)';
     c.lineWidth = Math.max(2, lw);
     c.setLineDash([]);
-    
-    // Thuật toán: Tự động lọc lấy 4 neo góc và xếp theo chiều kim đồng hồ
-    let pts = [];
-    if (scan.anchors && scan.anchors.length > 4) {
-        // Nếu phiếu có nhiều dải neo (như BGD 2025): lấy 2 điểm đầu và 2 điểm cuối
-        pts.push(scan.anchors[0], scan.anchors[1], scan.anchors[scan.anchors.length - 2], scan.anchors[scan.anchors.length - 1]);
-    } else if (scan.anchors && scan.anchors.length === 4) {
-        pts = scan.anchors.slice();
-    } else if (scan.P && scan.P.length === 4) {
-        pts = scan.P.slice();
-    }
-
-    if (pts.length === 4) {
-        // Tìm tâm của 4 góc
-        let cx = (pts[0][0] + pts[1][0] + pts[2][0] + pts[3][0]) / 4;
-        let cy = (pts[0][1] + pts[1][1] + pts[2][1] + pts[3][1]) / 4;
-        
-        // Sắp xếp các điểm quanh tâm để không bao giờ bị vắt chéo
-        pts.sort(function(a, b) {
-            return Math.atan2(a[1] - cy, a[0] - cx) - Math.atan2(b[1] - cy, b[0] - cx);
-        });
-        
-        // Vẽ nối thành hình tứ giác hoàn hảo bám sát các neo
-        c.beginPath();
-        c.moveTo(pts[0][0], pts[0][1]);
-        c.lineTo(pts[1][0], pts[1][1]);
-        c.lineTo(pts[2][0], pts[2][1]);
-        c.lineTo(pts[3][0], pts[3][1]);
-        c.closePath();
-        c.stroke();
-    }
+    c.beginPath();
+    scan.P.forEach(function (p, i) {
+      if (i) c.lineTo(p[0], p[1]);
+      else c.moveTo(p[0], p[1]);
+    });
+    c.closePath();
+    c.stroke();
     paintMarks(c, scan, g, ver, lw);
     (scan.anchors || []).forEach(function (a) {
       c.beginPath();
@@ -5847,7 +5823,7 @@ function paintMarks(c, sc, g, ver, lw, ringFn) {
       '<div class="actions"><button type="button" class="btn primary" id="nextBtn">Chấm phiếu ' +
       'tiếp</button></div></div>';
     h +=
-      '<div class="card" style="margin-top:14px"><h2></h2><div id="cvHost"></div><p class="hint">Vòng ' +
+      '<div class="card" style="margin-top:14px"><h2>Ảnh đã nhận diện</h2><div id="cvHost"></div><p class="hint">Vòng ' +
       'xanh lá là ý đúng, vòng đỏ là ý sai, vòng vàng (hoặc nét đứt vòng xanh) là đáp án đúng ở chỗ học sinh làm sai ' +
       'hoặc bỏ trống, vòng xanh dương là số báo danh và mã đề. Khung xanh dương là 4 góc phiếu ' +
       'máy tìm thấy, vòng nhỏ xanh lá là các ô neo đã nhận, vòng cam là ô neo máy ước ' +
@@ -8306,17 +8282,14 @@ let qrState = { kind: 'idle' },
               const rows = [['STT', 'Thời gian', 'Số báo danh', 'Họ và tên', 'Lớp', 'Mã đề', 'Điểm P.I', 'Điểm P.II', 'Điểm P.III', 'Tổng điểm', 'Điểm tối đa']];
               view.forEach(function (r, index) {
                   const p = r.parts || ['', '', ''];
-                  
-                  // Đã sửa thành r.sbdStr để lấy chính xác SBD và đối chiếu lấy Tên
-                  const info = getStudentInfo(r.sbdStr || r.sbd) || {name: '', cls: ''};
-                  
+                  const info = getStudentInfo(r.sbd) || {name: '', cls: ''};
                   rows.push([
                       index + 1,
                       new Date(r.t).toLocaleString('vi-VN'), 
-                      r.sbdStr || r.sbd || '', 
+                      r.sbd, 
                       info.name, 
                       info.cls, 
-                      r.mdStr || r.md || '', 
+                      r.md, 
                       p[0], p[1], p[2], 
                       r.total, 
                       r.max
