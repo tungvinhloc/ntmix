@@ -8282,14 +8282,17 @@ let qrState = { kind: 'idle' },
               const rows = [['STT', 'Thời gian', 'Số báo danh', 'Họ và tên', 'Lớp', 'Mã đề', 'Điểm P.I', 'Điểm P.II', 'Điểm P.III', 'Tổng điểm', 'Điểm tối đa']];
               view.forEach(function (r, index) {
                   const p = r.parts || ['', '', ''];
-                  const info = getStudentInfo(r.sbd) || {name: '', cls: ''};
+                  
+                  // Đã sửa thành r.sbdStr để lấy chính xác SBD và đối chiếu lấy Tên
+                  const info = getStudentInfo(r.sbdStr || r.sbd) || {name: '', cls: ''};
+                  
                   rows.push([
                       index + 1,
                       new Date(r.t).toLocaleString('vi-VN'), 
-                      r.sbd, 
+                      r.sbdStr || r.sbd || '', 
                       info.name, 
                       info.cls, 
-                      r.md, 
+                      r.mdStr || r.md || '', 
                       p[0], p[1], p[2], 
                       r.total, 
                       r.max
