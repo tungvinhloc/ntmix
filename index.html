@@ -1691,10 +1691,22 @@ const SHEET_BGD25 = {
   ],
   NAME: [74, 52, 66, 16],
   
-  // ĐÃ SỬA: Tắt tìm dải neo ngang vì phiếu này chỉ có 4 ô góc
-  bands: false,
-  // ĐÃ SỬA: Nhận diện chiều phiếu (tránh bị ngược) dựa vào vòng tròn in sẵn (rings)
-  ORIENT: 'rings',
+  // Đóng băng nguyên trạng các dải neo ngang hiện tại
+  MARK_ROWS: [
+    [[10.0, 10.0], [197.0, 10.0]],
+    [[10.0, 93.0], [197.0, 93.0]],
+    [[10.0, 172.0], [197.0, 172.0]],
+    [[10.0, 215.0], [197.0, 215.0]],
+    [[10.0, 287.0], [197.0, 287.0]]
+  ],
+  BAND_Y: [93.0, 172.0, 215.0],
+  bands: true,
+  ORIENT: 'bands',
+  
+  BARS_Y: [31.75, 37.63, 43.34, 49.19, 55.03, 60.87, 66.71, 72.55, 78.26, 84.23],
+  BAR_X: 197.0,
+  BAR_W: 3.72,
+  BAR_H: 1.4,
   
   // --- TỌA ĐỘ SBD & MÃ ĐỀ: BƯỚC NHẢY CỘT CHUẨN XÁC 4.3MM ---
   SBD_X: [140.8, 144.8, 149.1, 153.1, 157.2, 161.2, 165.3, 169.3],
@@ -5649,25 +5661,33 @@ function paintMarks(c, sc, g, ver, lw, ringFn) {
     c.lineWidth = Math.max(2, lw);
     c.setLineDash([]);
     
-    // Bám viền xanh dương vào đúng 4 nút neo ở góc của tờ phiếu
-    if (scan.anchors && scan.anchors.length >= 4) {
-        let TL, TR, BR, BL;
-        let A = scan.anchors;
+    // Thuật toán: Tự động lọc lấy 4 neo góc và xếp theo chiều kim đồng hồ
+    let pts = [];
+    if (scan.anchors && scan.anchors.length > 4) {
+        // Nếu phiếu có nhiều dải neo (như BGD 2025): lấy 2 điểm đầu và 2 điểm cuối
+        pts.push(scan.anchors[0], scan.anchors[1], scan.anchors[scan.anchors.length - 2], scan.anchors[scan.anchors.length - 1]);
+    } else if (scan.anchors && scan.anchors.length === 4) {
+        pts = scan.anchors.slice();
+    } else if (scan.P && scan.P.length === 4) {
+        pts = scan.P.slice();
+    }
+
+    if (pts.length === 4) {
+        // Tìm tâm của 4 góc
+        let cx = (pts[0][0] + pts[1][0] + pts[2][0] + pts[3][0]) / 4;
+        let cy = (pts[0][1] + pts[1][1] + pts[2][1] + pts[3][1]) / 4;
         
-        if (A.length === 4) {
-            // Trường hợp phiếu chỉ có 4 neo góc (phiếu ngắn)
-            TL = A[0]; TR = A[1]; BR = A[2]; BL = A[3];
-        } else {
-            // Trường hợp phiếu có cả neo giữa (2 điểm đầu là góc trên, 2 điểm cuối là góc dưới)
-            TL = A[0]; TR = A[1];
-            BL = A[A.length - 2]; BR = A[A.length - 1];
-        }
+        // Sắp xếp các điểm quanh tâm để không bao giờ bị vắt chéo
+        pts.sort(function(a, b) {
+            return Math.atan2(a[1] - cy, a[0] - cx) - Math.atan2(b[1] - cy, b[0] - cx);
+        });
         
+        // Vẽ nối thành hình tứ giác hoàn hảo bám sát các neo
         c.beginPath();
-        c.moveTo(TL[0], TL[1]); // Nối góc trên trái
-        c.lineTo(TR[0], TR[1]); // Nối góc trên phải
-        c.lineTo(BR[0], BR[1]); // Nối góc dưới phải
-        c.lineTo(BL[0], BL[1]); // Nối góc dưới trái
+        c.moveTo(pts[0][0], pts[0][1]);
+        c.lineTo(pts[1][0], pts[1][1]);
+        c.lineTo(pts[2][0], pts[2][1]);
+        c.lineTo(pts[3][0], pts[3][1]);
         c.closePath();
         c.stroke();
     }
