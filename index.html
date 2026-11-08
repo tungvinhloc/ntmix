@@ -1486,7 +1486,7 @@ h3.ph {
 <script>
 const SHEET_JPG="assets/bgd2025_cv1239.jpg";
 const SHEET_PDF="assets/bgd2025_cv1239.pdf";
-const SHEET2_JPG="assets/vx_01.jpg";
+const SHEET2_JPG="assets/NTMark_2025.jpg";
 const SHEET3_JPG="assets/vx_02.jpg";
 const SHEET4_JPG="assets/bgd2025.jpg";
 const SHEET4_PDF="assets/bgd2025.pdf";
@@ -1570,56 +1570,89 @@ const SHEET_NH = {
   MAX2: 8,
   MAX3: 6
 };
-/* ---- Phiếu NH-01 (đơn vị = điểm ảnh của ảnh mẫu 1901 x 861): 4 ô góc + 1 ô giữa mép trên; Phần I 10
-   câu, Phần II 2 câu, Phần III 3 câu ---- */
+/* ---- Phiếu NTMark_2025  ---- */
 const SHEET_KT = {
-  id: 'kt',
-  name: 'Phiếu NTMIX - 2',
-  PW: 1901,
-  PH: 861,
-  RB: 11.2,
-  K: 7.7,
-  MS: 24,
+   id: 'nh',
+  name: 'Phiếu NTMark_2025',
+  PW: 208,
+  PH: 297,
+  RB: 1.45,
   CORNERS: [
-    [28.5, 74.5],
-    [1875.5, 74.5],
-    [1875.5, 813.5],
-    [28.5, 813.5]
+    [6.69, 5.46],
+    [202.41, 5.38],
+    [202.46, 288.04],
+    [6.65, 288.04]
   ],
-  NAME: [266, 38, 390, 66],
-  BAND_Y: [1e9, 1e9, 1e9],
-  bands: false,
-  SPOT: [1009.5, 74.5, 22],
-  SBD_X: [134.5, 172.5],
-  MD_X: [266.0, 304.0, 342.0],
-  ID_Y: [260.25, 315.0, 370.0, 425.0, 480.0, 535.0, 590.0, 645.0, 699.5, 754.25],
-  P1_X: [[485.0, 563.5, 642.0, 719.6]],
-  P1_Y: [324.5, 371.5, 418.5, 465.5, 512.5, 559.5, 606.5, 653.5, 700.5, 747.5],
+  NAME: [74, 52, 66, 16],
+  MARK_ROWS: [
+    [
+      [6.69, 5.46],
+      [202.41, 5.38]
+    ],
+    [
+      [6.98, 96.38],
+      [202.46, 96.38]
+    ],
+    [
+      [6.98, 161.23],
+      [202.46, 161.23]
+    ],
+    [
+      [6.65, 202.71],
+      [202.46, 202.71]
+    ],
+    [
+      [6.65, 288.04],
+      [202.46, 288.04]
+    ]
+  ],
+  BAND_Y: [96.38, 161.23, 202.71],
+  bands: true,
+  BARS_Y: [31.75, 37.63, 43.34, 49.19, 55.03, 60.87, 66.71, 72.55, 78.26, 84.23],
+  BAR_X: 202.41,
+  BAR_W: 3.72,
+  BAR_H: 1.4,
+  SBD_X: [145.64, 149.68, 153.69, 157.77, 161.83, 165.85, 169.86, 173.88],
+  MD_X: [181.93, 185.95, 189.99, 194.08],
+  ID_Y: [33.87, 39.75, 45.57, 51.41, 57.26, 63.09, 68.97, 74.79, 80.66, 86.5],
+  P1_X: [
+    [22.54, 30.86, 39.18, 47.46],
+    [69.52, 77.89, 86.23, 94.48],
+    [116.52, 124.86, 133.21, 141.44],
+    [163.53, 171.88, 180.17, 188.47]
+  ],
+  P1_Y: [108.98, 114.0, 118.99, 123.98, 128.97, 133.99, 138.99, 143.96, 148.98, 153.99],
   P2_X: [
-    [872.5, 950.2],
-    [872.5, 950.2]
+    [22.62, 30.81],
+    [39.22, 47.53],
+    [69.38, 77.86],
+    [86.12, 94.48],
+    [116.47, 124.78],
+    [133.21, 141.44],
+    [163.28, 171.7],
+    [180.02, 188.47]
   ],
-  P2_Y: [
-    [325.5, 372.5, 419.5, 466.5],
-    [608.5, 655.5, 702.5, 749.5]
-  ],
+  P2_Y: [179.33, 184.34, 189.33, 194.3],
   P3_X: [
-    [1086.5, 1133.5, 1180.5, 1227.5],
-    [1353.5, 1400.5, 1447.5, 1494.5],
-    [1620.5, 1667.5, 1714.5, 1761.5]
+    [21.46, 26.46, 31.45, 36.44],
+    [51.4, 56.45, 61.44, 66.42],
+    [81.44, 86.44, 91.43, 96.44],
+    [111.43, 116.45, 121.45, 126.43],
+    [141.39, 146.41, 151.44, 156.41],
+    [171.42, 176.43, 181.42, 186.41]
   ],
-  P3_DASH: 230.5,
-  P3_COMMA: 277.5,
-  P3_D: [325.5, 372.5, 419.5, 466.5, 513.5, 560.5, 607.5, 654.5, 701.5, 748.5],
-  MAX1: 10,
-  MAX2: 2,
-  MAX3: 3
+  P3_DASH: 217.09,
+  P3_COMMA: 222.7,
+  P3_D: [228.28, 233.77, 239.37, 244.96, 250.52, 256.1, 261.68, 267.25, 272.79, 278.39],
+  MAX1: 40,
+  MAX2: 8,
+  MAX3: 6
 };
 /* ---- Phiếu NH-02 (đơn vị = điểm ảnh của ảnh mẫu 1100 x 914): 6 ô vuông neo (4 góc + 2 giữa mép),
    Phần I 12 câu, Phần II 2 câu, Phần III 4 câu ---- */
 const SHEET_M = {
   id: 'm',
-  name: 'Phiếu NTMIX - 1',
+  name: 'Phiếu NH-02',
   PW: 1100,
   PH: 914,
   RB: 6.4,
@@ -3675,8 +3708,8 @@ function renderPhoto(sheetImg, cfg, marks, o) {
       '<span class="lbl">Loại phiếu</span><div class="vchips">' +
       [
         ['nh', 'Phiếu BGD 2025 CV 1239'],
-        ['m', 'Phiếu NH-01'],
-        ['kt', 'Phiếu NH-02'],
+        ['m', 'Phiếu NTMark_2025'],
+        ['kt', 'Phiếu NH'],
         ['bgd25', 'Phiếu TNMaker BGD 2025(4MĐ)']
       ]
         .map(function (x) {
@@ -4449,8 +4482,8 @@ function renderPhoto(sheetImg, cfg, marks, o) {
   function renderSheet() {
     if (cfg.sheet === 'm') {
       $('#sheetCard').innerHTML =
-        '<h2>Phiếu NTMIX - 1</h2>' +
-        '<p class="hint">Mẫu phiếu NH-01: số báo danh 8 chữ số, mã đề 4 chữ số, Phần I tối đa 12 câu, ' +
+        '<h2>Phiếu NTMark_2025</h2>' +
+        '<p class="hint">Mẫu phiếu NTMark_2025: số báo danh 8 chữ số, mã đề 4 chữ số, Phần I tối đa 12 câu, ' +
         'Phần II tối đa 2 câu, Phần III tối đa 4 câu. Ứng dụng căn ảnh theo 6 ô vuông đen (4 góc ' +
         'và 2 ô giữa hai mép bên), chiều của phiếu nhận ra nhờ các vòng tròn in sẵn.</p>' +
         '<img class="sheetimg" alt="Xem trước phiếu B&T Pro - M" src="' +
@@ -4464,7 +4497,7 @@ function renderPhoto(sheetImg, cfg, marks, o) {
       $('#pdfBtn').onclick = async function () {
         const msg = $('#pdfMsg');
         this.disabled = true;
-        const st = await saveFile('phieu-nh-01.jpg', await fetchBytes(SHEET3_JPG));
+        const st = await saveFile('NTMark_2025.jpg', await fetchBytes(SHEET3_JPG));
         if (st === 'saved') msg.textContent = 'Đã lưu ảnh phiếu.';
         else if (st === 'declined') msg.textContent = 'Bạn đã huỷ lưu. Nhấn lại nút để tải.';
         else msg.textContent = 'Chế độ xem này không cho tải file. Nhấn giữ ảnh phiếu ở trên để lưu về máy.';
@@ -4475,7 +4508,7 @@ function renderPhoto(sheetImg, cfg, marks, o) {
     if (cfg.sheet === 'kt') {
       $('#sheetCard').innerHTML =
         '<h2>Phiếu NTMIX - 2</h2>' +
-        '<p class="hint">Mẫu phiếu NH-02 (ngắn): số thứ tự 2 chữ số, mã đề 3 chữ số, Phần I tối đa 10 ' +
+        '<p class="hint">Mẫu phiếu NH (ngắn): số thứ tự 2 chữ số, mã đề 3 chữ số, Phần I tối đa 10 ' +
         'câu, Phần II tối đa 2 câu, Phần III tối đa 3 câu. Ứng dụng căn ảnh theo 4 ô vuông đen ở ' +
         'góc, ô vuông thứ năm giữa mép trên giúp nhận ra phiếu bị đặt ngược.</p>' +
         '<img class="sheetimg" alt="Xem trước phiếu B&T Pro - S" src="' +
@@ -7872,12 +7905,12 @@ let qrState = { kind: 'idle' },
     inconsistent: ['Các mã đề trong mã QR có số câu khác nhau.', 'Kiểm tra lại mã QR hoặc quét lại.'],
     toomany: [
       'Phần III trong mã QR có nhiều câu hơn mọi loại phiếu hiện có.',
-      'Phiếu có ô tô cho tối đa ' + Math.max(SHEET_NH.MAX3, SHEET_KT.MAX3, SHEET_M.MAX3) + ' câu Phần III.'
+      'Phiếu có ô tô cho tối đa ' + Math.max(SHEET_NH.MAX3, SHEET_KT.MAX3, SHEET_M.MAX3, SHEET_BGD25.MAX3) + ' câu Phần III.'
     ],
     structure: [
       'Không suy ra được số câu của từng phần.',
       'Tổng số đáp án không khớp với cấu trúc của phiếu nào (Phần II mỗi câu 4 ý; Phần I tối đa ' +
-        Math.max(SHEET_NH.MAX1, SHEET_KT.MAX1, SHEET_M.MAX1) +
+        Math.max(SHEET_NH.MAX1, SHEET_KT.MAX1, SHEET_M.MAX1, SHEET_BGD25.MAX1) +
         ' câu).'
     ]
   };
