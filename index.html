@@ -4489,30 +4489,32 @@ function renderPhoto(sheetImg, cfg, marks, o) {
   }
   function renderSheet() {
     if (cfg.sheet === 'kt') {
-      $('#sheetCard').innerHTML =
-        '<h2>Phiếu NTMark_2025</h2>' +
-        '<p class="hint">Mẫu phiếu NTMark_2025: số báo danh 8 chữ số, mã đề 4 chữ số, Phần I tối đa 40 câu, ' +
-        'Phần II tối đa 8 câu, Phần III tối đa 6 câu. Ứng dụng căn ảnh theo 6 ô vuông đen (4 góc ' +
-        'và 2 ô giữa hai mép bên), chiều của phiếu nhận ra nhờ các vòng tròn in sẵn.</p>' +
-        '<img class="sheetimg" alt="Xem trước phiếu NTMark_2025" src="' +
-        SHEET2_JPG +
-        '">' +
-        '<div class="actions"><button type="button" class="btn primary" id="pdfBtn">Tải ảnh phiếu ' +
-        'mẫu (JPG)</button></div>' +
-        '<p class="hint" id="pdfMsg">Khi in, giữ tỉ lệ ngang như ảnh và in rõ cả 6 ô vuông đen. ' +
-        'Học sinh tô kín ô bằng bút chì đen hoặc bút mực đen, xanh. Mực hồng của phiếu không ảnh ' +
-        'hưởng đến việc đọc.</p>';
-      $('#pdfBtn').onclick = async function () {
-        const msg = $('#pdfMsg');
-        this.disabled = true;
-        const st = await saveFile('NTMark_2025.jpg', await fetchBytes(SHEET2_JPG));
-        if (st === 'saved') msg.textContent = 'Đã lưu ảnh phiếu.';
-        else if (st === 'declined') msg.textContent = 'Bạn đã huỷ lưu. Nhấn lại nút để tải.';
-        else msg.textContent = 'Chế độ xem này không cho tải file. Nhấn giữ ảnh phiếu ở trên để lưu về máy.';
-        this.disabled = false;
-      };
-      return;
-    }
+  $('#sheetCard').innerHTML =
+    '<h2>Phiếu NTMark_2025</h2>' +
+    '<p class="hint">Mẫu phiếu NTMark_2025: số báo danh 8 chữ số, mã đề 4 chữ số, Phần I tối đa 12 câu, ' +
+    'Phần II tối đa 8 câu, Phần III tối đa 6 câu. Ứng dụng căn ảnh theo 4 ô vuông đen góc (4 góc ' +
+    'và 6/6 ô neu giữa mép bên), chiều của phiếu nhận ra nhờ các vòng tròn in sẵn.</p>' +
+    '<img class="sheetimg" alt="Xem trước phiếu NTMark_2025" src="' +
+    SHEET2_JPG + // Đã sửa lại đúng biến ảnh xem trước của NTMark
+    '">' +
+    '<div class="actions"><button type="button" class="btn primary" id="pdfBtn">Tải phiếu gốc ' +
+    '(PDF)</button></div>' + // Đổi nhãn nút thành PDF
+    '<p class="hint" id="pdfMsg">Khi in, chọn khổ A4 và tỉ lệ 100% (không chọn “vừa trang”). ' +
+    'Học sinh tô kín ô bằng bút chì đen hoặc bút mực đen, xanh. Mực hồng của phiếu không ảnh ' +
+    'hưởng đến việc đọc.</p>'; // Cập nhật hướng dẫn in cho file PDF
+    
+  $('#pdfBtn').onclick = async function () {
+    const msg = $('#pdfMsg');
+    this.disabled = true;
+    // Đổi tên file lưu và gọi biến SHEET2_PDF chứa file NTMark_2025.pdf
+    const st = await saveFile('NTMark_2025.pdf', await fetchBytes(SHEET2_PDF));
+    if (st === 'saved') msg.textContent = 'Đã lưu file PDF của phiếu.';
+    else if (st === 'declined') msg.textContent = 'Bạn đã huỷ lưu. Nhấn lại nút để tải.';
+    else msg.textContent = 'Chế độ xem này không cho tải file. Mở bằng trình duyệt để tải PDF.';
+    this.disabled = false;
+  };
+  return;
+}
     if (cfg.sheet === 'm') {
       $('#sheetCard').innerHTML =
         '<h2>Phiếu NH</h2>' +
