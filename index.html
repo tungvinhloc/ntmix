@@ -4652,8 +4652,8 @@ function renderPhoto(sheetImg, cfg, marks, o) {
       const key = (ver.num[q] === '*' ? '1' : ver.num[q]) || '';
       m.p3.push(q === 2 ? '13' : q === 4 ? '' : key);
     }
-    m.sbd = '46001234'.split('');
-    m.md = (ver.code || '0201').padEnd(4, '0').slice(0, MD_X.length).split('');
+    m.sbd = '46000012'.split('');
+    m.md = (ver.code || '1201').padEnd(4, '0').slice(0, MD_X.length).split('');
     return m;
   }
   async function makeSample(o) {
