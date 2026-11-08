@@ -1580,7 +1580,7 @@ const SHEET_NH = {
 /* Toạ độ tính bằng mm trên trang 208 x 297 mm, đo trực tiếp từ file PDF gốc. */
 /* ---- Phiếu 2: PHIẾU TLTN NTMark_2025 (mm, trang 208 x 297) ---- */
 const SHEET_KT = {
-   id: 'nh',
+   id: 'kt',
   name: 'Phiếu NTMark_2025',
    PW: 208,
   PH: 297,
@@ -3490,7 +3490,7 @@ function renderPhoto(sheetImg, cfg, marks, o) {
     { n1: 8, n2: 2, n3: 2, p1: 0.25, p2: 1, p3: 0.5 }
   ];
   const presetsFor = function (id) {
-    return id === 'kt' ? PRESETS_KT : id === 'm' ? PRESETS_M : PRESETS;
+    return id === 'm' ? PRESETS_M : PRESETS;
   };
   const presetsNow = function () {
     return presetsFor(cfg && cfg.sheet);
@@ -4660,23 +4660,6 @@ function renderPhoto(sheetImg, cfg, marks, o) {
     const img = await curSheetImg();
     if (!img) throw new Error('no sheet');
     const marks = buildMarks(curVer());
-   if (cfg.sheet === 'kt')
-      o = Object.assign(
-        {
-          ppm: 4.5, // Độ nét của ảnh mẫu
-          w: 1300,  // Chiều rộng không gian mặt bàn
-          h: 1750,  // Chiều cao không gian mặt bàn
-          quad: [   // Ép 4 góc tờ giấy tạo hiệu ứng chụp 3D nghiêng
-            [150, 150],   
-            [1150, 100],  
-            [1250, 1600], 
-            [50, 1650]    
-          ],
-          light: 0.2, // Hiệu ứng đổ bóng
-          noise: 8    // Nhiễu hạt camera
-        },
-        o || {}
-      );
     if (cfg.sheet === 'm')
       o = Object.assign(
         {
