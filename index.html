@@ -4495,7 +4495,7 @@ function renderPhoto(sheetImg, cfg, marks, o) {
         'Phần II tối đa 8 câu, Phần III tối đa 6 câu. Ứng dụng căn ảnh theo 6 ô vuông đen (4 góc ' +
         'và 2 ô giữa hai mép bên), chiều của phiếu nhận ra nhờ các vòng tròn in sẵn.</p>' +
         '<img class="sheetimg" alt="Xem trước phiếu NTMark_2025" src="' +
-        SHEET3_JPG +
+        SHEET2_JPG +
         '">' +
         '<div class="actions"><button type="button" class="btn primary" id="pdfBtn">Tải ảnh phiếu ' +
         'mẫu (JPG)</button></div>' +
@@ -4505,7 +4505,7 @@ function renderPhoto(sheetImg, cfg, marks, o) {
       $('#pdfBtn').onclick = async function () {
         const msg = $('#pdfMsg');
         this.disabled = true;
-        const st = await saveFile('NTMark_2025.jpg', await fetchBytes(SHEET3_JPG));
+        const st = await saveFile('NTMark_2025.jpg', await fetchBytes(SHEET2_JPG));
         if (st === 'saved') msg.textContent = 'Đã lưu ảnh phiếu.';
         else if (st === 'declined') msg.textContent = 'Bạn đã huỷ lưu. Nhấn lại nút để tải.';
         else msg.textContent = 'Chế độ xem này không cho tải file. Nhấn giữ ảnh phiếu ở trên để lưu về máy.';
@@ -4513,14 +4513,14 @@ function renderPhoto(sheetImg, cfg, marks, o) {
       };
       return;
     }
-    if (cfg.sheet === 'kt') {
+    if (cfg.sheet === 'm') {
       $('#sheetCard').innerHTML =
-        '<h2>Phiếu NTMark_2025</h2>' +
-        '<p class="hint">Mẫu phiếu NH (ngắn): số thứ tự 2 chữ số, mã đề 3 chữ số, Phần I tối đa 40 ' +
-        'câu, Phần II tối đa 8 câu, Phần III tối đa 6 câu. Ứng dụng căn ảnh theo 4 ô vuông đen ở ' +
+        '<h2>Phiếu NH</h2>' +
+        '<p class="hint">Mẫu phiếu NH (ngắn): số thứ tự 2 chữ số, mã đề 3 chữ số, Phần I tối đa 12 ' +
+        'câu, Phần II tối đa 2 câu, Phần III tối đa 4 câu. Ứng dụng căn ảnh theo 4 ô vuông đen ở ' +
         'góc, ô vuông thứ năm giữa mép trên giúp nhận ra phiếu bị đặt ngược.</p>' +
         '<img class="sheetimg" alt="Xem trước phiếu B&T Pro - S" src="' +
-        SHEET2_JPG +
+        SHEET3_JPG +
         '">' +
         '<div class="actions"><button type="button" class="btn primary" id="pdfBtn">Tải ảnh phiếu ' +
         'mẫu (JPG)</button></div>' +
@@ -4547,7 +4547,7 @@ function renderPhoto(sheetImg, cfg, marks, o) {
       $('#pdfBtn').onclick = async function () {
         const msg = $('#pdfMsg');
         this.disabled = true;
-        const st = await saveFile('phieu-bgd-2025.pdf', await fetchBytes(SHEET4_PDF));
+        const st = await saveFile('phieu-tnmaker-bgd-2025.pdf', await fetchBytes(SHEET4_PDF));
         if (st === 'saved') msg.textContent = 'Đã lưu file PDF của phiếu.';
         else if (st === 'declined') msg.textContent = 'Bạn đã huỷ lưu. Nhấn lại nút để tải.';
         else msg.textContent = 'Chế độ xem này không cho tải file. Nhấn giữ ảnh để lưu.';
@@ -4560,7 +4560,7 @@ function renderPhoto(sheetImg, cfg, marks, o) {
       '<p class="hint">Ứng dụng chấm đúng trên mẫu phiếu BGD 2025 CV 1239 này: số báo danh 8 chữ số, mã đề 4 chữ ' +
       'số, Phần I tối đa 40 câu, Phần II tối đa 8 câu, Phần III tối đa 6 câu. Mỗi tờ có 4 ô ' +
       'vuông đen ở góc để căn ảnh.</p>' +
-      '<img class="sheetimg" alt="Xem trước phiếu B&T Pro - F" src="' +
+      '<img class="sheetimg" alt="Xem trước phiếu BGD 2025 CV 1239" src="' +
       SHEET_JPG +
       '">' +
       '<div class="actions"><button type="button" class="btn primary" id="pdfBtn">Tải phiếu gốc ' +
@@ -4658,24 +4658,24 @@ function renderPhoto(sheetImg, cfg, marks, o) {
     const img = await curSheetImg();
     if (!img) throw new Error('no sheet');
     const marks = buildMarks(curVer());
-    if (cfg.sheet === 'm')
+   if (cfg.sheet === 'kt')
       o = Object.assign(
         {
-          ppm: 1.4,
-          w: 1500,
-          h: 1250,
-          quad: [
-            [105, 120],
-            [1395, 80],
-            [1430, 1150],
-            [75, 1195]
+          ppm: 4.5, // Độ nét của ảnh mẫu
+          w: 1300,  // Chiều rộng không gian mặt bàn
+          h: 1750,  // Chiều cao không gian mặt bàn
+          quad: [   // Ép 4 góc tờ giấy tạo hiệu ứng chụp 3D nghiêng
+            [150, 150],   
+            [1150, 100],  
+            [1250, 1600], 
+            [50, 1650]    
           ],
-          light: 0.2,
-          noise: 8
+          light: 0.2, // Hiệu ứng đổ bóng
+          noise: 8    // Nhiễu hạt camera
         },
         o || {}
       );
-    if (cfg.sheet === 'kt')
+    if (cfg.sheet === 'm')
       o = Object.assign(
         {
           ppm: 0.92,
