@@ -1581,7 +1581,7 @@ const SHEET_NH = {
 const SHEET_KT = {
    id: 'nh',
   name: 'Phiếu NTMark_2025',
-  PW: 208,
+   PW: 208,
   PH: 297,
   RB: 1.45,
   CORNERS: [
@@ -4514,7 +4514,7 @@ function renderPhoto(sheetImg, cfg, marks, o) {
     }
     if (cfg.sheet === 'kt') {
       $('#sheetCard').innerHTML =
-        '<h2>Phiếu NTMIX - 2</h2>' +
+        '<h2>Phiếu NTMark_2025</h2>' +
         '<p class="hint">Mẫu phiếu NH (ngắn): số thứ tự 2 chữ số, mã đề 3 chữ số, Phần I tối đa 10 ' +
         'câu, Phần II tối đa 2 câu, Phần III tối đa 3 câu. Ứng dụng căn ảnh theo 4 ô vuông đen ở ' +
         'góc, ô vuông thứ năm giữa mép trên giúp nhận ra phiếu bị đặt ngược.</p>' +
@@ -4528,7 +4528,7 @@ function renderPhoto(sheetImg, cfg, marks, o) {
       $('#pdfBtn').onclick = async function () {
         const msg = $('#pdfMsg');
         this.disabled = true;
-        const st = await saveFile('vx_02.jpg', await fetchBytes(SHEET2_JPG));
+        const st = await saveFile('NTMark_2025.jpg', await fetchBytes(SHEET2_JPG));
         if (st === 'saved') msg.textContent = 'Đã lưu ảnh phiếu.';
         else if (st === 'declined') msg.textContent = 'Bạn đã huỷ lưu. Nhấn lại nút để tải.';
         else msg.textContent = 'Chế độ xem này không cho tải file. Nhấn giữ ảnh phiếu ở trên để lưu về máy.';
