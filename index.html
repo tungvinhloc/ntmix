@@ -3234,7 +3234,8 @@ function gradeAll(st, cfg, ver) {
         items.push('ok');
       } else items.push(sv === '' ? 'blank' : 'wrong');
     }
-    const frac = graded === 4 ? TF_LADDER[cnt] : graded ? cnt / graded : 0;
+    const ladder = cfg.tfLinear ? [0, 0.25, 0.5, 0.75, 1] : TF_LADDER;
+    const frac = graded === 4 ? ladder[cnt] : graded ? cnt / graded : 0;
     out.p2.per.push({ cnt: cnt, graded: graded, items: items, pts: frac * cfg.p2 });
     out.p2.st.push(graded ? (cnt === graded ? 'ok' : cnt === 0 ? 'wrong' : 'part') : 'skip');
     if (graded) out.p2.max += cfg.p2;
@@ -3524,6 +3525,7 @@ function renderPhoto(sheetImg, cfg, marks, o) {
       p1: 0.25,
       p2: 1,
       p3: 0.25,
+      tfLinear: false,
       thr: 0.08,
       td: 1,
       active: 0,
@@ -3575,6 +3577,7 @@ function renderPhoto(sheetImg, cfg, marks, o) {
         p1: clampP(c.p1, 0.25),
         p2: clampP(c.p2, 1),
         p3: clampP(c.p3, 0.25),
+        tfLinear: !!c.tfLinear,
         thr: c.td ? Math.max(0.08, Math.min(0.7, +c.thr || 0.08)) : 0.08,
         td: 1,
         thrs: c.td && c.thrs && typeof c.thrs === 'object' ? c.thrs : {},
@@ -3627,7 +3630,7 @@ function renderPhoto(sheetImg, cfg, marks, o) {
         return v.code && nz(v.code) === nz(code);
       });
       const ver = cfg.versions[i >= 0 ? i : Math.min(cfg.active, cfg.versions.length - 1)];
-      const cs = { n1: cfg.n1, n2: cfg.n2, n3: cfg.n3, p1: cfg.p1, p2: cfg.p2, p3: cfg.p3 };
+      const cs = { n1: cfg.n1, n2: cfg.n2, n3: cfg.n3, p1: cfg.p1, p2: cfg.p2, p3: cfg.p3, tfLinear: cfg.tfLinear };
       const g = gradeAll({ p1: r.ans.p1, p2: r.ans.p2, p3: r.ans.p3 }, cs, ver);
       const parts = [g.p1.pts, g.p2.pts, g.p3.pts].map(r2),
         t = r2(g.total),
@@ -3948,10 +3951,14 @@ function renderPhoto(sheetImg, cfg, marks, o) {
         '"></div>';
     });
     h +=
-      '<p class="hint">Tổng điểm tối đa <b class="mono">' +
+      '<p class="hint" style="margin-bottom:8px">Tổng điểm tối đa <b class="mono">' +
       fmt(tot) +
-      '</b>. Phần II tính theo số ý đúng trong câu: 1 ý được 10%, 2 ý 25%, 3 ý 50%, 4 ý 100% ' +
-      'điểm tối đa của câu.</p>' +
+      '</b>. Phần II tính theo: ' +
+      (cfg.tfLinear ? 'Mỗi ý đúng được 25% điểm tối đa của câu.' : '1 ý được 10%, 2 ý 25%, 3 ý 50%, 4 ý 100% điểm tối đa của câu.') +
+      '</p>' +
+      '<label class="hint" style="display:flex; align-items:center; gap:8px; font-weight:600; color:var(--ink); cursor:pointer; margin-bottom:12px; background:var(--ink-soft); padding:8px 12px; border-radius:8px;">' +
+      '<input type="checkbox" id="tfLinearCb" style="width:16px;height:16px;margin:0" ' + (cfg.tfLinear ? 'checked' : '') + '> ' +
+      'Tính điểm Phần II chia đều (Mỗi ý đúng = 25%)</label>' +
       '<div class="range-row"><div class="row"><label class="lbl" for="thrIn">Độ nhạy khi đọc ô ' +
       'tô</label><span class="mono" id="thrVal">' +
       Math.round(cfg.thr * 100) +
@@ -3982,6 +3989,13 @@ function renderPhoto(sheetImg, cfg, marks, o) {
         afterCfg();
       };
     });
+          const tfCb = $('#tfLinearCb');
+    if (tfCb) {
+      tfCb.onchange = function () {
+        cfg.tfLinear = this.checked;
+        afterCfg();
+      };
+    }
     $('#thrIn').oninput = function () {
       cfg.thr = this.value / 100;
       $('#thrVal').textContent = this.value + '%';
@@ -6264,7 +6278,7 @@ function paintMarks(c, sc, g, ver, lw, ringFn) {
     return out;
   }
   function csOf() {
-    return { n1: cfg.n1, n2: cfg.n2, n3: cfg.n3, p1: cfg.p1, p2: cfg.p2, p3: cfg.p3 };
+    return { n1: cfg.n1, n2: cfg.n2, n3: cfg.n3, p1: cfg.p1, p2: cfg.p2, p3: cfg.p3, tfLinear: cfg.tfLinear };
   }
   function annotatedCanvas(s, g) {
     if (!s.rect) s.rect = rectCanvas(s, 720);
