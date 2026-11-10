@@ -6561,25 +6561,23 @@ function paintMarks(c, sc, g, ver, lw, ringFn) {
       bindListBar(host);
       return;
     }
-    const pcts = view.map(function (r) {
-      return r.max ? r.total / r.max : 0;
-    });
-    const avg =
-      pcts.reduce(function (a, b) {
-        return a + b;
-      }, 0) / pcts.length;
-const sc = 10;
+    // Tính toán trực tiếp trên điểm số thật của học sinh
+    const totals = view.map(function (r) { return r.total || 0; });
+    const avg = totals.length ? totals.reduce(function (a, b) { return a + b; }, 0) / totals.length : 0;
+    const maxSc = totals.length ? Math.max.apply(null, totals) : 0;
+    const minSc = totals.length ? Math.min.apply(null, totals) : 0;
+    
     let h =
       '<div class="row"><h2>Kết quả đã lưu</h2><span class="hint">' +
       view.length +
       ' bài</span></div>' +
       listBar() +
       '<div class="stats" style="margin-bottom: 12px; padding-bottom: 12px; border-bottom: 1px solid var(--line);"><span>Trung bình <b>' +
-      fmt(avg * sc) +
+      fmt(avg) +
       '</b></span><span>Cao nhất <b>' +
-      fmt(Math.max.apply(null, pcts) * sc) +
+      fmt(maxSc) +
       '</b></span><span>Thấp nhất <b>' +
-      fmt(Math.min.apply(null, pcts) * sc) +
+      fmt(minSc) +
       '</b></span></div><div class="list">';
     view.forEach(function (r) {
       const d = new Date(r.t),
