@@ -8447,12 +8447,20 @@ let qrState = { kind: 'idle' },
         }
         
         let bins = new Array(11).fill(0), counts = { yeu: 0, tb: 0, kha: 0, tot: 0 }, totalHs = res.length;
-        
-        res.forEach(function(r) {
-            let score10 = (r.total / r.max) * 10, roundScore = Math.round(score10);
-            if(roundScore >= 0 && roundScore <= 10) bins[roundScore]++;
-            if (score10 < 5.0) counts.yeu++; else if (score10 < 6.5) counts.tb++; else if (score10 < 8.0) counts.kha++; else counts.tot++;
-        });
+          res.forEach(function(r) {
+              // Lấy trực tiếp điểm thật của học sinh, không quy đổi
+              let actualScore = r.total || 0; 
+              let roundScore = Math.round(actualScore);
+              
+              // Đưa vào phổ điểm
+              if(roundScore >= 0 && roundScore <= 10) bins[roundScore]++;
+              
+              // Xếp loại dựa trên điểm thật (dưới 5 là Yếu, 5-6.5 là Đạt/TB, 6.5-8 là Khá, từ 8 là Tốt)
+              if (actualScore < 5.0) counts.yeu++; 
+              else if (actualScore < 6.5) counts.tb++; 
+              else if (actualScore < 8.0) counts.kha++; 
+              else counts.tot++;
+          });
 
         let maxBin = Math.max(...bins); if(maxBin === 0) maxBin = 1;
         let barHtml = '';
