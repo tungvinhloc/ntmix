@@ -8331,7 +8331,8 @@ let qrState = { kind: 'idle' },
       }
   }, 1000);
 
-  // --- BẮT ĐẦU MÃ THỐNG KÊ ĐỘC LẬP ---
+ <script>
+  // BẮT SỰ KIỆN NÚT THỐNG KÊ (HOẠT ĐỘNG ĐỘC LẬP)
   document.addEventListener('click', function(e) {
       const tabBtn = e.target.closest('.tab[data-tab="stats"]');
       const refreshBtn = e.target.closest('#btnRefreshStats');
@@ -8346,32 +8347,65 @@ let qrState = { kind: 'idle' },
               window.scrollTo(0, 0);
           }
           
-          // Lấy dữ liệu bài chấm trực tiếp từ bộ nhớ cục bộ
           let res = [];
           try {
               let saved = localStorage.getItem('omr.results2');
               if(saved) {
                   let parsed = JSON.parse(saved);
-                  let lists = localStorage.getItem('omr.lists');
-                  let activeId = lists ? (JSON.parse(lists).active || 'l1') : 'l1';
+                  let listsObj = localStorage.getItem('omr.lists');
+                  let activeId = listsObj ? (JSON.parse(listsObj).active || 'l1') : 'l1';
                   res = parsed.filter(r => (r.lid || 'l1') === activeId);
               }
           } catch(err) {}
 
+          const summaryElem = document.getElementById('statsSummaryPage');
           if (!res || res.length === 0) { 
-              const chartElem = document.getElementById('barChartPage');
-              if(chartElem) chartElem.innerHTML = '<div style="width:100%;text-align:center;color:var(--muted);padding-top:80px;">Chưa có dữ liệu bài chấm</div>';
+              if(summaryElem) summaryElem.innerHTML = '<div style="grid-column: span 4; text-align:center;color:var(--muted);padding:20px;">Chưa có dữ liệu bài chấm</div>';
               return; 
           }
-          // 2. Tính toán phổ điểm và xếp loại dựa trên điểm thật
-          let bins = new Array(11).fill(0); // Đưa về mảng 11 cột chuẩn
+          
+          // KHAI BÁO CÁC BIẾN TÍNH TOÁN
+          let bins = new Array(11).fill(0); 
+          let counts = { yeu: 0, tb: 0, kha: 0, tot: 0 };
+          let totalHs = res.length;
+          let totals = res.map(function(r) { return r.total || 0; });
+          let avgScore = totalHs ? totals.reduce(function(a, b){ return a + b; }, 0) / totalHs : 0;
+          let maxScore = totalHs ? Math.max(...totals) : 0;
+          let minScore = totalHs ? Math.min(...totals) : 0;
+          let maxPossible = res[0] ? (res[0].max || 10) : 10;
+          
+          let formatScore = function(val) { return (Math.round(val * 100) / 100).toString().replace('.', ','); };
+
+          // 1. HIỂN THỊ 4 KHỐI THỐNG KÊ (DASHBOARD)
+          if (summaryElem) {
+              summaryElem.innerHTML = `
+                  <div style="background: var(--card); border: 1px solid var(--line); border-radius: 10px; padding: 12px 4px; text-align: center; display: flex; flex-direction: column; justify-content: center;">
+                      <div style="font-size: 20px; font-weight: bold; color: var(--fg); line-height: 1.2;">${totalHs}</div>
+                      <div style="font-size: 11px; color: var(--muted); margin-top: 4px;">bài</div>
+                  </div>
+                  <div style="background: var(--card); border: 1px solid var(--line); border-radius: 10px; padding: 12px 4px; text-align: center; display: flex; flex-direction: column; justify-content: center;">
+                      <div style="font-size: 20px; font-weight: bold; color: var(--warn); line-height: 1.2;">${formatScore(avgScore)}</div>
+                      <div style="font-size: 11px; color: var(--muted); margin-top: 4px;">điểm TB</div>
+                  </div>
+                  <div style="background: var(--card); border: 1px solid var(--line); border-radius: 10px; padding: 12px 4px; text-align: center; display: flex; flex-direction: column; justify-content: center;">
+                      <div style="font-size: 20px; font-weight: bold; color: var(--fg); line-height: 1.2;">${formatScore(maxScore)}</div>
+                      <div style="font-size: 11px; color: var(--muted); margin-top: 4px;">cao nhất</div>
+                  </div>
+                  <div style="background: var(--card); border: 1px solid var(--line); border-radius: 10px; padding: 12px 4px; text-align: center; display: flex; flex-direction: column; justify-content: center;">
+                      <div style="font-size: 20px; font-weight: bold; color: var(--fg); line-height: 1.2;">${formatScore(minScore)}</div>
+                      <div style="font-size: 11px; color: var(--muted); margin-top: 4px;">thấp nhất</div>
+                  </div>
+              `;
+          }
+
+          // 2. TÍNH TOÁN PHỔ ĐIỂM VÀ XẾP LOẠI
           res.forEach(function(r) {
               let actualScore = r.total || 0; 
-              // Làm tròn điểm về số nguyên gần nhất để xếp vào cột (vd 4.5 -> cột 5)
+              // Làm tròn điểm về số nguyên để xếp vào cột (4.5 -> 5)
               let roundScore = Math.max(0, Math.min(10, Math.round(actualScore)));
               bins[roundScore]++;
               
-              // Xếp loại linh động theo điểm max của đề (thường là 10)
+              // Tính thang xếp loại linh động (tránh lỗi nếu đề không phải 10 điểm)
               let scale = maxPossible / 10;
               if (actualScore < 5.0 * scale) counts.yeu++; 
               else if (actualScore < 6.5 * scale) counts.tb++; 
@@ -8379,9 +8413,9 @@ let qrState = { kind: 'idle' },
               else counts.tot++;
           });
 
+          // 3. VẼ BIỂU ĐỒ CỘT (11 CỘT TỪ 0-10)
           let maxBin = Math.max(...bins); if(maxBin === 0) maxBin = 1;
           let barHtml = '';
-          // Cố định vẽ đủ 11 cột từ 0 đến 10 cho đúng chuẩn Phổ điểm
           for (let i = 0; i <= 10; i++) {
               let count = bins[i];
               barHtml += `<div style="flex: 1; display: flex; flex-direction: column; justify-content: flex-end; align-items: center; height: 100%; position: relative;">
@@ -8393,6 +8427,7 @@ let qrState = { kind: 'idle' },
           const chartElem = document.getElementById('barChartPage');
           if(chartElem) chartElem.innerHTML = barHtml;
 
+          // 4. VẼ BIỂU ĐỒ TRÒN XẾP LOẠI
           let pYeu = (counts.yeu / totalHs) * 100 || 0;
           let pTb = (counts.tb / totalHs) * 100 || 0;
           let pKha = (counts.kha / totalHs) * 100 || 0;
@@ -8400,17 +8435,17 @@ let qrState = { kind: 'idle' },
           let degYeu = pYeu * 3.6, degTb = degYeu + pTb * 3.6, degKha = degTb + pKha * 3.6;
           
           const donutChartElem = document.getElementById('donutChartPage');
-          if(donutChartElem) donutChartElem.style.background = `conic-gradient(#e91e63 0deg ${degYeu}deg, #ff9800 ${degYeu}deg ${degTb}deg, #cddc39 ${degTb}deg ${degKha}deg, #4caf50 ${degKha}deg 360deg)`;
+          if(donutChartElem) donutChartElem.style.background = \`conic-gradient(#e91e63 0deg \${degYeu}deg, #ff9800 \${degYeu}deg \${degTb}deg, #cddc39 \${degTb}deg \${degKha}deg, #4caf50 \${degKha}deg 360deg)\`;
           const donutTotalElem = document.getElementById('donutTotalPage');
           if(donutTotalElem) donutTotalElem.innerText = totalHs;
           const donutLegendElem = document.getElementById('donutLegendPage');
-          if(donutLegendElem) donutLegendElem.innerHTML = `
-              <div style="display: flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 600;"><div style="width: 12px; height: 12px; border-radius: 3px; background:#e91e63"></div>Yếu <5: ${pYeu.toFixed(1)}%</div>
-              <div style="display: flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 600;"><div style="width: 12px; height: 12px; border-radius: 3px; background:#ff9800"></div>TB 5-6.5: ${pTb.toFixed(1)}%</div>
-              <div style="display: flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 600;"><div style="width: 12px; height: 12px; border-radius: 3px; background:#cddc39"></div>Khá 6.5-8: ${pKha.toFixed(1)}%</div>
-              <div style="display: flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 600;"><div style="width: 12px; height: 12px; border-radius: 3px; background:#4caf50"></div>Giỏi >=8: ${pTot.toFixed(1)}%</div>`;
-        }
-    });
+          if(donutLegendElem) donutLegendElem.innerHTML = \`
+              <div style="display: flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 600;"><div style="width: 12px; height: 12px; border-radius: 3px; background:#e91e63"></div>Yếu <5: \${pYeu.toFixed(1)}%</div>
+              <div style="display: flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 600;"><div style="width: 12px; height: 12px; border-radius: 3px; background:#ff9800"></div>TB 5-6.5: \${pTb.toFixed(1)}%</div>
+              <div style="display: flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 600;"><div style="width: 12px; height: 12px; border-radius: 3px; background:#cddc39"></div>Khá 6.5-8: \${pKha.toFixed(1)}%</div>
+              <div style="display: flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 600;"><div style="width: 12px; height: 12px; border-radius: 3px; background:#4caf50"></div>Giỏi >=8: \${pTot.toFixed(1)}%</div>\`;
+      }
+  });
 </script>
 <script>
 (function() {
