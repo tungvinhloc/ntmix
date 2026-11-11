@@ -3863,11 +3863,10 @@ function renderPhoto(sheetImg, cfg, marks, o) {
             if (binIndex > 20) binIndex = 20;
             bins[binIndex]++;
             
-            // Phân loại xếp loại theo % điểm thật
-            let pct = (actualScore / maxPossible) * 100;
-            if (pct < 50) counts.yeu++; 
-            else if (pct < 65) counts.tb++; 
-            else if (pct < 80) counts.kha++; 
+            // Phân loại xếp loại theo ĐIỂM THẬT TUYỆT ĐỐI
+            if (actualScore < 5) counts.yeu++; 
+            else if (actualScore < 6.5) counts.tb++; 
+            else if (actualScore < 8) counts.kha++; 
             else counts.tot++;
         });
 
@@ -3898,10 +3897,10 @@ function renderPhoto(sheetImg, cfg, marks, o) {
         if(donutChartElem) donutChartElem.style.background = `conic-gradient(#e91e63 0deg ${degYeu}deg, #ff9800 ${degYeu}deg ${degTb}deg, #cddc39 ${degTb}deg ${degKha}deg, #4caf50 ${degKha}deg 360deg)`;
         if(donutTotalElem) donutTotalElem.innerText = totalHs;
         if(donutLegendElem) donutLegendElem.innerHTML = `
-            <div style="display: flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 600;"><div style="width: 12px; height: 12px; border-radius: 3px; background:#e91e63"></div>Yếu <50%: ${pYeu.toFixed(1)}%</div>
-            <div style="display: flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 600;"><div style="width: 12px; height: 12px; border-radius: 3px; background:#ff9800"></div>TB 50-65%: ${pTb.toFixed(1)}%</div>
-            <div style="display: flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 600;"><div style="width: 12px; height: 12px; border-radius: 3px; background:#cddc39"></div>Khá 65-80%: ${pKha.toFixed(1)}%</div>
-            <div style="display: flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 600;"><div style="width: 12px; height: 12px; border-radius: 3px; background:#4caf50"></div>Giỏi >=80%: ${pTot.toFixed(1)}%</div>`;
+            <div style="display: flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 600;"><div style="width: 12px; height: 12px; border-radius: 3px; background:#e91e63"></div>Yếu (< 5): ${pYeu.toFixed(1)}%</div>
+            <div style="display: flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 600;"><div style="width: 12px; height: 12px; border-radius: 3px; background:#ff9800"></div>TB (5 - 6.4): ${pTb.toFixed(1)}%</div>
+            <div style="display: flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 600;"><div style="width: 12px; height: 12px; border-radius: 3px; background:#cddc39"></div>Khá (6.5 - 7.9): ${pKha.toFixed(1)}%</div>
+            <div style="display: flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 600;"><div style="width: 12px; height: 12px; border-radius: 3px; background:#4caf50"></div>Giỏi (>= 8): ${pTot.toFixed(1)}%</div>`;
     }
     window.scrollTo(0, 0);
   }
