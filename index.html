@@ -8363,44 +8363,15 @@ let qrState = { kind: 'idle' },
               if(chartElem) chartElem.innerHTML = '<div style="width:100%;text-align:center;color:var(--muted);padding-top:80px;">Chưa có dữ liệu bài chấm</div>';
               return; 
           }
-          
-          let bins = new Array(11).fill(0), counts = { yeu: 0, tb: 0, kha: 0, tot: 0 };
-          let totalHs = res.length;
-          let totals = res.map(function(r) { return r.total || 0; });
-          let avgScore = totalHs ? totals.reduce(function(a, b){ return a + b; }, 0) / totalHs : 0;
-          let maxScore = totalHs ? Math.max(...totals) : 0;
-          let minScore = totalHs ? Math.min(...totals) : 0;
-          let maxPossible = res[0] ? (res[0].max || 10) : 10;
-          
-          let formatScore = function(val) { return (Math.round(val * 100) / 100).toString().replace('.', ','); };
-
-          const summaryElem = document.getElementById('statsSummaryPage');
-          if (summaryElem) {
-              summaryElem.innerHTML = `
-                  <div style="background: var(--card); border: 1px solid var(--line); border-radius: 10px; padding: 12px 4px; text-align: center; display: flex; flex-direction: column; justify-content: center;">
-                      <div style="font-size: 20px; font-weight: bold; color: var(--fg); line-height: 1.2;">${totalHs}</div>
-                      <div style="font-size: 11px; color: var(--muted); margin-top: 4px;">bài</div>
-                  </div>
-                  <div style="background: var(--card); border: 1px solid var(--line); border-radius: 10px; padding: 12px 4px; text-align: center; display: flex; flex-direction: column; justify-content: center;">
-                      <div style="font-size: 20px; font-weight: bold; color: var(--warn); line-height: 1.2;">${formatScore(avgScore)}</div>
-                      <div style="font-size: 11px; color: var(--muted); margin-top: 4px;">điểm TB</div>
-                  </div>
-                  <div style="background: var(--card); border: 1px solid var(--line); border-radius: 10px; padding: 12px 4px; text-align: center; display: flex; flex-direction: column; justify-content: center;">
-                      <div style="font-size: 20px; font-weight: bold; color: var(--fg); line-height: 1.2;">${formatScore(maxScore)}</div>
-                      <div style="font-size: 11px; color: var(--muted); margin-top: 4px;">cao nhất</div>
-                  </div>
-                  <div style="background: var(--card); border: 1px solid var(--line); border-radius: 10px; padding: 12px 4px; text-align: center; display: flex; flex-direction: column; justify-content: center;">
-                      <div style="font-size: 20px; font-weight: bold; color: var(--fg); line-height: 1.2;">${formatScore(minScore)}</div>
-                      <div style="font-size: 11px; color: var(--muted); margin-top: 4px;">thấp nhất</div>
-                  </div>
-              `;
-          }
-
+          // 2. Tính toán phổ điểm và xếp loại dựa trên điểm thật
+          let bins = new Array(11).fill(0); // Đưa về mảng 11 cột chuẩn
           res.forEach(function(r) {
               let actualScore = r.total || 0; 
-              let roundScore = Math.round(actualScore * 2) / 2;
-              bins[roundScore] = (bins[roundScore] || 0) + 1;
+              // Làm tròn điểm về số nguyên gần nhất để xếp vào cột (vd 4.5 -> cột 5)
+              let roundScore = Math.max(0, Math.min(10, Math.round(actualScore)));
+              bins[roundScore]++;
               
+              // Xếp loại linh động theo điểm max của đề (thường là 10)
               let scale = maxPossible / 10;
               if (actualScore < 5.0 * scale) counts.yeu++; 
               else if (actualScore < 6.5 * scale) counts.tb++; 
@@ -8408,10 +8379,11 @@ let qrState = { kind: 'idle' },
               else counts.tot++;
           });
 
-          let maxBin = Math.max(...Object.values(bins)); if(maxBin === 0) maxBin = 1;
+          let maxBin = Math.max(...bins); if(maxBin === 0) maxBin = 1;
           let barHtml = '';
-          for (let i = 0; i <= maxPossible; i++) {
-              let count = bins[i] || 0;
+          // Cố định vẽ đủ 11 cột từ 0 đến 10 cho đúng chuẩn Phổ điểm
+          for (let i = 0; i <= 10; i++) {
+              let count = bins[i];
               barHtml += `<div style="flex: 1; display: flex; flex-direction: column; justify-content: flex-end; align-items: center; height: 100%; position: relative;">
                   ${count > 0 ? `<div style="font-size: 11px; font-weight: bold; margin-bottom: 4px; color: var(--fg);">${count}</div>` : ''}
                   <div style="width: 70%; background: #ff5722; border-radius: 2px 2px 0 0; transition: height 0.5s ease; height: ${(count / maxBin) * 100}%;"></div>
