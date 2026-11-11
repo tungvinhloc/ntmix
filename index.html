@@ -8401,11 +8401,14 @@ let qrState = { kind: 'idle' },
           // 2. TÍNH TOÁN PHỔ ĐIỂM VÀ XẾP LOẠI
           res.forEach(function(r) {
               let actualScore = r.total || 0; 
-              // Làm tròn điểm về số nguyên để xếp vào cột (4.5 -> 5)
-              let roundScore = Math.max(0, Math.min(10, Math.round(actualScore)));
-              bins[roundScore]++;
+              // Quy điểm thực tế về thang 10 trước khi làm tròn để bỏ vào bins
+              let score10 = (actualScore / maxPossible) * 10;
+              let roundScore = Math.round(score10);
               
-              // Tính thang xếp loại linh động (tránh lỗi nếu đề không phải 10 điểm)
+              if(roundScore >= 0 && roundScore <= 10) {
+                 bins[roundScore]++;
+              }
+              
               let scale = maxPossible / 10;
               if (actualScore < 5.0 * scale) counts.yeu++; 
               else if (actualScore < 6.5 * scale) counts.tb++; 
@@ -8416,8 +8419,10 @@ let qrState = { kind: 'idle' },
           // 3. VẼ BIỂU ĐỒ CỘT (11 CỘT TỪ 0-10)
           let maxBin = Math.max(...bins); if(maxBin === 0) maxBin = 1;
           let barHtml = '';
+          // Cố định vẽ đủ 11 cột từ 0 đến 10 cho đúng chuẩn Phổ điểm
           for (let i = 0; i <= 10; i++) {
               let count = bins[i];
+              // Thêm style phân bố đều cột và độ cao tương đối so với cột cao nhất
               barHtml += `<div style="flex: 1; display: flex; flex-direction: column; justify-content: flex-end; align-items: center; height: 100%; position: relative;">
                   ${count > 0 ? `<div style="font-size: 11px; font-weight: bold; margin-bottom: 4px; color: var(--fg);">${count}</div>` : ''}
                   <div style="width: 70%; background: #ff5722; border-radius: 2px 2px 0 0; transition: height 0.5s ease; height: ${(count / maxBin) * 100}%;"></div>
