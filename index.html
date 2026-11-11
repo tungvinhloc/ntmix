@@ -3780,6 +3780,129 @@ function renderPhoto(sheetImg, cfg, marks, o) {
     }, 'sample');
   }
 
+// ĐIỀU KHIỂN TAB & THỐNG KÊ (HỢP NHẤT)
+  function showTab(t) {
+    tab = t;
+    $$('.view').forEach(function (v) { v.hidden = v.id !== 'v-' + t; });
+    $$('.tab').forEach(function (b) {
+      if (b.dataset.tab === t) b.setAttribute('aria-current', 'page');
+      else b.removeAttribute('aria-current');
+    });
+    if (t === 'key') renderKey();
+    if (t === 'sheet') renderSheet();
+    if (t === 'res') renderRes();
+    if (t === 'students') renderStudents();
+    
+    // TÍNH TOÁN VÀ VẼ THỐNG KÊ KHI MỞ TAB 'stats'
+    if (t === 'stats') {
+        const summaryElem = document.getElementById('statsSummaryPage');
+        const chartElem = document.getElementById('barChartPage');
+        const donutChartElem = document.getElementById('donutChartPage');
+        const donutTotalElem = document.getElementById('donutTotalPage');
+        const donutLegendElem = document.getElementById('donutLegendPage');
+        
+        let res = [];
+        try {
+            let saved = localStorage.getItem('omr.results2');
+            if(saved) {
+                let parsed = JSON.parse(saved);
+                let listsObj = localStorage.getItem('omr.lists');
+                let activeId = listsObj ? (JSON.parse(listsObj).active || 'l1') : 'l1';
+                res = parsed.filter(r => (r.lid || 'l1') === activeId);
+            }
+        } catch(err) {}
+
+        if (!res || res.length === 0) { 
+            if(summaryElem) summaryElem.innerHTML = '<div style="grid-column: span 4; text-align:center;color:var(--muted);padding:20px;">Chưa có dữ liệu bài chấm</div>';
+            if(chartElem) chartElem.innerHTML = '';
+            if(donutChartElem) donutChartElem.style.background = 'var(--line)';
+            if(donutTotalElem) donutTotalElem.innerText = '0';
+            if(donutLegendElem) donutLegendElem.innerHTML = '';
+            return; 
+        }
+        
+        let bins = new Array(11).fill(0); 
+        let counts = { yeu: 0, tb: 0, kha: 0, tot: 0 };
+        let totalHs = res.length;
+        let totals = res.map(function(r) { return r.total || 0; });
+        let avgScore = totalHs ? totals.reduce(function(a, b){ return a + b; }, 0) / totalHs : 0;
+        let maxScore = totalHs ? Math.max(...totals) : 0;
+        let minScore = totalHs ? Math.min(...totals) : 0;
+        let maxPossible = res[0] ? (res[0].max || 10) : 10;
+        
+        let formatScore = function(val) { return (Math.round(val * 100) / 100).toString().replace('.', ','); };
+
+        if (summaryElem) {
+            summaryElem.innerHTML = `
+                <div style="background: var(--card); border: 1px solid var(--line); border-radius: 10px; padding: 12px 4px; text-align: center; display: flex; flex-direction: column; justify-content: center;">
+                    <div style="font-size: 20px; font-weight: bold; color: var(--fg); line-height: 1.2;">${totalHs}</div>
+                    <div style="font-size: 11px; color: var(--muted); margin-top: 4px;">bài</div>
+                </div>
+                <div style="background: var(--card); border: 1px solid var(--line); border-radius: 10px; padding: 12px 4px; text-align: center; display: flex; flex-direction: column; justify-content: center;">
+                    <div style="font-size: 20px; font-weight: bold; color: var(--warn); line-height: 1.2;">${formatScore(avgScore)}</div>
+                    <div style="font-size: 11px; color: var(--muted); margin-top: 4px;">điểm TB</div>
+                </div>
+                <div style="background: var(--card); border: 1px solid var(--line); border-radius: 10px; padding: 12px 4px; text-align: center; display: flex; flex-direction: column; justify-content: center;">
+                    <div style="font-size: 20px; font-weight: bold; color: var(--fg); line-height: 1.2;">${formatScore(maxScore)}</div>
+                    <div style="font-size: 11px; color: var(--muted); margin-top: 4px;">cao nhất</div>
+                </div>
+                <div style="background: var(--card); border: 1px solid var(--line); border-radius: 10px; padding: 12px 4px; text-align: center; display: flex; flex-direction: column; justify-content: center;">
+                    <div style="font-size: 20px; font-weight: bold; color: var(--fg); line-height: 1.2;">${formatScore(minScore)}</div>
+                    <div style="font-size: 11px; color: var(--muted); margin-top: 4px;">thấp nhất</div>
+                </div>`;
+        }
+
+        res.forEach(function(r) {
+            let actualScore = r.total || 0; 
+            let score10 = (actualScore / maxPossible) * 10;
+            let roundScore = Math.round(score10);
+            if(roundScore >= 0 && roundScore <= 10) bins[roundScore]++;
+            
+            let scale = maxPossible / 10;
+            if (actualScore < 5.0 * scale) counts.yeu++; 
+            else if (actualScore < 6.5 * scale) counts.tb++; 
+            else if (actualScore < 8.0 * scale) counts.kha++; 
+            else counts.tot++;
+        });
+
+        let maxBin = Math.max(...bins); if(maxBin === 0) maxBin = 1;
+        let barHtml = '';
+        for (let i = 0; i <= 10; i++) {
+            let count = bins[i];
+            barHtml += `<div style="flex: 1; display: flex; flex-direction: column; justify-content: flex-end; align-items: center; height: 100%; position: relative;">
+                ${count > 0 ? `<div style="font-size: 11px; font-weight: bold; margin-bottom: 4px; color: var(--fg);">${count}</div>` : ''}
+                <div style="width: 70%; background: #ff5722; border-radius: 2px 2px 0 0; transition: height 0.5s ease; height: ${(count / maxBin) * 100}%;"></div>
+                <div style="position: absolute; bottom: -20px; font-size: 11px; color: var(--muted);">${i}</div>
+            </div>`;
+        }
+        if(chartElem) chartElem.innerHTML = barHtml;
+
+        let pYeu = (counts.yeu / totalHs) * 100 || 0;
+        let pTb = (counts.tb / totalHs) * 100 || 0;
+        let pKha = (counts.kha / totalHs) * 100 || 0;
+        let pTot = (counts.tot / totalHs) * 100 || 0;
+        let degYeu = pYeu * 3.6, degTb = degYeu + pTb * 3.6, degKha = degTb + pKha * 3.6;
+        
+        if(donutChartElem) donutChartElem.style.background = `conic-gradient(#e91e63 0deg ${degYeu}deg, #ff9800 ${degYeu}deg ${degTb}deg, #cddc39 ${degTb}deg ${degKha}deg, #4caf50 ${degKha}deg 360deg)`;
+        if(donutTotalElem) donutTotalElem.innerText = totalHs;
+        if(donutLegendElem) donutLegendElem.innerHTML = `
+            <div style="display: flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 600;"><div style="width: 12px; height: 12px; border-radius: 3px; background:#e91e63"></div>Yếu <5: ${pYeu.toFixed(1)}%</div>
+            <div style="display: flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 600;"><div style="width: 12px; height: 12px; border-radius: 3px; background:#ff9800"></div>TB 5-6.5: ${pTb.toFixed(1)}%</div>
+            <div style="display: flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 600;"><div style="width: 12px; height: 12px; border-radius: 3px; background:#cddc39"></div>Khá 6.5-8: ${pKha.toFixed(1)}%</div>
+            <div style="display: flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 600;"><div style="width: 12px; height: 12px; border-radius: 3px; background:#4caf50"></div>Giỏi >=8: ${pTot.toFixed(1)}%</div>`;
+    }
+    window.scrollTo(0, 0);
+  }
+
+  $$('.tab').forEach(function (b) {
+    b.addEventListener('click', function () { showTab(b.dataset.tab); });
+  });
+
+  const btnRefreshStats = document.getElementById('btnRefreshStats');
+  if(btnRefreshStats) {
+      btnRefreshStats.addEventListener('click', function() { showTab('stats'); });
+  }
+    
   function renderChip() {
     $('#cfgChip').textContent = cfg.n1 + ' · ' + cfg.n2 + ' · ' + cfg.n3 + ' câu';
     const bd = $('#resBadge');
@@ -8309,129 +8432,6 @@ let qrState = { kind: 'idle' },
           };
       }
   }, 1000);
-
-// ĐIỀU KHIỂN TAB & THỐNG KÊ (HỢP NHẤT)
-  function showTab(t) {
-    tab = t;
-    $$('.view').forEach(function (v) { v.hidden = v.id !== 'v-' + t; });
-    $$('.tab').forEach(function (b) {
-      if (b.dataset.tab === t) b.setAttribute('aria-current', 'page');
-      else b.removeAttribute('aria-current');
-    });
-    if (t === 'key') renderKey();
-    if (t === 'sheet') renderSheet();
-    if (t === 'res') renderRes();
-    if (t === 'students') renderStudents();
-    
-    // TÍNH TOÁN VÀ VẼ THỐNG KÊ KHI MỞ TAB 'stats'
-    if (t === 'stats') {
-        const summaryElem = document.getElementById('statsSummaryPage');
-        const chartElem = document.getElementById('barChartPage');
-        const donutChartElem = document.getElementById('donutChartPage');
-        const donutTotalElem = document.getElementById('donutTotalPage');
-        const donutLegendElem = document.getElementById('donutLegendPage');
-        
-        let res = [];
-        try {
-            let saved = localStorage.getItem('omr.results2');
-            if(saved) {
-                let parsed = JSON.parse(saved);
-                let listsObj = localStorage.getItem('omr.lists');
-                let activeId = listsObj ? (JSON.parse(listsObj).active || 'l1') : 'l1';
-                res = parsed.filter(r => (r.lid || 'l1') === activeId);
-            }
-        } catch(err) {}
-
-        if (!res || res.length === 0) { 
-            if(summaryElem) summaryElem.innerHTML = '<div style="grid-column: span 4; text-align:center;color:var(--muted);padding:20px;">Chưa có dữ liệu bài chấm</div>';
-            if(chartElem) chartElem.innerHTML = '';
-            if(donutChartElem) donutChartElem.style.background = 'var(--line)';
-            if(donutTotalElem) donutTotalElem.innerText = '0';
-            if(donutLegendElem) donutLegendElem.innerHTML = '';
-            return; 
-        }
-        
-        let bins = new Array(11).fill(0); 
-        let counts = { yeu: 0, tb: 0, kha: 0, tot: 0 };
-        let totalHs = res.length;
-        let totals = res.map(function(r) { return r.total || 0; });
-        let avgScore = totalHs ? totals.reduce(function(a, b){ return a + b; }, 0) / totalHs : 0;
-        let maxScore = totalHs ? Math.max(...totals) : 0;
-        let minScore = totalHs ? Math.min(...totals) : 0;
-        let maxPossible = res[0] ? (res[0].max || 10) : 10;
-        
-        let formatScore = function(val) { return (Math.round(val * 100) / 100).toString().replace('.', ','); };
-
-        if (summaryElem) {
-            summaryElem.innerHTML = `
-                <div style="background: var(--card); border: 1px solid var(--line); border-radius: 10px; padding: 12px 4px; text-align: center; display: flex; flex-direction: column; justify-content: center;">
-                    <div style="font-size: 20px; font-weight: bold; color: var(--fg); line-height: 1.2;">${totalHs}</div>
-                    <div style="font-size: 11px; color: var(--muted); margin-top: 4px;">bài</div>
-                </div>
-                <div style="background: var(--card); border: 1px solid var(--line); border-radius: 10px; padding: 12px 4px; text-align: center; display: flex; flex-direction: column; justify-content: center;">
-                    <div style="font-size: 20px; font-weight: bold; color: var(--warn); line-height: 1.2;">${formatScore(avgScore)}</div>
-                    <div style="font-size: 11px; color: var(--muted); margin-top: 4px;">điểm TB</div>
-                </div>
-                <div style="background: var(--card); border: 1px solid var(--line); border-radius: 10px; padding: 12px 4px; text-align: center; display: flex; flex-direction: column; justify-content: center;">
-                    <div style="font-size: 20px; font-weight: bold; color: var(--fg); line-height: 1.2;">${formatScore(maxScore)}</div>
-                    <div style="font-size: 11px; color: var(--muted); margin-top: 4px;">cao nhất</div>
-                </div>
-                <div style="background: var(--card); border: 1px solid var(--line); border-radius: 10px; padding: 12px 4px; text-align: center; display: flex; flex-direction: column; justify-content: center;">
-                    <div style="font-size: 20px; font-weight: bold; color: var(--fg); line-height: 1.2;">${formatScore(minScore)}</div>
-                    <div style="font-size: 11px; color: var(--muted); margin-top: 4px;">thấp nhất</div>
-                </div>`;
-        }
-
-        res.forEach(function(r) {
-            let actualScore = r.total || 0; 
-            let score10 = (actualScore / maxPossible) * 10;
-            let roundScore = Math.round(score10);
-            if(roundScore >= 0 && roundScore <= 10) bins[roundScore]++;
-            
-            let scale = maxPossible / 10;
-            if (actualScore < 5.0 * scale) counts.yeu++; 
-            else if (actualScore < 6.5 * scale) counts.tb++; 
-            else if (actualScore < 8.0 * scale) counts.kha++; 
-            else counts.tot++;
-        });
-
-        let maxBin = Math.max(...bins); if(maxBin === 0) maxBin = 1;
-        let barHtml = '';
-        for (let i = 0; i <= 10; i++) {
-            let count = bins[i];
-            barHtml += `<div style="flex: 1; display: flex; flex-direction: column; justify-content: flex-end; align-items: center; height: 100%; position: relative;">
-                ${count > 0 ? `<div style="font-size: 11px; font-weight: bold; margin-bottom: 4px; color: var(--fg);">${count}</div>` : ''}
-                <div style="width: 70%; background: #ff5722; border-radius: 2px 2px 0 0; transition: height 0.5s ease; height: ${(count / maxBin) * 100}%;"></div>
-                <div style="position: absolute; bottom: -20px; font-size: 11px; color: var(--muted);">${i}</div>
-            </div>`;
-        }
-        if(chartElem) chartElem.innerHTML = barHtml;
-
-        let pYeu = (counts.yeu / totalHs) * 100 || 0;
-        let pTb = (counts.tb / totalHs) * 100 || 0;
-        let pKha = (counts.kha / totalHs) * 100 || 0;
-        let pTot = (counts.tot / totalHs) * 100 || 0;
-        let degYeu = pYeu * 3.6, degTb = degYeu + pTb * 3.6, degKha = degTb + pKha * 3.6;
-        
-        if(donutChartElem) donutChartElem.style.background = `conic-gradient(#e91e63 0deg ${degYeu}deg, #ff9800 ${degYeu}deg ${degTb}deg, #cddc39 ${degTb}deg ${degKha}deg, #4caf50 ${degKha}deg 360deg)`;
-        if(donutTotalElem) donutTotalElem.innerText = totalHs;
-        if(donutLegendElem) donutLegendElem.innerHTML = `
-            <div style="display: flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 600;"><div style="width: 12px; height: 12px; border-radius: 3px; background:#e91e63"></div>Yếu <5: ${pYeu.toFixed(1)}%</div>
-            <div style="display: flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 600;"><div style="width: 12px; height: 12px; border-radius: 3px; background:#ff9800"></div>TB 5-6.5: ${pTb.toFixed(1)}%</div>
-            <div style="display: flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 600;"><div style="width: 12px; height: 12px; border-radius: 3px; background:#cddc39"></div>Khá 6.5-8: ${pKha.toFixed(1)}%</div>
-            <div style="display: flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 600;"><div style="width: 12px; height: 12px; border-radius: 3px; background:#4caf50"></div>Giỏi >=8: ${pTot.toFixed(1)}%</div>`;
-    }
-    window.scrollTo(0, 0);
-  }
-
-  $$('.tab').forEach(function (b) {
-    b.addEventListener('click', function () { showTab(b.dataset.tab); });
-  });
-
-  const btnRefreshStats = document.getElementById('btnRefreshStats');
-  if(btnRefreshStats) {
-      btnRefreshStats.addEventListener('click', function() { showTab('stats'); });
-  }
 
 })();
 </script>
