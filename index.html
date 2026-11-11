@@ -3821,9 +3821,9 @@ function renderPhoto(sheetImg, cfg, marks, o) {
             return; 
         }
         
-        // 1. Phổ điểm: Lấy max điểm cấu hình hiện tại, làm tròn nửa điểm (0, 0.5, 1, 1.5...)
+        // 1. Phổ điểm: Quy về 11 cột (từ 0 đến 10)
         let maxPossible = res[0] ? (res[0].max || 10) : 10;
-        let binCount = Math.ceil(maxPossible * 2) + 1; // Số lượng cột cho nửa điểm
+        let binCount = 11; // 11 cột cho điểm từ 0 đến 10
         let bins = new Array(binCount).fill(0); 
         let counts = { yeu: 0, tb: 0, kha: 0, tot: 0 };
         
@@ -3857,8 +3857,8 @@ function renderPhoto(sheetImg, cfg, marks, o) {
 
         res.forEach(function(r) {
             let actualScore = r.total || 0; 
-            // Gom vào cột phổ điểm dựa trên điểm thật (bước nhảy 0.5)
-            let binIndex = Math.round(actualScore * 2);
+            // Gom vào cột phổ điểm bằng cách làm tròn số học (ví dụ: 4.5 -> 5, 4.4 -> 4)
+            let binIndex = Math.round(actualScore);
             if(binIndex >= 0 && binIndex < binCount) bins[binIndex]++;
             
             // Phân loại xếp loại học sinh theo tỷ lệ % điểm thật so với điểm tối đa
@@ -3874,11 +3874,10 @@ function renderPhoto(sheetImg, cfg, marks, o) {
         let barHtml = '';
         for (let i = 0; i < binCount; i++) {
             let count = bins[i];
-            let label = i % 2 === 0 ? (i/2) : ""; // Chỉ hiển thị nhãn cho điểm chẵn để đỡ rối
             barHtml += `<div style="flex: 1; display: flex; flex-direction: column; justify-content: flex-end; align-items: center; height: 100%; position: relative;">
                 ${count > 0 ? `<div style="font-size: 11px; font-weight: bold; margin-bottom: 4px; color: var(--fg);">${count}</div>` : ''}
                 <div style="width: 70%; background: #ff5722; border-radius: 2px 2px 0 0; transition: height 0.5s ease; height: ${(count / maxBin) * 100}%;"></div>
-                <div style="position: absolute; bottom: -20px; font-size: 10px; color: var(--muted);">${label}</div>
+                <div style="position: absolute; bottom: -20px; font-size: 10px; color: var(--muted);">${i}</div>
             </div>`;
         }
         if(chartElem) chartElem.innerHTML = barHtml;
