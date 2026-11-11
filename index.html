@@ -3821,10 +3821,8 @@ function renderPhoto(sheetImg, cfg, marks, o) {
             return; 
         }
         
-        // 1. Phổ điểm: Quy về 11 cột (từ 0 đến 10)
-        let maxPossible = res[0] ? (res[0].max || 10) : 10;
-        let binCount = 11; // 11 cột cho điểm từ 0 đến 10
-        let bins = new Array(binCount).fill(0); 
+        // 1. Phổ điểm: Phân vùng điểm thật thành 21 cột (0.0 đến 10.0, bước nhảy 0.5)
+        let bins = new Array(21).fill(0); 
         let counts = { yeu: 0, tb: 0, kha: 0, tot: 0 };
         
         let totalHs = res.length;
@@ -3832,6 +3830,7 @@ function renderPhoto(sheetImg, cfg, marks, o) {
         let avgScore = totalHs ? totals.reduce(function(a, b){ return a + b; }, 0) / totalHs : 0;
         let maxScore = totalHs ? Math.max(...totals) : 0;
         let minScore = totalHs ? Math.min(...totals) : 0;
+        let maxPossible = res[0] ? (res[0].max || 10) : 10;
         
         let formatScore = function(val) { return (Math.round(val * 100) / 100).toString().replace('.', ','); };
 
@@ -3857,11 +3856,14 @@ function renderPhoto(sheetImg, cfg, marks, o) {
 
         res.forEach(function(r) {
             let actualScore = r.total || 0; 
-            // Gom vào cột phổ điểm bằng cách làm tròn số học (ví dụ: 4.5 -> 5, 4.4 -> 4)
-            let binIndex = Math.round(actualScore);
-            if(binIndex >= 0 && binIndex < binCount) bins[binIndex]++;
             
-            // Phân loại xếp loại học sinh theo tỷ lệ % điểm thật so với điểm tối đa
+            // Xếp điểm lẻ vào đúng cột (vd: 6.85 * 2 = 13.7 -> làm tròn xuống 13 -> Thuộc khoảng 6.5)
+            let binIndex = Math.floor(actualScore * 2);
+            if (binIndex < 0) binIndex = 0;
+            if (binIndex > 20) binIndex = 20;
+            bins[binIndex]++;
+            
+            // Phân loại xếp loại theo % điểm thật
             let pct = (actualScore / maxPossible) * 100;
             if (pct < 50) counts.yeu++; 
             else if (pct < 65) counts.tb++; 
@@ -3872,12 +3874,16 @@ function renderPhoto(sheetImg, cfg, marks, o) {
         // Vẽ biểu đồ cột
         let maxBin = Math.max(...bins); if(maxBin === 0) maxBin = 1;
         let barHtml = '';
-        for (let i = 0; i < binCount; i++) {
+        for (let i = 0; i <= 20; i++) {
             let count = bins[i];
+            
+            // Để biểu đồ không bị rối mắt, chỉ hiển thị số 0, 1, 2... ở các cột điểm chẵn
+            let label = (i % 2 === 0) ? (i / 2) : ""; 
+            
             barHtml += `<div style="flex: 1; display: flex; flex-direction: column; justify-content: flex-end; align-items: center; height: 100%; position: relative;">
-                ${count > 0 ? `<div style="font-size: 11px; font-weight: bold; margin-bottom: 4px; color: var(--fg);">${count}</div>` : ''}
-                <div style="width: 70%; background: #ff5722; border-radius: 2px 2px 0 0; transition: height 0.5s ease; height: ${(count / maxBin) * 100}%;"></div>
-                <div style="position: absolute; bottom: -20px; font-size: 10px; color: var(--muted);">${i}</div>
+                ${count > 0 ? `<div style="font-size: 10px; font-weight: bold; margin-bottom: 2px; color: var(--fg); z-index: 2;">${count}</div>` : ''}
+                <div style="width: 85%; background: #ff5722; border-radius: 2px 2px 0 0; transition: height 0.5s ease; height: ${(count / maxBin) * 100}%;"></div>
+                <div style="position: absolute; bottom: -20px; font-size: 10px; color: var(--muted);">${label}</div>
             </div>`;
         }
         if(chartElem) chartElem.innerHTML = barHtml;
