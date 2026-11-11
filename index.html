@@ -8512,46 +8512,52 @@ let qrState = { kind: 'idle' },
           }
 
           res.forEach(function(r) {
-              let actualScore = r.total || 0; 
-              let roundScore = Math.round(actualScore * 2) / 2;
-              bins[roundScore] = (bins[roundScore] || 0) + 1;
-              
-              let scale = maxPossible / 10;
-              if (actualScore < 5.0 * scale) counts.yeu++; 
-              else if (actualScore < 6.5 * scale) counts.tb++; 
-              else if (actualScore < 8.0 * scale) counts.kha++; 
-              else counts.tot++;
-          });
+            let actualScore = r.total || 0; 
+            
+            // 1. Phổ điểm chi tiết (Vẫn giữ thuật toán 21 cột để chứa vừa vặn điểm lẻ)
+            let binIndex = Math.floor(actualScore * 2);
+            if (binIndex < 0) binIndex = 0;
+            if (binIndex > 20) binIndex = 20;
+            bins[binIndex]++;
+            
+            // 2. XẾP LOẠI DỰA TRÊN ĐIỂM THẬT TUYỆT ĐỐI (KHÔNG DÙNG TỶ LỆ %)
+            if (actualScore < 5) counts.yeu++; 
+            else if (actualScore < 6.5) counts.tb++; 
+            else if (actualScore < 8) counts.kha++; 
+            else counts.tot++;
+        });
 
-          let maxBin = Math.max(...Object.values(bins)); if(maxBin === 0) maxBin = 1;
-          let barHtml = '';
-          for (let i = 0; i <= maxPossible; i++) {
-              let count = bins[i] || 0;
-              barHtml += `<div style="flex: 1; display: flex; flex-direction: column; justify-content: flex-end; align-items: center; height: 100%; position: relative;">
-                  ${count > 0 ? `<div style="font-size: 11px; font-weight: bold; margin-bottom: 4px; color: var(--fg);">${count}</div>` : ''}
-                  <div style="width: 70%; background: #ff5722; border-radius: 2px 2px 0 0; transition: height 0.5s ease; height: ${(count / maxBin) * 100}%;"></div>
-                  <div style="position: absolute; bottom: -20px; font-size: 11px; color: var(--muted);">${i}</div>
-              </div>`;
-          }
-          const chartElem = document.getElementById('barChartPage');
-          if(chartElem) chartElem.innerHTML = barHtml;
+        // Vẽ biểu đồ cột (Phổ điểm)
+        let maxBin = Math.max(...bins); if(maxBin === 0) maxBin = 1;
+        let barHtml = '';
+        for (let i = 0; i <= 20; i++) {
+            let count = bins[i];
+            
+            // Để biểu đồ không bị rối mắt, chỉ hiển thị số 0, 1, 2... ở các cột điểm chẵn
+            let label = (i % 2 === 0) ? (i / 2) : ""; 
+            
+            barHtml += `<div style="flex: 1; display: flex; flex-direction: column; justify-content: flex-end; align-items: center; height: 100%; position: relative;">
+                ${count > 0 ? `<div style="font-size: 10px; font-weight: bold; margin-bottom: 2px; color: var(--fg); z-index: 2;">${count}</div>` : ''}
+                <div style="width: 85%; background: #ff5722; border-radius: 2px 2px 0 0; transition: height 0.5s ease; height: ${(count / maxBin) * 100}%;"></div>
+                <div style="position: absolute; bottom: -20px; font-size: 10px; color: var(--muted);">${label}</div>
+            </div>`;
+        }
+        if(chartElem) chartElem.innerHTML = barHtml;
 
-          let pYeu = (counts.yeu / totalHs) * 100 || 0;
-          let pTb = (counts.tb / totalHs) * 100 || 0;
-          let pKha = (counts.kha / totalHs) * 100 || 0;
-          let pTot = (counts.tot / totalHs) * 100 || 0;
-          let degYeu = pYeu * 3.6, degTb = degYeu + pTb * 3.6, degKha = degTb + pKha * 3.6;
-          
-          const donutChartElem = document.getElementById('donutChartPage');
-          if(donutChartElem) donutChartElem.style.background = `conic-gradient(#e91e63 0deg ${degYeu}deg, #ff9800 ${degYeu}deg ${degTb}deg, #cddc39 ${degTb}deg ${degKha}deg, #4caf50 ${degKha}deg 360deg)`;
-          const donutTotalElem = document.getElementById('donutTotalPage');
-          if(donutTotalElem) donutTotalElem.innerText = totalHs;
-          const donutLegendElem = document.getElementById('donutLegendPage');
-          if(donutLegendElem) donutLegendElem.innerHTML = `
-              <div style="display: flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 600;"><div style="width: 12px; height: 12px; border-radius: 3px; background:#e91e63"></div>Yếu <5: ${pYeu.toFixed(1)}%</div>
-              <div style="display: flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 600;"><div style="width: 12px; height: 12px; border-radius: 3px; background:#ff9800"></div>TB 5-6.5: ${pTb.toFixed(1)}%</div>
-              <div style="display: flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 600;"><div style="width: 12px; height: 12px; border-radius: 3px; background:#cddc39"></div>Khá 6.5-8: ${pKha.toFixed(1)}%</div>
-              <div style="display: flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 600;"><div style="width: 12px; height: 12px; border-radius: 3px; background:#4caf50"></div>Giỏi >=8: ${pTot.toFixed(1)}%</div>`;
+        // Vẽ biểu đồ tròn xếp loại
+        let pYeu = (counts.yeu / totalHs) * 100 || 0;
+        let pTb = (counts.tb / totalHs) * 100 || 0;
+        let pKha = (counts.kha / totalHs) * 100 || 0;
+        let pTot = (counts.tot / totalHs) * 100 || 0;
+        let degYeu = pYeu * 3.6, degTb = degYeu + pTb * 3.6, degKha = degTb + pKha * 3.6;
+        
+        if(donutChartElem) donutChartElem.style.background = `conic-gradient(#e91e63 0deg ${degYeu}deg, #ff9800 ${degYeu}deg ${degTb}deg, #cddc39 ${degTb}deg ${degKha}deg, #4caf50 ${degKha}deg 360deg)`;
+        if(donutTotalElem) donutTotalElem.innerText = totalHs;
+        if(donutLegendElem) donutLegendElem.innerHTML = `
+            <div style="display: flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 600;"><div style="width: 12px; height: 12px; border-radius: 3px; background:#e91e63"></div>Yếu <5: ${pYeu.toFixed(1)}%</div>
+            <div style="display: flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 600;"><div style="width: 12px; height: 12px; border-radius: 3px; background:#ff9800"></div>TB 5-6.5: ${pTb.toFixed(1)}%</div>
+            <div style="display: flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 600;"><div style="width: 12px; height: 12px; border-radius: 3px; background:#cddc39"></div>Khá 6.5-8: ${pKha.toFixed(1)}%</div>
+            <div style="display: flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 600;"><div style="width: 12px; height: 12px; border-radius: 3px; background:#4caf50"></div>Giỏi >=8: ${pTot.toFixed(1)}%</div>`;
         }
     });
 </script>
