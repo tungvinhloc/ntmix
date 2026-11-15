@@ -8750,17 +8750,22 @@ let qrState = { kind: 'idle' },
       // Bắt sự kiện chuyển tab
       document.querySelectorAll('.menu-item[data-target]').forEach(item => {
           item.addEventListener('click', function() {
+              // 1. Đóng menu
               sideMenu.classList.remove('active');
               menuOverlay.classList.remove('active');
               
+              // 2. Cập nhật màu nút đang chọn
               document.querySelectorAll('.menu-item').forEach(i => i.classList.remove('active'));
               this.classList.add('active');
 
-              mainTitle.textContent = this.textContent.trim(); // Cập nhật Header
+              // 3. Cập nhật Tiêu đề Header
+              mainTitle.textContent = this.textContent.trim();
 
-              // Gọi nhẹ nhàng sang hàm xử lý tab cũ của thầy
-              if(typeof showTab === 'function') {
-                 showTab(this.dataset.target);
+              // 4. TUYỆT CHIÊU: Giả lập click vào thanh tab cũ (đang bị ẩn)
+              const targetTab = this.dataset.target;
+              const oldTabBtn = document.querySelector('.tab[data-tab="' + targetTab + '"]');
+              if(oldTabBtn) {
+                  oldTabBtn.click(); // Kích hoạt logic lõi an toàn tuyệt đối
               }
           });
       });
