@@ -5052,30 +5052,13 @@ function renderPhoto(sheetImg, cfg, marks, o) {
       'đó bằng nút “Xem ảnh bài đã chấm”.</p><div class="list">';
     rows.forEach(function (r, i) {
       if (r.err) {
-        h +=
-          '<div class="item"><div><div class="who">Ảnh ' +
-          (i + 1) +
-          ': không đọc được</div><div class="meta">' +
-          esc(r.name) +
-          ' · thiếu 4 ô góc hoặc không mở được ảnh, hãy chụp lại</div></div><span></span><span></span></div>';
+        h += '<div class="item"><div><div class="who">Ảnh ' + (i + 1) + ': không đọc được</div><div class="meta">' + esc(r.name) + ' · thiếu 4 ô góc hoặc không mở được ảnh, hãy chụp lại</div></div><span></span><span></span></div>';
       } else {
         const info = getStudentInfo(r.sbd) || {name: '', cls: ''};
-        const nameStr = info.name ? '<div style="font-size: 15px; font-weight: 700; color: var(--fg); margin-bottom: 2px;">' + esc(info.name) + '</div>' : '';
-        
-        h +=
-          '<div class="item" style="align-items: flex-start; padding: 12px 0;"><div>' +
-          nameStr +
-          '<div class="meta" style="font-size: 13px; color: var(--muted); font-weight: 600;">SBD ' +
-          esc(r.sbd || '—') +
-          ' · Mã đề ' +
-          esc(r.md || '—') +
-          '</div><div class="meta" style="margin-top: 4px;">' +
-          esc(r.name) +
-          (r.matched ? '' : ' · chưa khớp mã đề, dùng đáp án đang chọn') +
-          (r.bad ? ' · SBD hoặc mã đề có cột đọc chưa chắc' : '') +
-          '</div></div><span class="sc">' +
-          fmt(r.total) +
-          '</span><span></span></div>';
+        const nameStr = info.name ? '<div style="font-size: 16px; font-weight: 700; color: var(--fg); margin-bottom: 2px;">' + esc(info.name) + '</div>' : '';
+        h += '<div class="item" style="align-items: flex-start; padding: 12px 0;"><div>' + nameStr +
+          '<div class="meta" style="font-size: 13px; color: var(--muted); font-weight: 600;">SBD ' + esc(r.sbd || '—') + ' · Mã đề ' + esc(r.md || '—') + '</div><div class="meta" style="margin-top: 4px;">' + esc(r.name) +
+          (r.matched ? '' : ' · chưa khớp mã đề') + (r.bad ? ' · SBD hoặc mã đề đọc chưa chắc' : '') + '</div></div><span class="sc">' + fmt(r.total) + '</span><span></span></div>';
       }
     });
     out.innerHTML =
@@ -6766,42 +6749,17 @@ function paintMarks(c, sc, g, ver, lw, ringFn) {
       listBar() +
       '<div class="list" style="margin-top: 14px;">';
     view.forEach(function (r) {
-      const d = new Date(r.t),
-        tm =
-          d.toLocaleDateString('vi-VN') +
-          ' ' +
-          d.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' });
-      const pt = r.parts
-        ? ' · I ' + fmt(r.parts[0]) + ' · II ' + fmt(r.parts[1]) + ' · III ' + fmt(r.parts[2])
-        : '';
-        
+      const d = new Date(r.t), tm = d.toLocaleDateString('vi-VN') + ' ' + d.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' });
+      const pt = r.parts ? ' · I ' + fmt(r.parts[0]) + ' · II ' + fmt(r.parts[1]) + ' · III ' + fmt(r.parts[2]) : '';
       const info = getStudentInfo(r.sbd) || {name: '', cls: ''};
-      const nameStr = info.name ? '<div style="font-size: 15px; font-weight: 700; color: var(--fg); margin-bottom: 2px;">' + esc(info.name) + '</div>' : '';
+      const nameStr = info.name ? '<div style="font-size: 16px; font-weight: 700; color: var(--fg); margin-bottom: 2px;">' + esc(info.name) + '</div>' : '';
       
-      h +=
-        '<div class="item" style="align-items: flex-start; padding: 12px 0;"><div>' +
-        nameStr +
-        '<div class="meta" style="font-size: 13px; color: var(--muted); font-weight: 600;">SBD ' +
-        esc(r.sbd) +
-        ' · Mã đề ' +
-        esc(r.md) +
-        '</div><div class="meta" style="margin-top: 4px;">' +
-        tm +
-        pt +
-        (r.edited ? ' · đã sửa' : '') +
-        '</div></div><span class="sc">' +
-        fmt(r.total) +
-        '</span>' +
-        '<button type="button" data-del="' +
-        r.id +
-        '" aria-label="Xoá bài này">×</button>' +
-        '<div class="rowbtns">' +
-        (r.nm
-          ? '<img class="nmthumb" data-nm="' + r.id + '" data-edit="' + r.id + '" alt="Họ tên học sinh">'
-          : '') +
-        '<button type="button" class="viewimg" data-edit="' +
-        r.id +
-        '">Xem và sửa bài</button></div></div>';
+      h += '<div class="item" style="align-items: flex-start; padding: 12px 0;"><div>' + nameStr +
+        '<div class="meta" style="font-size: 13px; color: var(--muted); font-weight: 600;">SBD ' + esc(r.sbd) + ' · Mã đề ' + esc(r.md) + '</div>' +
+        '<div class="meta" style="margin-top: 4px;">' + tm + pt + (r.edited ? ' · đã sửa' : '') + '</div></div>' +
+        '<span class="sc">' + fmt(r.total) + '</span><button type="button" data-del="' + r.id + '" aria-label="Xoá bài này">×</button><div class="rowbtns">' +
+        (r.nm ? '<img class="nmthumb" data-nm="' + r.id + '" data-edit="' + r.id + '" alt="Họ tên học sinh">' : '') +
+        '<button type="button" class="viewimg" data-edit="' + r.id + '">Xem và sửa bài</button></div></div>';
     });
     h +=
       '</div><div class="actions"><button type="button" class="btn primary" id="csvBtn">Tải bảng ' +
@@ -8301,8 +8259,23 @@ let qrState = { kind: 'idle' },
   else setTimeout(first, 200);
   // --- KẾT NỐI TÍNH NĂNG MỞ RỘNG CỦA NTMIX ---
   function getStudentInfo(sbd) {
-      const stds = LS.get('omr.students', {});
-      return stds[String(sbd).trim()] || null;
+    if (!sbd) return null;
+    const key = String(sbd).trim().replace(/^0+/, '');
+    try {
+      const lists = LS.get('omr.lists', null);
+      if (lists && lists.items) {
+        const activeList = lists.items.find(l => l.id === lists.active) || lists.items[0];
+        if (activeList && activeList.students) {
+          const found = activeList.students.find(s => String(s.k).replace(/^0+/, '') === key);
+          if (found) return { name: found.name, cls: found.cls };
+        }
+      }
+    } catch(e) {}
+    const stds = LS.get('omr.students', {});
+    for (let k in stds) {
+       if (String(k).replace(/^0+/, '') === key) return stds[k];
+    }
+    return null;
   }
 
   // Chèn tên học sinh vào màn hình Camera
