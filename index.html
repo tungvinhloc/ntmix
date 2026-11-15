@@ -6974,7 +6974,27 @@ function paintMarks(c, sc, g, ver, lw, ringFn) {
       '"></div></div>';
     if (ed.hasAns) {
       const g = edGrade();
-      h += '<div class="re-score"><b>' + fmt(g.total) + '</b><span>/' + fmt(g.max) + ' điểm</span></div>';
+      let p = g.parts || [g.p1.pts, g.p2.pts, g.p3.pts];
+    h += `<div style="display: grid; grid-template-columns: 110px 1fr; gap: 16px; align-items: center; background: var(--card); padding: 16px 20px; border-radius: 16px; border: 2px solid var(--ink-soft); margin: 16px 0; box-shadow: 0 4px 12px rgba(0,0,0,0.03);">
+        <div style="text-align: center; border-right: 2px solid var(--ink-soft); padding-right: 16px;">
+            <div style="font-size: 11px; font-weight: 800; color: var(--muted); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 8px;">Tổng điểm</div>
+            <div style="font-size: 38px; font-weight: 800; color: var(--fg); line-height: 1; letter-spacing: -0.02em;">${fmt(g.total)}</div>
+        </div>
+        <div style="display: flex; flex-direction: column; gap: 10px; font-size: 15px; font-weight: 700;">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+                <span style="color: var(--muted);">P1 (Trắc nghiệm)</span>
+                <span style="font-variant-numeric: tabular-nums;">${fmt(p[0])} đ</span>
+            </div>
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+                <span style="color: var(--muted);">P2 (Đúng / Sai)</span>
+                <span style="font-variant-numeric: tabular-nums;">${fmt(p[1])} đ</span>
+            </div>
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+                <span style="color: var(--muted);">P3 (Điền số)</span>
+                <span style="font-variant-numeric: tabular-nums;">${fmt(p[2])} đ</span>
+            </div>
+        </div>
+    </div>`;
       if (ed.cs.n1) h += '<h3 class="re-h">Phần I</h3><div id="reP1"></div>';
       if (ed.cs.n2) h += '<h3 class="re-h">Phần II</h3><div id="reP2"></div>';
       if (ed.cs.n3) h += '<h3 class="re-h">Phần III</h3><div id="reP3"></div>';
