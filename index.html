@@ -5051,31 +5051,32 @@ function renderPhoto(sheetImg, cfg, marks, o) {
       '<p class="hint">Mọi bài chấm được đã tự lưu vào mục Kết quả. Bài nào cần xem lại thì mở ở ' +
       'đó bằng nút “Xem ảnh bài đã chấm”.</p><div class="list">';
     rows.forEach(function (r, i) {
-      if (r.err)
+      if (r.err) {
         h +=
           '<div class="item"><div><div class="who">Ảnh ' +
           (i + 1) +
           ': không đọc được</div><div class="meta">' +
           esc(r.name) +
           ' · thiếu 4 ô góc hoặc không mở được ảnh, hãy chụp lại</div></div><span></span><span></span></div>';
-      else
-       const info = getStudentInfo(r.sbd) || {name: '', cls: ''};
-      const nameStr = info.name ? '<div style="font-size: 15px; font-weight: 700; color: var(--fg); margin-bottom: 2px;">' + esc(info.name) + '</div>' : '';
-      
-      h +=
-        '<div class="item" style="align-items: flex-start; padding: 12px 0;"><div>' +
-        nameStr +
-        '<div class="meta" style="font-size: 13px; color: var(--muted); font-weight: 600;">SBD ' +
-        esc(r.sbd) +
-        ' · Mã đề ' +
-        esc(r.md) +
-        '</div><div class="meta" style="margin-top: 4px;">' +
+      } else {
+        const info = getStudentInfo(r.sbd) || {name: '', cls: ''};
+        const nameStr = info.name ? '<div style="font-size: 15px; font-weight: 700; color: var(--fg); margin-bottom: 2px;">' + esc(info.name) + '</div>' : '';
+        
+        h +=
+          '<div class="item" style="align-items: flex-start; padding: 12px 0;"><div>' +
+          nameStr +
+          '<div class="meta" style="font-size: 13px; color: var(--muted); font-weight: 600;">SBD ' +
+          esc(r.sbd || '—') +
+          ' · Mã đề ' +
+          esc(r.md || '—') +
+          '</div><div class="meta" style="margin-top: 4px;">' +
           esc(r.name) +
           (r.matched ? '' : ' · chưa khớp mã đề, dùng đáp án đang chọn') +
           (r.bad ? ' · SBD hoặc mã đề có cột đọc chưa chắc' : '') +
           '</div></div><span class="sc">' +
           fmt(r.total) +
           '</span><span></span></div>';
+      }
     });
     out.innerHTML =
       h +
@@ -6773,20 +6774,18 @@ function paintMarks(c, sc, g, ver, lw, ringFn) {
       const pt = r.parts
         ? ' · I ' + fmt(r.parts[0]) + ' · II ' + fmt(r.parts[1]) + ' · III ' + fmt(r.parts[2])
         : '';
-      const info = getStudentInfo(r.sbd);
-      const nameStr = info ? ' - <span style="color:var(--ink)">' + esc(info.name) + '</span>' : '';
-      
-      const info = getStudentInfo(r.sbd) || {name: '', cls: ''};
-        const nameStr = info.name ? '<div style="font-size: 15px; font-weight: 700; color: var(--fg); margin-bottom: 2px;">' + esc(info.name) + '</div>' : '';
         
-        h +=
-          '<div class="item" style="align-items: flex-start; padding: 12px 0;"><div>' +
-          nameStr +
-          '<div class="meta" style="font-size: 13px; color: var(--muted); font-weight: 600;">SBD ' +
-          esc(r.sbd || '—') +
-          ' · Mã đề ' +
-          esc(r.md || '—') +
-          '</div><div class="meta" style="margin-top: 4px;">' +
+      const info = getStudentInfo(r.sbd) || {name: '', cls: ''};
+      const nameStr = info.name ? '<div style="font-size: 15px; font-weight: 700; color: var(--fg); margin-bottom: 2px;">' + esc(info.name) + '</div>' : '';
+      
+      h +=
+        '<div class="item" style="align-items: flex-start; padding: 12px 0;"><div>' +
+        nameStr +
+        '<div class="meta" style="font-size: 13px; color: var(--muted); font-weight: 600;">SBD ' +
+        esc(r.sbd) +
+        ' · Mã đề ' +
+        esc(r.md) +
+        '</div><div class="meta" style="margin-top: 4px;">' +
         tm +
         pt +
         (r.edited ? ' · đã sửa' : '') +
