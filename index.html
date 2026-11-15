@@ -5059,12 +5059,17 @@ function renderPhoto(sheetImg, cfg, marks, o) {
           esc(r.name) +
           ' · thiếu 4 ô góc hoặc không mở được ảnh, hãy chụp lại</div></div><span></span><span></span></div>';
       else
-        h +=
-          '<div class="item"><div><div class="who">SBD ' +
-          esc(r.sbd || '—') +
-          ' · Mã đề ' +
-          esc(r.md || '—') +
-          '</div><div class="meta">' +
+       const info = getStudentInfo(r.sbd) || {name: '', cls: ''};
+      const nameStr = info.name ? '<div style="font-size: 15px; font-weight: 700; color: var(--fg); margin-bottom: 2px;">' + esc(info.name) + '</div>' : '';
+      
+      h +=
+        '<div class="item" style="align-items: flex-start; padding: 12px 0;"><div>' +
+        nameStr +
+        '<div class="meta" style="font-size: 13px; color: var(--muted); font-weight: 600;">SBD ' +
+        esc(r.sbd) +
+        ' · Mã đề ' +
+        esc(r.md) +
+        '</div><div class="meta" style="margin-top: 4px;">' +
           esc(r.name) +
           (r.matched ? '' : ' · chưa khớp mã đề, dùng đáp án đang chọn') +
           (r.bad ? ' · SBD hoặc mã đề có cột đọc chưa chắc' : '') +
@@ -6771,12 +6776,17 @@ function paintMarks(c, sc, g, ver, lw, ringFn) {
       const info = getStudentInfo(r.sbd);
       const nameStr = info ? ' - <span style="color:var(--ink)">' + esc(info.name) + '</span>' : '';
       
-      h +=
-        '<div class="item"><div><div class="who">SBD ' +
-        esc(r.sbd || '—') + nameStr +
-        ' · Mã đề ' +
-        esc(r.md || '—') +
-        '</div><div class="meta">' +
+      const info = getStudentInfo(r.sbd) || {name: '', cls: ''};
+        const nameStr = info.name ? '<div style="font-size: 15px; font-weight: 700; color: var(--fg); margin-bottom: 2px;">' + esc(info.name) + '</div>' : '';
+        
+        h +=
+          '<div class="item" style="align-items: flex-start; padding: 12px 0;"><div>' +
+          nameStr +
+          '<div class="meta" style="font-size: 13px; color: var(--muted); font-weight: 600;">SBD ' +
+          esc(r.sbd || '—') +
+          ' · Mã đề ' +
+          esc(r.md || '—') +
+          '</div><div class="meta" style="margin-top: 4px;">' +
         tm +
         pt +
         (r.edited ? ' · đã sửa' : '') +
