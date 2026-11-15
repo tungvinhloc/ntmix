@@ -1377,7 +1377,11 @@ h3.ph {
     </div>
     <div class="sidebar-menu">
       <div class="menu-group">
-        <div class="menu-item active" data-target="scan">
+        <div class="menu-item active" data-target="home">
+           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
+           Trang chủ
+        </div>
+        <div class="menu-item" data-target="scan">
            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 8h3l1.6-2.4h6.8L17 8h3a1 1 0 0 1 1 1v9a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V9a1 1 0 0 1 1-1z"/><circle cx="12" cy="13" r="3.4"/></svg>
            Chấm bài
         </div>
@@ -1413,12 +1417,27 @@ h3.ph {
     <button class="menu-btn" id="btnOpenMenu" aria-label="Mở menu">
       <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M4 6h16M4 12h16M4 18h16"/></svg>
     </button>
-    <div class="header-title" id="mainTitle">Chấm bài</div>
+    <div class="header-title" id="mainTitle">Trang chủ</div>
     <div style="width: 44px; text-align: right;"><span class="pill" id="cfgChip" style="background: rgba(255,255,255,0.2); color: white; border: none;"></span></div>
   </header>
 
   <main>
-    <section id="v-scan" class="view" aria-label="Chấm bài">
+    <!-- TAB TRANG CHỦ MỚI -->
+    <section id="v-home" class="view" aria-label="Trang chủ">
+      <div class="card" style="text-align: center; padding: 40px 20px; display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 55vh; border: none; background: transparent;">
+        <img src="logo-ntmix.png" width="120" height="120" alt="Logo NTMIX" style="border-radius: 24px; box-shadow: 0 8px 24px rgba(0,0,0,0.12); margin-bottom: 24px;">
+        <h1 style="font-size: 32px; font-weight: 900; color: var(--ink); margin-bottom: 12px; letter-spacing: -0.02em;">NTMIX PRO</h1>
+        <div style="font-size: 15px; color: var(--muted); line-height: 1.6; margin-bottom: 32px;">
+          <b style="color: var(--fg); font-size: 17px;">Tác giả: Nguyễn Thanh Tùng</b><br>
+          Giáo viên Toán trường THPT Vinh Xuân<br>Thành Phố Huế
+        </div>
+        <!-- Nút này tự động chuyển hướng sang tab Chấm bài an toàn -->
+        <button class="btn primary big" onclick="document.querySelector('.menu-item[data-target=\'scan\']').click()" style="width: 100%; max-width: 280px; border-radius: 14px; box-shadow: 0 4px 12px rgba(28, 63, 148, 0.3);">Bắt đầu chấm bài</button>
+      </div>
+    </section>
+
+    <!-- TAB CHẤM BÀI ĐƯỢC GIỮ NGUYÊN (Tạm Ẩn khi khởi động) -->
+    <section id="v-scan" class="view" hidden aria-label="Chấm bài">
       <div class="card">
         <div id="sheetSel" class="sheetsel"></div>
         <div class="actions">
@@ -1530,7 +1549,8 @@ h3.ph {
 
 <nav class="tabs" aria-label="Chuyển mục">
   <div>
-    <button class="tab" type="button" data-tab="scan" aria-current="page">
+    <button class="tab" type="button" data-tab="home" aria-current="page">Trang chủ</button>
+    <button class="tab" type="button" data-tab="scan">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 8h3l1.6-2.4h6.8L17 8h3a1 1 0 0 1 1 1v9a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V9a1 1 0 0 1 1-1z"/><circle cx="12" cy="13" r="3.4"/></svg>
       Chấm bài</button>
     <button class="tab" type="button" data-tab="key">
@@ -3773,7 +3793,7 @@ function renderPhoto(sheetImg, cfg, marks, o) {
     return cfg.n1 * cfg.p1 + cfg.n2 * cfg.p2 + cfg.n3 * cfg.p3;
   }
 
-  let tab = 'scan',
+  let tab = 'home',
     keyPart = 1,
     scan = null;
   function renderSheetSel() {
