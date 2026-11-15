@@ -1343,18 +1343,78 @@ h3.ph {
   flex: 0 0 auto;
   padding: 0 14px;
 }
-
+/* --- GIAO DIỆN APP TNMAKER (THÊM MỚI) --- */
+.top-header { background: #d84315; color: white; padding: max(16px, env(safe-area-inset-top)) 16px 20px; border-bottom-left-radius: 24px; border-bottom-right-radius: 24px; display: flex; align-items: center; justify-content: space-between; box-shadow: 0 4px 12px rgba(216, 67, 21, 0.2); position: sticky; top: 0; z-index: 40; margin-bottom: 14px; }
+.header-title { font-size: 22px; font-weight: 800; letter-spacing: -0.02em; }
+.menu-btn { background: rgba(255,255,255,0.2); border: none; border-radius: 50%; width: 44px; height: 44px; color: white; display: grid; place-items: center; cursor: pointer; }
+.overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 90; opacity: 0; pointer-events: none; transition: opacity 0.3s ease; }
+.overlay.active { opacity: 1; pointer-events: auto; }
+.sidebar { position: fixed; top: 0; left: -320px; width: 300px; height: 100%; max-width: 85vw; background: var(--bg); z-index: 100; transition: left 0.3s ease; overflow-y: auto; box-shadow: 4px 0 24px rgba(0,0,0,0.15); display: flex; flex-direction: column; }
+.sidebar.active { left: 0; }
+.sidebar-header { padding: max(30px, env(safe-area-inset-top)) 20px 20px; display: flex; align-items: center; gap: 12px; }
+.sidebar-menu { padding: 0 16px 20px; }
+.menu-group { background: var(--card); border-radius: 16px; display: flex; flex-direction: column; margin-bottom: 16px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.02);}
+.menu-item { display: flex; align-items: center; gap: 16px; padding: 16px; font-weight: 600; color: var(--fg); text-decoration: none; border-bottom: 1px solid var(--line); cursor: pointer;}
+.menu-item:last-child { border-bottom: none; }
+.menu-item svg { color: #d84315; width: 22px; height: 22px;}
+.menu-item.active { background: #fff5f2; color: #d84315; }
+.menu-label { font-size: 11px; color: var(--muted); text-transform: uppercase; padding: 0 16px 8px; font-weight: 700; letter-spacing: 0.05em; }
+.tabs { display: none !important; } /* Ẩn thanh tab dưới đáy cũ */
+    
 </style>
 </head>
 <body>
 <div class="wrap">
-  <header class="top">
-    <div class="brand">
-      <div class="brand">
-      <img src="logo-ntmix.png" width="32" height="32" alt="Logo NTMIX" style="border-radius: 6px; object-fit: contain;">
-      <h1>NTMIX Pro</h1>
-       </div>
-      <span class="pill" id="cfgChip"></span>
+  <!-- LỚP PHỦ & SIDEBAR MENU (THÊM MỚI) -->
+  <div class="overlay" id="menuOverlay"></div>
+  <nav class="sidebar" id="sideMenu">
+    <div class="sidebar-header">
+      <img src="logo-ntmix.png" width="56" height="56" style="border-radius: 14px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+      <div>
+        <div style="font-weight: 800; font-size: 18px;">NTMIX Pro</div>
+        <div style="font-size: 13px; color: var(--muted); background: var(--warn-soft); color: var(--warn); padding: 2px 8px; border-radius: 12px; display: inline-block; margin-top: 4px; font-weight: bold;">Tài khoản GV</div>
+      </div>
+    </div>
+    <div class="sidebar-menu">
+      <div class="menu-group">
+        <div class="menu-item active" data-target="scan">
+           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 8h3l1.6-2.4h6.8L17 8h3a1 1 0 0 1 1 1v9a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V9a1 1 0 0 1 1-1z"/><circle cx="12" cy="13" r="3.4"/></svg>
+           Chấm bài
+        </div>
+        <div class="menu-item" data-target="res">
+           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line></svg>
+           Kiểm tra
+        </div>
+        <div class="menu-item" data-target="stats">
+           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 20V10M12 20V4M6 20v-6"/></svg>
+           Thống kê
+        </div>
+      </div>
+      <div class="menu-label">Thiết lập</div>
+      <div class="menu-group">
+        <div class="menu-item" data-target="students">
+           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
+           Lớp học
+        </div>
+        <div class="menu-item" data-target="key">
+           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 6.5l1.8 1.8L9 5M4 12.5l1.8 1.8L9 11M4 18.5l1.8 1.8L9 17"/><path d="M13 7h7M13 13h7M13 19h7"/></svg>
+           Cài đặt đáp án
+        </div>
+        <div class="menu-item" data-target="sheet">
+           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+           Tải giấy thi
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <!-- HEADER CAM CHÍNH (THÊM MỚI) -->
+  <header class="top-header">
+    <button class="menu-btn" id="btnOpenMenu" aria-label="Mở menu">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M4 6h16M4 12h16M4 18h16"/></svg>
+    </button>
+    <div class="header-title" id="mainTitle">Chấm bài</div>
+    <div style="width: 44px; text-align: right;"><span class="pill" id="cfgChip" style="background: rgba(255,255,255,0.2); color: white; border: none;"></span></div>
   </header>
 
   <main>
@@ -8664,6 +8724,47 @@ let qrState = { kind: 'idle' },
             return; 
         }
     });
+})();
+</script>
+<script>
+// --- TÍNH NĂNG SIDEBAR MENU ĐỘC LẬP ---
+(function() {
+  const sideMenu = document.getElementById('sideMenu');
+  const menuOverlay = document.getElementById('menuOverlay');
+  const btnOpenMenu = document.getElementById('btnOpenMenu');
+  const mainTitle = document.getElementById('mainTitle');
+
+  if(btnOpenMenu && sideMenu && menuOverlay) {
+      // Mở menu
+      btnOpenMenu.addEventListener('click', function() {
+          sideMenu.classList.add('active');
+          menuOverlay.classList.add('active');
+      });
+
+      // Bấm ra ngoài để đóng menu
+      menuOverlay.addEventListener('click', function() {
+          sideMenu.classList.remove('active');
+          menuOverlay.classList.remove('active');
+      });
+
+      // Bắt sự kiện chuyển tab
+      document.querySelectorAll('.menu-item[data-target]').forEach(item => {
+          item.addEventListener('click', function() {
+              sideMenu.classList.remove('active');
+              menuOverlay.classList.remove('active');
+              
+              document.querySelectorAll('.menu-item').forEach(i => i.classList.remove('active'));
+              this.classList.add('active');
+
+              mainTitle.textContent = this.textContent.trim(); // Cập nhật Header
+
+              // Gọi nhẹ nhàng sang hàm xử lý tab cũ của thầy
+              if(typeof showTab === 'function') {
+                 showTab(this.dataset.target);
+              }
+          });
+      });
+  }
 })();
 </script>
 </body>
