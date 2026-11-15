@@ -5059,9 +5059,13 @@ function renderPhoto(sheetImg, cfg, marks, o) {
           esc(r.name) +
           ' · thiếu 4 ô góc hoặc không mở được ảnh, hãy chụp lại</div></div><span></span><span></span></div>';
       else
+       const info = getStudentInfo(r.sbd) || {name: '', cls: ''};
+        const nameStr = info.name ? ' · <span style="color:var(--ink)">' + esc(info.name) + '</span>' : '';
+        
         h +=
           '<div class="item"><div><div class="who">SBD ' +
           esc(r.sbd || '—') +
+          nameStr +
           ' · Mã đề ' +
           esc(r.md || '—') +
           '</div><div class="meta">' +
@@ -6771,11 +6775,15 @@ function paintMarks(c, sc, g, ver, lw, ringFn) {
       const info = getStudentInfo(r.sbd);
       const nameStr = info ? ' - <span style="color:var(--ink)">' + esc(info.name) + '</span>' : '';
       
+      const info = getStudentInfo(r.sbd) || {name: '', cls: ''};
+      const nameStr = info.name ? ' · <span style="color:var(--ink)">' + esc(info.name) + '</span>' : '';
+      
       h +=
         '<div class="item"><div><div class="who">SBD ' +
-        esc(r.sbd || '—') + nameStr +
+        esc(r.sbd) +
+        nameStr +
         ' · Mã đề ' +
-        esc(r.md || '—') +
+        esc(r.md) +
         '</div><div class="meta">' +
         tm +
         pt +
