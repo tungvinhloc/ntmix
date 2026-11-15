@@ -3780,7 +3780,7 @@ function renderPhoto(sheetImg, cfg, marks, o) {
     }, 'sample');
   }
 
-// --- ĐIỀU KHIỂN TAB & THỐNG KÊ (PHIÊN BẢN ĐIỂM THẬT) ---
+// --- ĐIỀU KHIỂN TAB & THỐNG KÊ ---
   function showTab(t) {
     tab = t;
     $$('.view').forEach(function (v) { v.hidden = v.id !== 'v-' + t; });
@@ -3793,11 +3793,9 @@ function renderPhoto(sheetImg, cfg, marks, o) {
     if (t === 'res') renderRes();
     if (t === 'students') renderStudents();
     
-// TÍNH TOÁN VÀ VẼ THỐNG KÊ (NÂNG CẤP BỘ LỌC TỪNG PHẦN & XẾP LOẠI ĐỘNG)
+    // TÍNH TOÁN VÀ VẼ THỐNG KÊ
     if (t === 'stats') {
         const statsCard = document.querySelector('#v-stats .card');
-        
-        // Tự động vẽ thêm thanh Bộ lọc nếu chưa có
         if (!document.getElementById('statFilterBar')) {
             statsCard.innerHTML = `
                 <div class="row">
@@ -3828,8 +3826,6 @@ function renderPhoto(sheetImg, cfg, marks, o) {
                     <div id="donutLegendPage" style="display: flex; flex-wrap: wrap; justify-content: center; gap: 12px;"></div>
                 </div>
             `;
-            
-            // Lắng nghe sự kiện bấm bộ lọc
             document.querySelectorAll('#statFilterBar button').forEach(btn => {
                 btn.addEventListener('click', function() {
                     window.currentStatFilter = this.dataset.sfilter;
@@ -3843,24 +3839,13 @@ function renderPhoto(sheetImg, cfg, marks, o) {
         
         window.currentStatFilter = window.currentStatFilter || 'all';
         const filter = window.currentStatFilter;
-
         const summaryElem = document.getElementById('statsSummaryPage');
         const chartElem = document.getElementById('barChartPage');
         const donutChartElem = document.getElementById('donutChartPage');
         const donutTotalElem = document.getElementById('donutTotalPage');
         const donutLegendElem = document.getElementById('donutLegendPage');
         
-        let res = [];
-        try {
-            let saved = localStorage.getItem('omr.results2');
-            if(saved) {
-                let parsed = JSON.parse(saved);
-                let listsObj = localStorage.getItem('omr.lists');
-                let activeId = listsObj ? (JSON.parse(listsObj).active || 'l1') : 'l1';
-                res = parsed.filter(r => (r.lid || 'l1') === activeId);
-            }
-        } catch(err) {}
-
+        let res = listRes();
         if (!res || res.length === 0) { 
             if(summaryElem) summaryElem.innerHTML = '<div style="grid-column: span 4; text-align:center;color:var(--muted);padding:20px;">Chưa có dữ liệu bài chấm</div>';
             if(chartElem) chartElem.innerHTML = '';
@@ -3870,16 +3855,13 @@ function renderPhoto(sheetImg, cfg, marks, o) {
             return; 
         }
 
-        // Tự động co giãn điểm Max theo từng phần
         let maxPartScore = 10;
         if (filter === 'all') maxPartScore = res[0] ? (res[0].max || 10) : 10;
         else if (filter === 'p1') maxPartScore = cfg.n1 * cfg.p1;
         else if (filter === 'p2') maxPartScore = cfg.n2 * cfg.p2;
         else if (filter === 'p3') maxPartScore = cfg.n3 * cfg.p3;
-        
         if (maxPartScore === 0) maxPartScore = 1;
 
-        // Trích xuất điểm theo bộ lọc
         let totalHs = res.length;
         let totals = res.map(function(r) { 
             if (filter === 'all') return r.total || 0;
@@ -3889,10 +3871,9 @@ function renderPhoto(sheetImg, cfg, marks, o) {
             return 0;
         });
         
-        let avgScore = totalHs ? totals.reduce(function(a, b){ return a + b; }, 0) / totalHs : 0;
+        let avgScore = totalHs ? totals.reduce((a, b) => a + b, 0) / totalHs : 0;
         let maxScore = totalHs ? Math.max(...totals) : 0;
         let minScore = totalHs ? Math.min(...totals) : 0;
-        
         let formatScore = function(val) { return (Math.round(val * 100) / 100).toString().replace('.', ','); };
 
         if (summaryElem) {
@@ -3915,13 +3896,10 @@ function renderPhoto(sheetImg, cfg, marks, o) {
                 </div>`;
         }
 
-        // Bước nhảy động: Phần riêng có điểm nhỏ thì chia nhỏ (0.25), Tất cả thì chia lớn (0.5)
         let binStep = maxPartScore > 5 ? 0.5 : 0.25; 
         let binCount = Math.floor(maxPartScore / binStep) + 1;
         let bins = new Array(binCount).fill(0); 
         let counts = { yeu: 0, tb: 0, kha: 0, tot: 0 };
-        
-        // Mốc xếp loại tự động biến thiên
         let yeuThresh = maxPartScore * 0.5;
         let tbThresh = maxPartScore * 0.65;
         let khaThresh = maxPartScore * 0.8;
@@ -3931,28 +3909,24 @@ function renderPhoto(sheetImg, cfg, marks, o) {
             if (binIndex < 0) binIndex = 0;
             if (binIndex >= binCount) binIndex = binCount - 1;
             bins[binIndex]++;
-            
             if (actualScore < yeuThresh) counts.yeu++; 
             else if (actualScore < tbThresh) counts.tb++; 
             else if (actualScore < khaThresh) counts.kha++; 
             else counts.tot++;
         });
 
-        // Biểu đồ phân bố
         let maxBin = Math.max(...bins); if(maxBin === 0) maxBin = 1;
         let barHtml = '';
         for (let i = 0; i < binCount; i++) {
             let count = bins[i];
             let scoreVal = i * binStep;
-            // Chỉ hiện số cho điểm chẵn, hoặc 0.5 nếu là lọc theo phần
             let showLabel = (maxPartScore > 5) ? (scoreVal % 1 === 0) : (scoreVal % 0.5 === 0);
             let label = showLabel ? formatScore(scoreVal) : ""; 
-            
-            barHtml += `<div style="flex: 1; display: flex; flex-direction: column; justify-content: flex-end; align-items: center; height: 100%; position: relative;">
-                ${count > 0 ? `<div style="font-size: 10px; font-weight: bold; margin-bottom: 2px; color: var(--fg); z-index: 2;">${count}</div>` : ''}
-                <div style="width: 85%; background: #ff5722; border-radius: 2px 2px 0 0; transition: height 0.5s ease; height: ${(count / maxBin) * 100}%;"></div>
-                <div style="position: absolute; bottom: -20px; font-size: 10px; color: var(--muted);">${label}</div>
-            </div>`;
+            barHtml += \`<div style="flex: 1; display: flex; flex-direction: column; justify-content: flex-end; align-items: center; height: 100%; position: relative;">
+                \${count > 0 ? \`<div style="font-size: 10px; font-weight: bold; margin-bottom: 2px; color: var(--fg); z-index: 2;">\${count}</div>\` : ''}
+                <div style="width: 85%; background: #ff5722; border-radius: 2px 2px 0 0; transition: height 0.5s ease; height: \${(count / maxBin) * 100}%;"></div>
+                <div style="position: absolute; bottom: -20px; font-size: 10px; color: var(--muted);">\${label}</div>
+            </div>\`;
         }
         if(chartElem) chartElem.innerHTML = barHtml;
 
@@ -3962,21 +3936,18 @@ function renderPhoto(sheetImg, cfg, marks, o) {
         let pTot = (counts.tot / totalHs) * 100 || 0;
         let degYeu = pYeu * 3.6, degTb = degYeu + pTb * 3.6, degKha = degTb + pKha * 3.6;
         
-        if(donutChartElem) donutChartElem.style.background = `conic-gradient(#e91e63 0deg ${degYeu}deg, #ff9800 ${degYeu}deg ${degTb}deg, #cddc39 ${degTb}deg ${degKha}deg, #4caf50 ${degKha}deg 360deg)`;
+        if(donutChartElem) donutChartElem.style.background = \`conic-gradient(#e91e63 0deg \${degYeu}deg, #ff9800 \${degYeu}deg \${degTb}deg, #cddc39 \${degTb}deg \${degKha}deg, #4caf50 \${degKha}deg 360deg)\`;
         if(donutTotalElem) donutTotalElem.innerText = totalHs;
-        if(donutLegendElem) donutLegendElem.innerHTML = `
-            <div style="display: flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 600;"><div style="width: 12px; height: 12px; border-radius: 3px; background:#e91e63"></div>Yếu (< ${formatScore(yeuThresh)}): ${counts.yeu}</div>
-            <div style="display: flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 600;"><div style="width: 12px; height: 12px; border-radius: 3px; background:#ff9800"></div>TB (${formatScore(yeuThresh)}-${formatScore(tbThresh-0.01)}): ${counts.tb}</div>
-            <div style="display: flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 600;"><div style="width: 12px; height: 12px; border-radius: 3px; background:#cddc39"></div>Khá (${formatScore(tbThresh)}-${formatScore(khaThresh-0.01)}): ${counts.kha}</div>
-            <div style="display: flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 600;"><div style="width: 12px; height: 12px; border-radius: 3px; background:#4caf50"></div>Giỏi (≥ ${formatScore(khaThresh)}): ${counts.tot}</div>`;
+        if(donutLegendElem) donutLegendElem.innerHTML = \`
+            <div style="display: flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 600;"><div style="width: 12px; height: 12px; border-radius: 3px; background:#e91e63"></div>Yếu (< \${formatScore(yeuThresh)}): \${counts.yeu}</div>
+            <div style="display: flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 600;"><div style="width: 12px; height: 12px; border-radius: 3px; background:#ff9800"></div>TB (\${formatScore(yeuThresh)}-\${formatScore(tbThresh-0.01)}): \${counts.tb}</div>
+            <div style="display: flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 600;"><div style="width: 12px; height: 12px; border-radius: 3px; background:#cddc39"></div>Khá (\${formatScore(tbThresh)}-\${formatScore(khaThresh-0.01)}): \${counts.kha}</div>
+            <div style="display: flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 600;"><div style="width: 12px; height: 12px; border-radius: 3px; background:#4caf50"></div>Giỏi (≥ \${formatScore(khaThresh)}): \${counts.tot}</div>\`;
     }
     window.scrollTo(0, 0);
   }
-
   $$('.tab').forEach(function (b) {
-    b.addEventListener('click', function () {
-      showTab(b.dataset.tab);
-    });
+    b.addEventListener('click', function () { showTab(b.dataset.tab); });
   });
 
   const btnRefreshStats = document.getElementById('btnRefreshStats');
