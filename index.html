@@ -3368,9 +3368,17 @@ function gradeAll(st, cfg, ver) {
     } else out.p3.st.push('wrong');
   }
   out.total = out.p1.pts + out.p2.pts + out.p3.pts;
-  out.max = out.p1.max + out.p2.max + out.p3.max;
-  return out;
-}
+          out.max = out.p1.max + out.p2.max + out.p3.max;
+          
+          // LUẬT THÉP: Sai mã đề -> Chấm 0 điểm toàn bài
+          if (st.p1 && st.p1.isMatched === false) {
+            out.p1.pts = 0;
+            out.p2.pts = 0;
+            out.p3.pts = 0;
+            out.total = 0;
+          }
+          return out;
+        }
 
 /* ---------- Quét trực tiếp: chỉ tìm 4 ô neo + hướng phiếu, đủ nhẹ để chạy mỗi khung hình ---------- */
 function detectFrame(imgData, w, h) {
@@ -3736,6 +3744,7 @@ function renderPhoto(sheetImg, cfg, marks, o) {
       });
       const ver = cfg.versions[i >= 0 ? i : Math.min(cfg.active, cfg.versions.length - 1)];
       const cs = { n1: cfg.n1, n2: cfg.n2, n3: cfg.n3, p1: cfg.p1, p2: cfg.p2, p3: cfg.p3, tfLinear: cfg.tfLinear };
+            r.ans.p1.isMatched = (i >= 0);
       const g = gradeAll({ p1: r.ans.p1, p2: r.ans.p2, p3: r.ans.p3 }, cs, ver);
       const parts = [g.p1.pts, g.p2.pts, g.p3.pts].map(r2),
         t = r2(g.total),
@@ -5079,12 +5088,14 @@ function renderPhoto(sheetImg, cfg, marks, o) {
       return v.code && nz(v.code) === nz(s.mdStr);
     });
     if (i >= 0) {
-      s.ver = i;
-      s.matched = true;
-    } else {
-      s.ver = Math.min(cfg.active, cfg.versions.length - 1);
-      s.matched = false;
-    }
+            s.ver = i;
+            s.matched = true;
+            if(s.p1) s.p1.isMatched = true;
+          } else {
+            s.ver = Math.min(cfg.active, cfg.versions.length - 1);
+            s.matched = false;
+            if(s.p1) s.p1.isMatched = false;
+          }
   }
   function pickVersion() {
     pickVersionFor(scan);
@@ -6127,11 +6138,11 @@ function paintMarks(c, sc, g, ver, lw, ringFn) {
           '</button>';
       });
       h += '</div>';
-      if (!scan.matched && cfg.versions.length > 1)
-        h +=
-          '<p class="hint">Mã đề đọc được chưa trùng đề nào đã nhập, đang chấm theo Đề ' +
-          (scan.ver + 1) +
-          '.</p>';
+      if (!scan.matched)
+            h +=
+              '<p class="hint" style="color: var(--red); font-weight: 600;">⚠️ Sai hoặc thiếu mã đề! Tự động chấm 0 điểm toàn bài. (Vẫn hiển thị vòng tròn theo Đề ' +
+              (scan.ver + 1) +
+              ' để giáo viên đối chiếu).</p>';
     }
     if (!sample) autoSave(scan);
     h +=
@@ -6995,11 +7006,14 @@ function paintMarks(c, sc, g, ver, lw, ringFn) {
   function edVer() {
     return verForCode(ed.md);
   }
-  function edGrade() {
-    return withSheet(ed.sheet, function () {
-      return gradeAll({ p1: ed.p1, p2: ed.p2, p3: ed.p3 }, ed.cs, edVer());
-    });
-  }
+    function edGrade() {
+        return withSheet(ed.sheet, function () {
+            const nz = function (c) { return String(c).replace(/^0+(?=\d)/, ''); };
+            const isMatched = cfg.versions.some(function(v) { return v.code && nz(v.code) === nz(ed.md); });
+            if(ed.p1) ed.p1.isMatched = isMatched;
+            return gradeAll({ p1: ed.p1, p2: ed.p2, p3: ed.p3 }, ed.cs, edVer());
+        });
+    }
   function edPaint() {
     const cv = $('#reCv');
     if (!cv || !ed.base) return;
