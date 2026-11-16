@@ -3185,7 +3185,7 @@ function scanSheet(g, w, h, L, cfg, HB, thr, ga) {
   L.p3.forEach(function (b) {
     p3c[b.q][b.c].push({ k: b.k, s: rd(b) });
   });
-  const p3 = [];
+const p3 = [];
   for (let q = 0; q < cfg.n3; q++) {
     let str = '';
     for (let c = 0; c < 4; c++) {
@@ -3198,10 +3198,12 @@ function scanSheet(g, w, h, L, cfg, HB, thr, ga) {
         );
       if (m.length === 1) str += cell[m[0]].k;
       else if (m.length > 1) str += '?';
+      else str += ' '; // Ghi nhận cột bị bỏ trống bằng 1 dấu cách
       marked += m.length;
       seen += cell.length;
     }
-    p3.push(str);
+    // Cắt bỏ khoảng trắng dư ở đuôi (nếu HS tô đúng từ trái sang phải)
+    p3.push(str.replace(/\s+$/, ''));
   }
   function readId(cells, cols) {
     const sc = [],
@@ -3256,11 +3258,19 @@ function analyzeImage(imgData, w, h, cfg, thr) {
 
 /* ---------- Chấm điểm ---------- */
 function normNum(s) {
-  return String(s).replace(/\s+/g, '').replace(/[−–]/g, '-').replace(/\./g, ',');
+  return String(s).replace(/[−–]/g, '-').replace(/\./g, ',');
 }
 function numEq(a, b) {
   a = normNum(a);
   b = normNum(b);
+  
+  // LUẬT BGD: Nếu chuỗi đáp án của HS bắt đầu bằng dấu cách (bỏ trống cột trái) -> Báo Sai
+  if (a.startsWith(' ')) return false;
+  
+  // Sau khi qua vòng kiểm tra vị trí, mới loại bỏ khoảng trắng để so sánh toán học
+  a = a.replace(/\s+/g, '');
+  b = b.replace(/\s+/g, '');
+  
   if (a === b) return true;
   if (a.indexOf('?') >= 0 || !a || !b) return false;
   const x = parseFloat(a.replace(',', '.')),
