@@ -1371,7 +1371,7 @@ html, body {
   overflow-x: hidden !important;
   width: 100%;
 }
-/* --- GIAO DIỆN CẤU HÌNH LẦN CHẤM & MODAL ĐỢT CHẤM MỚI (THÊM MỚI) --- */
+/* --- GIAO DIỆN CẤU HÌNH LẦN CHẤM & MODAL LẦN CHẤM MỚI (THÊM MỚI) --- */
 .fab-add {
   position: fixed;
   right: 20px;
@@ -1416,7 +1416,7 @@ html, body {
   color: var(--ink);
 }
 
-/* Modal Đợt chấm mới */
+/* Modal Lần chấm mới */
 .batch-modal-bg {
   position: fixed;
   inset: 0;
@@ -1585,27 +1585,27 @@ html, body {
     <!-- TAB CẤU HÌNH LẦN CHẤM (THÊM MỚI) -->
     <section id="v-batches" class="view" hidden aria-label="Cấu hình lần chấm" style="padding-bottom: 84px;">
       <div class="row" style="margin-bottom: 10px; padding: 0 4px;">
-        <h2>Danh sách đợt chấm</h2>
-        <span class="hint" id="batchCountLbl">0 đợt</span>
+        <h2>Danh sách lần chấm</h2>
+        <span class="hint" id="batchCountLbl">0 lần</span>
       </div>
       <div id="batchListContainer" style="display: flex; flex-direction: column; gap: 12px;"></div>
 
       <!-- Nút tròn dấu + góc dưới bên phải -->
-      <button type="button" class="fab-add" id="btnAddBatchFab" aria-label="Tạo đợt chấm mới">+</button>
+      <button type="button" class="fab-add" id="btnAddBatchFab" aria-label="Tạo lần chấm mới">+</button>
     </section>
 
-    <!-- HỘP THOẠI ĐỢT CHẤM MỚI (GIỐNG HÌNH 2) -->
-    <div class="batch-modal-bg" id="batchModal" hidden role="dialog" aria-modal="true" aria-label="Đợt chấm mới">
+    <!-- HỘP THOẠI LẦN CHẤM MỚI (GIỐNG HÌNH 2) -->
+    <div class="batch-modal-bg" id="batchModal" hidden role="dialog" aria-modal="true" aria-label="Lần chấm mới">
       <div class="batch-modal">
-        <h2>Đợt chấm mới</h2>
+        <h2>Lần chấm mới</h2>
         
         <div class="field">
-          <label class="lbl" for="newBatchName">Tên đợt chấm</label>
+          <label class="lbl" for="newBatchName">Tên lần chấm</label>
           <input id="newBatchName" type="text" placeholder="Ví dụ: 10_KTGK_I">
         </div>
 
         <div class="field">
-          <label class="lbl">Chọn loại phiếu (cố định cho cả đợt, tránh nhầm khi chấm)</label>
+          <label class="lbl">Chọn loại phiếu (cố định cho cả lần, tránh nhầm khi chấm)</label>
           <div class="sheet-grid-2x2" id="newBatchSheetGrid">
             <button type="button" class="sheet-opt selected" data-sheet-id="nh">
               <img src="assets/bgd2025_cv1239.jpg" alt="Phiếu BGD 2025 CV 1239">
@@ -1631,12 +1631,12 @@ html, body {
         </div>
 
         <div class="field">
-          <label class="lbl" for="copyFromBatchSel">Sao chép đáp án và danh sách lớp từ đợt (tuỳ chọn)</label>
+          <label class="lbl" for="copyFromBatchSel">Sao chép đáp án và danh sách lớp từ lần (tuỳ chọn)</label>
           <select id="copyFromBatchSel" class="batch-select"></select>
         </div>
 
         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 4px;">
-          <button type="button" class="btn primary" id="btnConfirmCreateBatch" style="border-radius: 12px;">Tạo đợt chấm</button>
+          <button type="button" class="btn primary" id="btnConfirmCreateBatch" style="border-radius: 12px;">Tạo lần chấm</button>
           <button type="button" class="btn" id="btnCancelCreateBatch" style="border-radius: 12px;">Huỷ</button>
         </div>
       </div>
@@ -1729,10 +1729,10 @@ html, body {
    <section id="v-stats" class="view" hidden aria-label="Thống kê">
       <div class="card">
         <div class="row">
-          <h2>Thống kê đợt chấm</h2>
+          <h2>Thống kê làn chấm</h2>
           <button type="button" class="btn small primary" id="btnRefreshStats" style="background: var(--warn); border-color: var(--warn);">Làm mới</button>
         </div>
-        <p class="hint">Phổ điểm và xếp loại học sinh của đợt chấm hiện tại.</p>
+        <p class="hint">Phổ điểm và xếp loại học sinh của lần chấm hiện tại.</p>
         <!-- Thêm 4 khối thống kê tổng quan -->
         <div id="statsSummaryPage" style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-top: 16px;">
            <!-- Dữ liệu sẽ được tự động điền vào đây -->
@@ -4114,7 +4114,7 @@ function renderPhoto(sheetImg, cfg, marks, o) {
         if (!document.getElementById('statFilterBar')) {
             statsCard.innerHTML = `
                 <div class="row">
-                    <h2>Thống kê đợt chấm</h2>
+                    <h2>Thống kê lần chấm</h2>
                     <button type="button" class="btn small primary" id="btnRefreshStats" style="background: var(--warn); border-color: var(--warn);">Làm mới</button>
                 </div>
                 <div id="statFilterBar" class="seg full" style="margin-top: 10px;" role="group">
@@ -4590,9 +4590,9 @@ function renderPhoto(sheetImg, cfg, marks, o) {
       '<div class="row"><h2>Danh sách thí sinh</h2><span class="hint">' +
       stds.length +
       ' thí sinh</span></div>' +
-      '<p class="hint">Danh sách thuộc đợt “' +
+      '<p class="hint">Danh sách thuộc lần “' +
       esc(list.name || '') +
-      '”. Khi chấm, app đối chiếu số báo danh trên phiếu với danh sách này để hiện tên học sinh trong kết quả, bảng điểm CSV và file PDF. Số 0 đứng đầu được bỏ qua khi so khớp (ví dụ “01” khớp với “1”). Muốn đổi đợt, vào mục Kết quả.</p>' +
+      '”. Khi chấm, app đối chiếu số báo danh trên phiếu với danh sách này để hiện tên học sinh trong kết quả, bảng điểm CSV và file PDF. Số 0 đứng đầu được bỏ qua khi so khớp (ví dụ “01” khớp với “1”). Muốn đổi lần, vào mục Kết quả.</p>' +
       '<div class="actions"><label class="btn primary" style="flex:1; border: 1px dashed var(--ink); background: transparent; color: var(--ink);" for="stuFile">' +
       '<svg width="56" height="56" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 6px;"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>' +
       'Nạp Danh Sách Học Sinh (.xlsx)</label><input class="vh" type="file" id="stuFile" accept=".xlsx, .xls, .csv">' +
@@ -4602,7 +4602,7 @@ function renderPhoto(sheetImg, cfg, marks, o) {
       '<button type="button" class="btn primary" id="stu1Go" style="width:100%; margin-top:8px">Thêm</button>';
     if (stds.length) {
       h +=
-        '<div class="actions" style="margin-top:20px"><button type="button" class="btn small danger ghost" id="stuClear">Xoá toàn bộ thí sinh đợt này</button></div>' +
+        '<div class="actions" style="margin-top:20px"><button type="button" class="btn small danger ghost" id="stuClear">Xoá toàn bộ thí sinh lần này</button></div>' +
         '<div class="list" style="margin-top:14px">';
       stds.slice(0, 100).forEach(function (s, i) {
         h +=
@@ -4697,7 +4697,7 @@ function renderPhoto(sheetImg, cfg, marks, o) {
     const scl = $('#stuClear');
     if (scl)
       scl.onclick = function () {
-        if (confirm('Xoá toàn bộ danh sách thí sinh của đợt này?')) {
+        if (confirm('Xoá toàn bộ danh sách thí sinh của lần này?')) {
           list.students = [];
           saveLists();
           renderStudents();
@@ -9103,7 +9103,7 @@ let qrState = { kind: 'idle' },
 })();
 </script>
 <script>
-// --- QUẢN LÝ CẤU HÌNH LẦN CHẤM & ĐỢT CHẤM MỚI (ĐỘC LẬP) ---
+// --- QUẢN LÝ CẤU HÌNH LẦN CHẤM & LẦN CHẤM MỚI (ĐỘC LẬP) ---
 (function() {
   const SHEET_NAMES = {
     nh: 'Phiếu BGD 2025 CV 1239',
@@ -9153,7 +9153,7 @@ let qrState = { kind: 'idle' },
     const lists = getLists();
     const allRes = getResults();
     const curCfg = getCurCfg();
-    if (countLbl) countLbl.textContent = lists.items.length + ' đợt';
+    if (countLbl) countLbl.textContent = lists.items.length + ' lần';
 
     let html = '';
     lists.items.forEach(function(item) {
@@ -9207,14 +9207,14 @@ let qrState = { kind: 'idle' },
             if (mItem) mItem.click();
           }
         } else if (act === 'rename') {
-          const newName = prompt('Nhập tên mới cho đợt chấm:', lists.items[idx].name || '');
+          const newName = prompt('Nhập tên mới cho lần chấm:', lists.items[idx].name || '');
           if (newName && newName.trim()) {
             lists.items[idx].name = newName.trim();
             localStorage.setItem('omr.lists', JSON.stringify(lists));
             renderBatchList();
           }
         } else if (act === 'del') {
-          if (confirm('Xoá đợt chấm "' + lists.items[idx].name + '"?')) {
+          if (confirm('Xoá lần chấm "' + lists.items[idx].name + '"?')) {
             lists.items.splice(idx, 1);
             if (lists.active === id) {
               lists.active = lists.items[0].id;
@@ -9246,7 +9246,7 @@ let qrState = { kind: 'idle' },
       const lists = getLists();
       if (nameInput) nameInput.value = String(lists.items.length + 1);
       if (copySel) {
-        let opts = '<option value="">Không sao chép, tạo đợt trống</option>';
+        let opts = '<option value="">Không sao chép, tạo lần trống</option>';
         lists.items.forEach(function(it) {
           const sCount = Array.isArray(it.students) ? it.students.length : 0;
           opts += `<option value="${escHtml(it.id)}">Sao chép từ: ${escHtml(it.name)} (${sCount} HS)</option>`;
@@ -9263,7 +9263,7 @@ let qrState = { kind: 'idle' },
     cancelBtn.addEventListener('click', function() { batchModal.hidden = true; });
   }
 
-  // Nút Tạo đợt chấm
+  // Nút Tạo lần chấm
   const confirmBtn = document.getElementById('btnConfirmCreateBatch');
   if (confirmBtn) {
     confirmBtn.addEventListener('click', function() {
@@ -9335,7 +9335,7 @@ let qrState = { kind: 'idle' },
   }
   renderBatchList();
 
-  // Khôi phục tab đích sau khi tạo/chuyển đợt chấm
+  // Khôi phục tab đích sau khi tạo/chuyển lần chấm
   const pendingTab = sessionStorage.getItem('ntmix.openTab');
   if (pendingTab) {
     sessionStorage.removeItem('ntmix.openTab');
