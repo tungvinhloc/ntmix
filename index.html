@@ -1371,7 +1371,134 @@ html, body {
   overflow-x: hidden !important;
   width: 100%;
 }
-    
+/* --- GIAO DIỆN CẤU HÌNH LẦN CHẤM & MODAL ĐỢT CHẤM MỚI (THÊM MỚI) --- */
+.fab-add {
+  position: fixed;
+  right: 20px;
+  bottom: 24px;
+  width: 58px;
+  height: 58px;
+  border-radius: 50%;
+  background: #d84315;
+  color: #ffffff;
+  border: none;
+  font-size: 32px;
+  font-weight: 400;
+  line-height: 1;
+  display: grid;
+  place-items: center;
+  box-shadow: 0 6px 20px rgba(216, 67, 21, 0.45);
+  cursor: pointer;
+  z-index: 45;
+  transition: transform 0.15s ease;
+}
+.fab-add:active { transform: scale(0.94); }
+
+.batch-card {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  padding: 14px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  transition: border-color 0.2s;
+}
+.batch-card.active {
+  border: 2px solid var(--ink);
+}
+.batch-badge {
+  font-size: 11px;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: var(--ink-soft);
+  color: var(--ink);
+}
+
+/* Modal Đợt chấm mới */
+.batch-modal-bg {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.65);
+  z-index: 120;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 14px;
+}
+.batch-modal-bg[hidden] { display: none; }
+.batch-modal {
+  background: var(--card);
+  color: var(--fg);
+  border: 1px solid var(--line);
+  border-radius: 20px;
+  width: 100%;
+  max-width: 480px;
+  max-height: 92vh;
+  overflow-y: auto;
+  padding: 20px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  box-shadow: 0 12px 36px rgba(0, 0, 0, 0.35);
+}
+.batch-modal h2 {
+  font-size: 21px;
+  font-weight: 800;
+  color: var(--ink);
+}
+.sheet-grid-2x2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+.sheet-opt {
+  background: var(--bg);
+  border: 1.5px solid var(--line);
+  border-radius: 14px;
+  padding: 10px;
+  text-align: left;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.sheet-opt.selected {
+  border: 2px solid var(--ink);
+  background: var(--ink-soft);
+}
+.sheet-opt img {
+  width: 100%;
+  height: 76px;
+  object-fit: cover;
+  object-position: top center;
+  border-radius: 8px;
+  background: #fff;
+  border: 1px solid var(--line);
+}
+.sheet-opt .s-title {
+  font-size: 14px;
+  font-weight: 800;
+  color: var(--fg);
+  line-height: 1.25;
+}
+.sheet-opt .s-desc {
+  font-size: 11.5px;
+  color: var(--muted);
+  line-height: 1.35;
+}
+.batch-select {
+  width: 100%;
+  min-height: 44px;
+  padding: 8px 12px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: var(--bg);
+  color: var(--fg);
+  font-weight: 600;
+}    
+
 </style>
 </head>
 <body>
@@ -1391,6 +1518,10 @@ html, body {
         <div class="menu-item active" data-target="home">
            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
            Trang chủ
+        </div>
+        <div class="menu-item" data-target="batches">
+           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="16" rx="2"/><line x1="7" y1="9" x2="17" y2="9"/><line x1="7" y1="13" x2="17" y2="13"/><line x1="7" y1="17" x2="13" y2="17"/></svg>
+           Cấu hình lần chấm
         </div>
         <div class="menu-item" data-target="scan">
            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 8h3l1.6-2.4h6.8L17 8h3a1 1 0 0 1 1 1v9a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V9a1 1 0 0 1 1-1z"/><circle cx="12" cy="13" r="3.4"/></svg>
@@ -1446,10 +1577,70 @@ html, body {
           <b style="color: var(--fg); font-size: 17px;">Tác giả: Nguyễn Thanh Tùng</b><br>
           Giáo viên Toán trường THPT Vinh Xuân<br>Thành Phố Huế
         </div>
-        <!-- Nút này tự động chuyển hướng sang tab Chấm bài an toàn -->
-        <button class="btn primary big" onclick="document.querySelector('.menu-item[data-target=\'scan\']').click()" style="width: 100%; max-width: 280px; border-radius: 14px; box-shadow: 0 4px 12px rgba(28, 63, 148, 0.3);">Bắt đầu chấm bài</button>
+        <!-- Bấm Bắt đầu chấm bài -> Mở tab Cấu hình lần chấm -->
+        <button class="btn primary big" onclick="document.querySelector('.menu-item[data-target=\'batches\']').click()" style="width: 100%; max-width: 280px; border-radius: 14px; box-shadow: 0 4px 12px rgba(28, 63, 148, 0.3);">Bắt đầu chấm bài</button>
       </div>
     </section>
+
+    <!-- TAB CẤU HÌNH LẦN CHẤM (THÊM MỚI) -->
+    <section id="v-batches" class="view" hidden aria-label="Cấu hình lần chấm" style="padding-bottom: 84px;">
+      <div class="row" style="margin-bottom: 10px; padding: 0 4px;">
+        <h2>Danh sách đợt chấm</h2>
+        <span class="hint" id="batchCountLbl">0 đợt</span>
+      </div>
+      <div id="batchListContainer" style="display: flex; flex-direction: column; gap: 12px;"></div>
+
+      <!-- Nút tròn dấu + góc dưới bên phải -->
+      <button type="button" class="fab-add" id="btnAddBatchFab" aria-label="Tạo đợt chấm mới">+</button>
+    </section>
+
+    <!-- HỘP THOẠI ĐỢT CHẤM MỚI (GIỐNG HÌNH 2) -->
+    <div class="batch-modal-bg" id="batchModal" hidden role="dialog" aria-modal="true" aria-label="Đợt chấm mới">
+      <div class="batch-modal">
+        <h2>Đợt chấm mới</h2>
+        
+        <div class="field">
+          <label class="lbl" for="newBatchName">Tên đợt chấm</label>
+          <input id="newBatchName" type="text" placeholder="Ví dụ: 10_KTGK_I">
+        </div>
+
+        <div class="field">
+          <label class="lbl">Chọn loại phiếu (cố định cho cả đợt, tránh nhầm khi chấm)</label>
+          <div class="sheet-grid-2x2" id="newBatchSheetGrid">
+            <button type="button" class="sheet-opt selected" data-sheet-id="nh">
+              <img src="assets/bgd2025_cv1239.jpg" alt="Phiếu BGD 2025 CV 1239">
+              <div class="s-title">Phiếu BGD 2025</div>
+              <div class="s-desc">CV 1239 · 40 câu P.I · 8 câu P.II · 6 câu P.III</div>
+            </button>
+            <button type="button" class="sheet-opt" data-sheet-id="kt">
+              <img src="assets/NTMark_2025.jpg" alt="Phiếu NTMark_2025">
+              <div class="s-title">Phiếu NTMark</div>
+              <div class="s-desc">40 câu P.I · 8 câu P.II · 6 câu P.III</div>
+            </button>
+            <button type="button" class="sheet-opt" data-sheet-id="m">
+              <img src="assets/vx_02.jpg" alt="Phiếu NH">
+              <div class="s-title">Phiếu NH</div>
+              <div class="s-desc">12 câu P.I · 2 câu P.II · 4 câu P.III</div>
+            </button>
+            <button type="button" class="sheet-opt" data-sheet-id="bgd25">
+              <img src="assets/bgd2025.jpg" alt="Phiếu TNMaker BGD 2025">
+              <div class="s-title">Phiếu TNMaker</div>
+              <div class="s-desc">BGD 2025 (4MĐ) · 40 P.I · 8 P.II · 6 P.III</div>
+            </button>
+          </div>
+        </div>
+
+        <div class="field">
+          <label class="lbl" for="copyFromBatchSel">Sao chép đáp án và danh sách lớp từ đợt (tuỳ chọn)</label>
+          <select id="copyFromBatchSel" class="batch-select"></select>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 4px;">
+          <button type="button" class="btn primary" id="btnConfirmCreateBatch" style="border-radius: 12px;">Tạo đợt chấm</button>
+          <button type="button" class="btn" id="btnCancelCreateBatch" style="border-radius: 12px;">Huỷ</button>
+        </div>
+      </div>
+    </div>
 
     <!-- TAB CHẤM BÀI ĐƯỢC GIỮ NGUYÊN (Tạm Ẩn khi khởi động) -->
     <section id="v-scan" class="view" hidden aria-label="Chấm bài">
@@ -1572,6 +1763,7 @@ html, body {
 <nav class="tabs" aria-label="Chuyển mục">
   <div>
     <button class="tab" type="button" data-tab="home" aria-current="page">Trang chủ</button>
+    <button class="tab" type="button" data-tab="batches">Cấu hình lần chấm</button>
     <button class="tab" type="button" data-tab="scan">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 8h3l1.6-2.4h6.8L17 8h3a1 1 0 0 1 1 1v9a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V9a1 1 0 0 1 1-1z"/><circle cx="12" cy="13" r="3.4"/></svg>
       Chấm bài</button>
@@ -8908,6 +9100,250 @@ let qrState = { kind: 'idle' },
 
   // Tự động cập nhật trực tiếp nếu giáo viên sửa SBD hoặc Mã đề
   reBody.addEventListener('input', updateEditHeader);
+})();
+</script>
+<script>
+// --- QUẢN LÝ CẤU HÌNH LẦN CHẤM & ĐỢT CHẤM MỚI (ĐỘC LẬP) ---
+(function() {
+  const SHEET_NAMES = {
+    nh: 'Phiếu BGD 2025 CV 1239',
+    kt: 'Phiếu NTMark_2025',
+    m: 'Phiếu NH',
+    bgd25: 'Phiếu TNMaker BGD 2025(4MĐ)'
+  };
+  const SHEET_DEFAULTS = {
+    nh: { n1: 40, n2: 8, n3: 6, p1: 0.25, p2: 1, p3: 0.5 },
+    kt: { n1: 40, n2: 8, n3: 6, p1: 0.25, p2: 1, p3: 0.5 },
+    m:  { n1: 12, n2: 2, n3: 4, p1: 0.25, p2: 1, p3: 0.5 },
+    bgd25: { n1: 40, n2: 8, n3: 6, p1: 0.25, p2: 1, p3: 0.5 }
+  };
+
+  function getLists() {
+    try {
+      const l = JSON.parse(localStorage.getItem('omr.lists') || 'null');
+      if (l && Array.isArray(l.items) && l.items.length) return l;
+    } catch (e) {}
+    return { items: [{ id: 'l1', name: 'Lần 1' }], active: 'l1' };
+  }
+  function getResults() {
+    try {
+      const r = JSON.parse(localStorage.getItem('omr.results2') || '[]');
+      return Array.isArray(r) ? r : [];
+    } catch (e) { return []; }
+  }
+  function getCurCfg() {
+    try {
+      return JSON.parse(localStorage.getItem('omr.cfg2') || 'null');
+    } catch (e) { return null; }
+  }
+  function escHtml(s) {
+    return String(s || '').replace(/[&<>"]/g, c => ({'&':'&','<':'<','>':'>','"':'"'}[c]));
+  }
+
+  let selectedSheet = 'nh';
+  const batchModal = document.getElementById('batchModal');
+  const fabBtn = document.getElementById('btnAddBatchFab');
+  const nameInput = document.getElementById('newBatchName');
+  const copySel = document.getElementById('copyFromBatchSel');
+  const listContainer = document.getElementById('batchListContainer');
+  const countLbl = document.getElementById('batchCountLbl');
+
+  function renderBatchList() {
+    if (!listContainer) return;
+    const lists = getLists();
+    const allRes = getResults();
+    const curCfg = getCurCfg();
+    if (countLbl) countLbl.textContent = lists.items.length + ' đợt';
+
+    let html = '';
+    lists.items.forEach(function(item) {
+      const isActive = item.id === lists.active;
+      const c = isActive && curCfg ? curCfg : (item.cfg || curCfg || { sheet: 'nh', n1: 18, n2: 4, n3: 6 });
+      const shName = SHEET_NAMES[c.sheet] || SHEET_NAMES.nh;
+      const paperCount = allRes.filter(r => (r.lid || lists.items[0].id) === item.id).length;
+      const stuCount = Array.isArray(item.students) ? item.students.length : 0;
+
+      html += `
+        <div class="batch-card ${isActive ? 'active' : ''}" data-batch-id="${escHtml(item.id)}">
+          <div class="row">
+            <strong style="font-size: 17px; color: var(--fg);">${escHtml(item.name || 'Chưa đặt tên')}</strong>
+            ${isActive ? '<span class="batch-badge">Đang chọn</span>' : ''}
+          </div>
+          <div style="font-size: 13px; color: var(--muted); line-height: 1.5;">
+            ${escHtml(shName)} · <b>${c.n1} · ${c.n2} · ${c.n3} câu</b><br>
+            ${paperCount} bài đã chấm · ${stuCount} thí sinh
+          </div>
+          <div style="display: flex; gap: 8px; margin-top: 4px; flex-wrap: wrap;">
+            <button type="button" class="btn small primary" data-act="scan" data-id="${escHtml(item.id)}" style="flex: 1;">Chấm bài</button>
+            <button type="button" class="btn small" data-act="key" data-id="${escHtml(item.id)}">Đáp án</button>
+            <button type="button" class="btn small ghost" data-act="rename" data-id="${escHtml(item.id)}">Đổi tên</button>
+            ${lists.items.length > 1 ? `<button type="button" class="btn small ghost danger" data-act="del" data-id="${escHtml(item.id)}">Xoá</button>` : ''}
+          </div>
+        </div>
+      `;
+    });
+    listContainer.innerHTML = html;
+
+    listContainer.querySelectorAll('button[data-act]').forEach(function(btn) {
+      btn.addEventListener('click', function(e) {
+        e.stopPropagation();
+        const act = this.dataset.act;
+        const id = this.dataset.id;
+        const lists = getLists();
+        const idx = lists.items.findIndex(x => x.id === id);
+        if (idx < 0) return;
+
+        if (act === 'scan' || act === 'key') {
+          if (lists.active !== id) {
+            lists.active = id;
+            localStorage.setItem('omr.lists', JSON.stringify(lists));
+            if (lists.items[idx].cfg) {
+              localStorage.setItem('omr.cfg2', JSON.stringify(lists.items[idx].cfg));
+            }
+            sessionStorage.setItem('ntmix.openTab', act);
+            location.reload();
+          } else {
+            const mItem = document.querySelector('.menu-item[data-target="' + act + '"]');
+            if (mItem) mItem.click();
+          }
+        } else if (act === 'rename') {
+          const newName = prompt('Nhập tên mới cho đợt chấm:', lists.items[idx].name || '');
+          if (newName && newName.trim()) {
+            lists.items[idx].name = newName.trim();
+            localStorage.setItem('omr.lists', JSON.stringify(lists));
+            renderBatchList();
+          }
+        } else if (act === 'del') {
+          if (confirm('Xoá đợt chấm "' + lists.items[idx].name + '"?')) {
+            lists.items.splice(idx, 1);
+            if (lists.active === id) {
+              lists.active = lists.items[0].id;
+              if (lists.items[0].cfg) {
+                localStorage.setItem('omr.cfg2', JSON.stringify(lists.items[0].cfg));
+              }
+            }
+            localStorage.setItem('omr.lists', JSON.stringify(lists));
+            sessionStorage.setItem('ntmix.openTab', 'batches');
+            location.reload();
+          }
+        }
+      });
+    });
+  }
+
+  // Chọn loại phiếu trong Modal 2x2
+  document.querySelectorAll('#newBatchSheetGrid .sheet-opt').forEach(function(btn) {
+    btn.addEventListener('click', function() {
+      document.querySelectorAll('#newBatchSheetGrid .sheet-opt').forEach(b => b.classList.remove('selected'));
+      this.classList.add('selected');
+      selectedSheet = this.dataset.sheetId || 'nh';
+    });
+  });
+
+  // Mở Modal khi bấm nút tròn dấu +
+  if (fabBtn && batchModal) {
+    fabBtn.addEventListener('click', function() {
+      const lists = getLists();
+      if (nameInput) nameInput.value = String(lists.items.length + 1);
+      if (copySel) {
+        let opts = '<option value="">Không sao chép, tạo đợt trống</option>';
+        lists.items.forEach(function(it) {
+          const sCount = Array.isArray(it.students) ? it.students.length : 0;
+          opts += `<option value="${escHtml(it.id)}">Sao chép từ: ${escHtml(it.name)} (${sCount} HS)</option>`;
+        });
+        copySel.innerHTML = opts;
+      }
+      batchModal.hidden = false;
+    });
+  }
+
+  // Nút Huỷ
+  const cancelBtn = document.getElementById('btnCancelCreateBatch');
+  if (cancelBtn && batchModal) {
+    cancelBtn.addEventListener('click', function() { batchModal.hidden = true; });
+  }
+
+  // Nút Tạo đợt chấm
+  const confirmBtn = document.getElementById('btnConfirmCreateBatch');
+  if (confirmBtn) {
+    confirmBtn.addEventListener('click', function() {
+      const lists = getLists();
+      const curCfg = getCurCfg();
+      const bName = (nameInput && nameInput.value.trim()) ? nameInput.value.trim() : ('Lần ' + (lists.items.length + 1));
+      const copyId = copySel ? copySel.value : '';
+      const srcBatch = copyId ? lists.items.find(x => x.id === copyId) : null;
+
+      const defStruct = SHEET_DEFAULTS[selectedSheet] || SHEET_DEFAULTS.nh;
+      let newCfg = {
+        v: 2,
+        sheet: selectedSheet,
+        n1: defStruct.n1,
+        n2: defStruct.n2,
+        n3: defStruct.n3,
+        p1: defStruct.p1,
+        p2: defStruct.p2,
+        p3: defStruct.p3,
+        tfLinear: false,
+        thr: 0.08,
+        td: 1,
+        active: 0,
+        versions: [{
+          code: '0201',
+          mcq: new Array(40).fill(null),
+          tf: Array.from({ length: 8 }, () => [null, null, null, null]),
+          num: ['', '', '', '', '', '']
+        }]
+      };
+      let newStudents = [];
+
+      if (srcBatch) {
+        const srcCfg = (srcBatch.id === lists.active && curCfg) ? curCfg : srcBatch.cfg;
+        if (srcCfg) {
+          newCfg = JSON.parse(JSON.stringify(srcCfg));
+          newCfg.sheet = selectedSheet; // Cố định loại phiếu mới chọn
+          if (selectedSheet === 'm') {
+            newCfg.n1 = Math.min(newCfg.n1, 12);
+            newCfg.n2 = Math.min(newCfg.n2, 2);
+            newCfg.n3 = Math.min(newCfg.n3, 4);
+          }
+        }
+        if (Array.isArray(srcBatch.students)) {
+          newStudents = JSON.parse(JSON.stringify(srcBatch.students));
+        }
+      }
+
+      const newId = 'l_' + Date.now();
+      lists.items.unshift({
+        id: newId,
+        name: bName,
+        cfg: newCfg,
+        students: newStudents
+      });
+      lists.active = newId;
+
+      localStorage.setItem('omr.lists', JSON.stringify(lists));
+      localStorage.setItem('omr.cfg2', JSON.stringify(newCfg));
+      sessionStorage.setItem('ntmix.openTab', 'scan'); // Tạo xong mở ngay tab Chấm bài
+      location.reload();
+    });
+  }
+
+  // Cập nhật danh sách mỗi khi mở tab Cấu hình lần chấm
+  const batchMenuBtn = document.querySelector('.menu-item[data-target="batches"]');
+  if (batchMenuBtn) {
+    batchMenuBtn.addEventListener('click', renderBatchList);
+  }
+  renderBatchList();
+
+  // Khôi phục tab đích sau khi tạo/chuyển đợt chấm
+  const pendingTab = sessionStorage.getItem('ntmix.openTab');
+  if (pendingTab) {
+    sessionStorage.removeItem('ntmix.openTab');
+    setTimeout(function() {
+      const targetMenu = document.querySelector('.menu-item[data-target="' + pendingTab + '"]');
+      if (targetMenu) targetMenu.click();
+    }, 30);
+  }
 })();
 </script>
 </body>
