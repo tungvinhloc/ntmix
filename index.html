@@ -9346,5 +9346,94 @@ let qrState = { kind: 'idle' },
   }
 })();
 </script>
+<script>
+// --- THAY THẾ CỤM DANH SÁCH CHẤM Ở TAB KẾT QUẢ BẰNG THANH "XEM LẠI BÀI" (ĐỘC LẬP) ---
+(function() {
+  const resCard = document.getElementById('resCard');
+  if (!resCard) return;
+
+  let lastKeyword = '';
+
+  function getActiveBatchName(listbar) {
+    if (listbar) {
+      const sel = listbar.querySelector('select');
+      if (sel && sel.options[sel.selectedIndex]) {
+        return sel.options[sel.selectedIndex].text.replace(/\s*\(\d+.*$/, '').trim();
+      }
+    }
+    try {
+      const l = JSON.parse(localStorage.getItem('omr.lists') || 'null');
+      if (l && Array.isArray(l.items)) {
+        const cur = l.items.find(function(x) { return x.id === l.active; }) || l.items[0];
+        if (cur && cur.name) return cur.name;
+      }
+    } catch (e) {}
+    return '';
+  }
+
+  function applyFilter(keyword) {
+    const q = String(keyword || '').trim().toLowerCase();
+    resCard.querySelectorAll('.item').forEach(function(item) {
+      const txt = (item.textContent || '').toLowerCase();
+      item.style.display = (!q || txt.indexOf(q) >= 0) ? '' : 'none';
+    });
+  }
+
+  function enhanceResCard() {
+    const listbar = resCard.querySelector('.listbar');
+    if (!listbar) return;
+
+    const batchName = getActiveBatchName(listbar);
+    listbar.style.display = 'none';
+
+    let bar = document.getElementById('ntmixReviewBar');
+    if (!bar) {
+      bar = document.createElement('div');
+      bar.id = 'ntmixReviewBar';
+      bar.style.cssText = 'margin: 6px 0 12px; padding: 10px 12px; border: 1px solid var(--line); border-radius: 12px; background: var(--bg); display: flex; flex-direction: column; gap: 8px;';
+
+      const hasItems = resCard.querySelectorAll('.item').length > 0;
+      bar.innerHTML =
+        '<div style="display: flex; align-items: center; justify-content: space-between; gap: 8px;">' +
+          '<span style="font-size: 15px; font-weight: 700; color: var(--fg);">Xem lại bài</span>' +
+          (batchName ? '<span class="hint" style="font-weight: 600;">Đợt: ' + batchName.replace(/[<>&"]/g, '') + '</span>' : '') +
+        '</div>' +
+        (hasItems
+          ? '<div style="display: flex; gap: 8px; align-items: center;">' +
+              '<input type="search" id="reviewSearchInp" placeholder="Tìm tên, SBD, mã đề..." style="flex: 1; min-width: 0; min-height: 38px; padding: 6px 10px; border: 1px solid var(--line); border-radius: 8px; background: var(--card); font-size: 13px;">' +
+              '<button type="button" class="btn small primary" id="btnQuickReview" style="white-space: nowrap; min-height: 38px;">Xem lại bài</button>' +
+            '</div>'
+          : '');
+
+      listbar.insertAdjacentElement('afterend', bar);
+
+      const inp = document.getElementById('reviewSearchInp');
+      if (inp) {
+        inp.value = lastKeyword;
+        inp.addEventListener('input', function() {
+          lastKeyword = this.value;
+          applyFilter(lastKeyword);
+        });
+      }
+
+      const btnQuick = document.getElementById('btnQuickReview');
+      if (btnQuick) {
+        btnQuick.addEventListener('click', function() {
+          const items = Array.prototype.slice.call(resCard.querySelectorAll('.item'));
+          const firstVisible = items.find(function(it) { return it.style.display !== 'none'; });
+          const viewBtn = firstVisible && firstVisible.querySelector('.viewimg');
+          if (viewBtn) viewBtn.click();
+        });
+      }
+    }
+
+    if (lastKeyword) applyFilter(lastKeyword);
+  }
+
+  const obs = new MutationObserver(enhanceResCard);
+  obs.observe(resCard, { childList: true });
+  enhanceResCard();
+})();
+</script>
 </body>
 </html>
