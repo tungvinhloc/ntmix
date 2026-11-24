@@ -9435,5 +9435,138 @@ let qrState = { kind: 'idle' },
   enhanceResCard();
 })();
 </script>
+<script>
+// --- CHỌN TỪNG MẪU GIẤY THI ĐỂ XEM TRƯỚC VÀ TẢI VỀ (ĐỘC LẬP, KHÔNG ẢNH HƯỞNG ĐỢT CHẤM) ---
+(function() {
+  const sheetCard = document.getElementById('sheetCard');
+  if (!sheetCard) return;
+
+  const TEMPLATES = [
+    {
+      id: 'nh',
+      chip: 'Phiếu BGD 2025 CV 1239',
+      title: 'Phiếu BGD 2025 CV 1239',
+      desc: 'Mẫu phiếu chuẩn Bộ GD&ĐT theo CV 1239: số báo danh 8 chữ số, mã đề 4 chữ số, Phần I tối đa 40 câu, Phần II tối đa 8 câu, Phần III tối đa 6 câu.',
+      img: 'assets/bgd2025_cv1239.jpg',
+      file: 'assets/bgd2025_cv1239.pdf',
+      saveName: 'phieu-bgd-2025-cv1239.pdf',
+      btnText: 'Tải phiếu gốc (PDF)',
+      note: 'Khi in, chọn khổ A4 và tỉ lệ 100% (không chọn “vừa trang”). Đảm bảo 4 ô vuông đen ở 4 góc hiển thị rõ nét.'
+    },
+    {
+      id: 'kt',
+      chip: 'Phiếu NTMark_2025',
+      title: 'Phiếu NTMark_2025',
+      desc: 'Mẫu phiếu NTMark_2025: số báo danh 8 chữ số, mã đề 4 chữ số, Phần I tối đa 40 câu, Phần II tối đa 8 câu, Phần III tối đa 6 câu.',
+      img: 'assets/NTMark_2025.jpg',
+      file: 'assets/NTMark_2025.pdf',
+      saveName: 'NTMark_2025.pdf',
+      btnText: 'Tải phiếu gốc (PDF)',
+      note: 'Khi in, chọn khổ A4 và tỉ lệ 100% (không chọn “vừa trang”). Mực hồng của phiếu không ảnh hưởng đến việc quét.'
+    },
+    {
+      id: 'm',
+      chip: 'Phiếu NH',
+      title: 'Phiếu NH',
+      desc: 'Mẫu phiếu NH (phiếu ngắn): số thứ tự 2 chữ số, mã đề 3 chữ số, Phần I tối đa 12 câu, Phần II tối đa 2 câu, Phần III tối đa 4 câu.',
+      img: 'assets/vx_02.jpg',
+      file: 'assets/vx_02.jpg',
+      saveName: 'phieu-nh-mau.jpg',
+      btnText: 'Tải ảnh phiếu mẫu (JPG)',
+      note: 'Ảnh phiếu mẫu dùng để tham khảo bố cục hoặc in thử. Khi chụp chấm, cần chụp trọn cả 4 ô vuông đen ở góc.'
+    },
+    {
+      id: 'bgd25',
+      chip: 'Phiếu TNMaker BGD 2025(4MĐ)',
+      title: 'Phiếu BGD 2025 (MĐ 4 số)',
+      desc: 'Mẫu phiếu chuẩn TNMaker BGD 2025 mã đề 4 số: SBD 8 số, Mã đề 4 số. Gồm 40 câu Phần I, 8 câu Phần II và 6 câu Phần III.',
+      img: 'assets/bgd2025.jpg',
+      file: 'assets/bgd2025.pdf',
+      saveName: 'phieu-tnmaker-bgd-2025.pdf',
+      btnText: 'Tải phiếu gốc (PDF)',
+      note: 'In khổ A4 tỷ lệ 100%. Đảm bảo 4 ô vuông đen ở 4 góc hiển thị rõ ràng.'
+    }
+  ];
+
+  function getActiveSheetId() {
+    try {
+      const c = JSON.parse(localStorage.getItem('omr.cfg2') || 'null');
+      if (c && c.sheet) return c.sheet;
+    } catch (e) {}
+    return 'nh';
+  }
+
+  let selectedId = getActiveSheetId();
+
+  async function downloadTemplateFile(url, filename, msgEl, btnEl) {
+    btnEl.disabled = true;
+    msgEl.textContent = 'Đang chuẩn bị tải tệp...';
+    try {
+      const res = await fetch(url);
+      if (!res.ok) throw new Error('HTTP ' + res.status);
+      const blob = await res.blob();
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      setTimeout(function() {
+        URL.revokeObjectURL(a.href);
+        a.remove();
+      }, 1500);
+      msgEl.textContent = 'Đã tải xuống tệp: ' + filename;
+    } catch (e) {
+      window.open(url, '_blank');
+      msgEl.textContent = 'Đã mở tệp trong thẻ mới. Thầy có thể lưu trực tiếp từ trình duyệt.';
+    }
+    btnEl.disabled = false;
+  }
+
+  function renderCustomSheetCard(id) {
+    const tpl = TEMPLATES.find(function(t) { return t.id === id; }) || TEMPLATES[0];
+    selectedId = tpl.id;
+
+    const chipsHtml = TEMPLATES.map(function(t) {
+      return '<button type="button" class="vchip" data-tpl-id="' + t.id + '" aria-pressed="' + (t.id === tpl.id) + '">' + t.chip + '</button>';
+    }).join('');
+
+    sheetCard.innerHTML =
+      '<div id="sheetPickerBar" class="sheetsel" style="margin-bottom: 4px;">' +
+        '<span class="lbl">Chọn mẫu phiếu để xem & tải</span>' +
+        '<div class="vchips">' + chipsHtml + '</div>' +
+      '</div>' +
+      '<hr style="border: 0; border-top: 1px solid var(--line); margin: 2px 0;">' +
+      '<h2>' + tpl.title + '</h2>' +
+      '<p class="hint">' + tpl.desc + '</p>' +
+      '<img class="sheetimg" alt="Xem trước ' + tpl.title + '" src="' + tpl.img + '">' +
+      '<div class="actions">' +
+        '<button type="button" class="btn primary" id="customPdfBtn">' + tpl.btnText + '</button>' +
+      '</div>' +
+      '<p class="hint" id="customPdfMsg">' + tpl.note + '</p>';
+
+    sheetCard.querySelectorAll('[data-tpl-id]').forEach(function(btn) {
+      btn.addEventListener('click', function() {
+        renderCustomSheetCard(this.dataset.tplId);
+      });
+    });
+
+    const dlBtn = document.getElementById('customPdfBtn');
+    const dlMsg = document.getElementById('customPdfMsg');
+    if (dlBtn && dlMsg) {
+      dlBtn.addEventListener('click', function() {
+        downloadTemplateFile(tpl.file, tpl.saveName, dlMsg, dlBtn);
+      });
+    }
+  }
+
+  const obs = new MutationObserver(function() {
+    if (!document.getElementById('sheetPickerBar')) {
+      selectedId = getActiveSheetId();
+      renderCustomSheetCard(selectedId);
+    }
+  });
+  obs.observe(sheetCard, { childList: true });
+})();
+</script>
 </body>
 </html>
