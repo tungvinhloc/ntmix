@@ -9763,5 +9763,65 @@ let qrState = { kind: 'idle' },
   syncUI();
 })();
 </script>
+<script>
+// --- CHUYỂN CHỌN LOẠI PHIẾU Ở TAB CHẤM BÀI SANG DANH SÁCH XỔ XUỐNG (ĐỘC LẬP) ---
+(function() {
+  const sheetSel = document.getElementById('sheetSel');
+  if (!sheetSel) return;
+
+  let isUpdating = false;
+
+  function upgradeSheetSelector() {
+    if (isUpdating) return;
+    const vchips = sheetSel.querySelector('.vchips');
+    if (!vchips) return;
+
+    const btns = Array.prototype.slice.call(vchips.querySelectorAll('button[data-sh]'));
+    if (!btns.length) return;
+
+    isUpdating = true;
+    try {
+      // Ẩn dãy nút cũ nhưng giữ nguyên trong DOM để kích hoạt an toàn hàm switchSheet gốc
+      vchips.style.display = 'none';
+      const oldLbl = sheetSel.querySelector(':scope > .lbl');
+      if (oldLbl) oldLbl.style.display = 'none';
+
+      let wrap = document.getElementById('scanSheetDropWrap');
+      if (!wrap) {
+        wrap = document.createElement('div');
+        wrap.id = 'scanSheetDropWrap';
+        wrap.className = 'field';
+        wrap.innerHTML =
+          '<label class="lbl" for="scanSheetSelect">Loại phiếu</label>' +
+          '<div style="position: relative; display: flex; align-items: center;">' +
+            '<select id="scanSheetSelect" style="width: 100%; min-height: 44px; padding: 8px 38px 8px 12px; border: 1.5px solid var(--ink); border-radius: 10px; background: var(--bg); color: var(--fg); font-weight: 700; font-size: 14px; appearance: none; -webkit-appearance: none; cursor: pointer;"></select>' +
+            '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="position: absolute; right: 12px; pointer-events: none; color: var(--ink);"><polyline points="6 9 12 15 18 9"></polyline></svg>' +
+          '</div>';
+        sheetSel.appendChild(wrap);
+
+        const sel = document.getElementById('scanSheetSelect');
+        sel.addEventListener('change', function() {
+          const targetBtn = sheetSel.querySelector('button[data-sh="' + this.value + '"]');
+          if (targetBtn) targetBtn.click();
+        });
+      }
+
+      const sel = document.getElementById('scanSheetSelect');
+      if (sel) {
+        sel.innerHTML = btns.map(function(b) {
+          const isSelected = b.getAttribute('aria-pressed') === 'true';
+          return '<option value="' + b.dataset.sh + '"' + (isSelected ? ' selected' : '') + '>' + b.textContent.trim() + '</option>';
+        }).join('');
+      }
+    } finally {
+      isUpdating = false;
+    }
+  }
+
+  const obs = new MutationObserver(upgradeSheetSelector);
+  obs.observe(sheetSel, { childList: true, subtree: true, attributes: true, attributeFilter: ['aria-pressed'] });
+  upgradeSheetSelector();
+})();
+</script>
 </body>
 </html>
