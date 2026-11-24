@@ -9764,27 +9764,29 @@ let qrState = { kind: 'idle' },
 })();
 </script>
 <script>
-// --- CHUYỂN CHỌN LOẠI PHIẾU Ở TAB CHẤM BÀI SANG DANH SÁCH XỔ XUỐNG (ĐỘC LẬP) ---
+// --- CHUYỂN CHỌN LOẠI PHIẾU Ở TAB CHẤM BÀI SANG DANH SÁCH XỔ XUỐNG (ĐÃ SỬA LỖI TREO TRANG) ---
 (function() {
   const sheetSel = document.getElementById('sheetSel');
   if (!sheetSel) return;
 
-  let isUpdating = false;
+  const obs = new MutationObserver(function() {
+    upgradeSheetSelector();
+  });
 
   function upgradeSheetSelector() {
-    if (isUpdating) return;
-    const vchips = sheetSel.querySelector('.vchips');
-    if (!vchips) return;
-
-    const btns = Array.prototype.slice.call(vchips.querySelectorAll('button[data-sh]'));
-    if (!btns.length) return;
-
-    isUpdating = true;
+    obs.disconnect();
     try {
-      // Ẩn dãy nút cũ nhưng giữ nguyên trong DOM để kích hoạt an toàn hàm switchSheet gốc
+      const vchips = sheetSel.querySelector('.vchips');
+      if (!vchips) return;
+
+      const btns = Array.prototype.slice.call(vchips.querySelectorAll('button[data-sh]'));
+      if (!btns.length) return;
+
       vchips.style.display = 'none';
-      const oldLbl = sheetSel.querySelector(':scope > .lbl');
-      if (oldLbl) oldLbl.style.display = 'none';
+      const oldLbl = vchips.previousElementSibling;
+      if (oldLbl && oldLbl.classList.contains('lbl')) {
+        oldLbl.style.display = 'none';
+      }
 
       let wrap = document.getElementById('scanSheetDropWrap');
       if (!wrap) {
@@ -9814,12 +9816,10 @@ let qrState = { kind: 'idle' },
         }).join('');
       }
     } finally {
-      isUpdating = false;
+      obs.observe(sheetSel, { childList: true });
     }
   }
 
-  const obs = new MutationObserver(upgradeSheetSelector);
-  obs.observe(sheetSel, { childList: true, subtree: true, attributes: true, attributeFilter: ['aria-pressed'] });
   upgradeSheetSelector();
 })();
 </script>
