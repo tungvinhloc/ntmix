@@ -1538,6 +1538,10 @@ html, body {
       </div>
       <div class="menu-label">Thiết lập</div>
       <div class="menu-group">
+        <div class="menu-item" data-target="omr">
+           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="4" y1="21" x2="4" y2="14"></line><line x1="4" y1="10" x2="4" y2="3"></line><line x1="12" y1="21" x2="12" y2="12"></line><line x1="12" y1="8" x2="12" y2="3"></line><line x1="20" y1="21" x2="20" y2="16"></line><line x1="20" y1="12" x2="20" y2="3"></line><line x1="1" y1="14" x2="7" y2="14"></line><line x1="9" y1="8" x2="15" y2="8"></line><line x1="17" y1="16" x2="23" y2="16"></line></svg>
+           Nhận dạng ô tô
+        </div>
         <div class="menu-item" data-target="students">
            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
            Nạp danh sách học sinh
@@ -1757,12 +1761,90 @@ html, body {
         </div>
       </div>
     </section>
+
+    <!-- TAB NHẬN DẠNG Ô TÔ (THÊM MỚI) -->
+    <section id="v-omr" class="view" hidden aria-label="Nhận dạng ô tô">
+      <div class="card" style="gap: 18px; padding: 18px 16px;">
+        <!-- 1. Độ nhạt tối thiểu -->
+        <div style="display: flex; flex-direction: column; gap: 8px;">
+          <div class="row">
+            <strong style="font-size: 16px; color: var(--fg);">Độ nhạt tối thiểu</strong>
+            <span id="omrDarkVal" class="mono" style="color: #d84315; font-size: 16px; font-weight: 800;">0.10</span>
+          </div>
+          <div style="display: flex; align-items: center; gap: 14px;">
+            <div style="flex: 1; display: flex; flex-direction: column; gap: 4px;">
+              <input id="omrDarkIn" type="range" min="0.05" max="0.30" step="0.01" value="0.10" style="accent-color: #d84315;">
+              <div class="range-lbls"><span>0.05</span><span>0.30</span></div>
+            </div>
+            <div style="width: 74px; height: 44px; border: 1px solid var(--line); border-radius: 10px; background: var(--bg); display: grid; place-items: center; flex: none;">
+              <svg width="64" height="38" viewBox="0 0 64 38">
+                <circle id="omrDarkCircle" cx="32" cy="19" r="13" fill="rgba(107,114,128,0.22)" stroke="#6b7280" stroke-width="1.8"/>
+              </svg>
+            </div>
+          </div>
+          <p class="hint">Ô nhạt như thế này vẫn được nhận là tô.</p>
+        </div>
+
+        <hr style="border: 0; border-top: 1px solid var(--line); margin: 0;">
+
+        <!-- 2. Mức độ tô tối thiểu -->
+        <div style="display: flex; flex-direction: column; gap: 8px;">
+          <div class="row">
+            <strong style="font-size: 16px; color: var(--fg);">Mức độ tô tối thiểu</strong>
+            <span id="omrFillVal" class="mono" style="color: #d84315; font-size: 16px; font-weight: 800;">0.15</span>
+          </div>
+          <div style="display: flex; align-items: center; gap: 14px;">
+            <div style="flex: 1; display: flex; flex-direction: column; gap: 4px;">
+              <input id="omrFillIn" type="range" min="0.10" max="0.30" step="0.01" value="0.15" style="accent-color: #d84315;">
+              <div class="range-lbls"><span>0.10</span><span>0.30</span></div>
+            </div>
+            <div style="width: 74px; height: 44px; border: 1px solid var(--line); border-radius: 10px; background: var(--bg); display: grid; place-items: center; flex: none;">
+              <svg width="64" height="38" viewBox="0 0 64 38">
+                <circle cx="32" cy="19" r="13" fill="none" stroke="#6b7280" stroke-width="1.8"/>
+                <circle id="omrFillDot" cx="32" cy="19" r="5.03" fill="#6b7280"/>
+              </svg>
+            </div>
+          </div>
+          <p class="hint">Ô tô ít như thế này vẫn được nhận là tô.</p>
+        </div>
+
+        <hr style="border: 0; border-top: 1px solid var(--line); margin: 0;">
+
+        <!-- 3. Độ nhạy tẩy xoá -->
+        <div style="display: flex; flex-direction: column; gap: 8px;">
+          <div class="row">
+            <strong style="font-size: 16px; color: var(--fg);">Độ nhạy tẩy xoá</strong>
+            <span id="omrEraseVal" class="mono" style="color: #d84315; font-size: 16px; font-weight: 800;">0.60</span>
+          </div>
+          <div style="display: flex; align-items: center; gap: 14px;">
+            <div style="flex: 1; display: flex; flex-direction: column; gap: 4px;">
+              <input id="omrEraseIn" type="range" min="0.40" max="0.70" step="0.01" value="0.60" style="accent-color: #d84315;">
+              <div class="range-lbls"><span>0.40</span><span>0.70</span></div>
+            </div>
+            <div style="width: 74px; height: 44px; border: 1px solid var(--line); border-radius: 10px; background: var(--bg); display: grid; place-items: center; flex: none;">
+              <svg width="64" height="38" viewBox="0 0 64 38">
+                <circle cx="19" cy="19" r="11.5" fill="#737880" stroke="#52565c" stroke-width="1.5"/>
+                <circle id="omrEraseCircle" cx="45" cy="19" r="11.5" fill="rgba(115,120,128,0.51)" stroke="#52565c" stroke-width="1.5"/>
+              </svg>
+            </div>
+          </div>
+          <p class="hint">Trong một câu, ô nhạt hơn ô bên phải so với ô đậm nhất được coi là vết tẩy.</p>
+        </div>
+      </div>
+
+      <p class="hint" style="padding: 12px 6px 18px; line-height: 1.55;">
+        Chỉ áp dụng cho bài quét mới. Giá trị mặc định là giá trị đã kiểm chứng. Nâng độ nhạt để bỏ qua vết tẩy, nét mờ; ảnh chụp tối có thể mất nét bút chì nhạt.
+      </p>
+
+      <button type="button" id="btnOmrReset" class="btn big" style="width: 100%; border-radius: 999px; background: var(--line); color: var(--muted); border: none;">Đặt lại</button>
+    </section>
   </main>
 </div>
 
 <nav class="tabs" aria-label="Chuyển mục">
   <div>
     <button class="tab" type="button" data-tab="home" aria-current="page">Trang chủ</button>
+    <button class="tab" type="button" data-tab="omr">Nhận dạng ô tô</button>
     <button class="tab" type="button" data-tab="batches">Cấu hình lần chấm</button>
     <button class="tab" type="button" data-tab="scan">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 8h3l1.6-2.4h6.8L17 8h3a1 1 0 0 1 1 1v9a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V9a1 1 0 0 1 1-1z"/><circle cx="12" cy="13" r="3.4"/></svg>
@@ -3129,18 +3211,11 @@ function discOffsets(rad, step) {
   return o;
 }
 function bubbleScore(g, w, h, H, b, inOff, a0, a1) {
+  const omr = window.NTMIX_OMR_CFG || { minDark: 0.10, minFill: 0.15, eraseRatio: 0.60 };
   let s = 0,
-    c = 0;
-  for (let i = 0; i < inOff.length; i++) {
-    const l = sampleMM(g, w, h, H, b.x + inOff[i][0], b.y + inOff[i][1]);
-    if (l === l) {
-      s += l;
-      c++;
-    }
-  }
-  if (c < inOff.length * 0.6) return 0;
-  const mIn = s / c,
-    arr = [];
+    c = 0,
+    darkCnt = 0;
+  const arr = [];
   [a0, a1].forEach(function (rr, k) {
     for (let a = 0; a < 12; a++) {
       const t = (a * Math.PI) / 6.0 + (k ? 0.26 : 0);
@@ -3153,17 +3228,30 @@ function bubbleScore(g, w, h, H, b, inOff, a0, a1) {
     return p - q;
   });
   const ref = Math.max(arr[Math.floor(arr.length * 0.7)], 1);
+  for (let i = 0; i < inOff.length; i++) {
+    const l = sampleMM(g, w, h, H, b.x + inOff[i][0], b.y + inOff[i][1]);
+    if (l === l) {
+      s += l;
+      c++;
+      if (1 - l / ref >= omr.minDark) darkCnt++;
+    }
+  }
+  if (c < inOff.length * 0.6) return 0;
+  if (darkCnt / c < omr.minFill) return 0;
+  const mIn = s / c;
   return Math.max(0, Math.min(1, 1 - mIn / ref));
 }
 function decideMarks(scores, thr) {
+  const omr = window.NTMIX_OMR_CFG || { minDark: 0.10, minFill: 0.15, eraseRatio: 0.60 };
+  const minThr = Math.max(thr, omr.minDark);
   let mx = 0;
   scores.forEach(function (s) {
     if (s > mx) mx = s;
   });
-  if (mx < thr) return [];
+  if (mx < minThr) return [];
   const out = [];
   scores.forEach(function (s, i) {
-    if (s >= thr && s >= 0.55 * mx) out.push(i);
+    if (s >= minThr && s >= omr.eraseRatio * mx) out.push(i);
   });
   return out;
 }
@@ -9572,6 +9660,107 @@ let qrState = { kind: 'idle' },
     }
   });
   obs.observe(sheetCard, { childList: true });
+})();
+</script>
+<script>
+// --- ĐIỀU KHIỂN CÀI ĐẶT NHẬN DẠNG Ô TÔ (ĐỘC LẬP) ---
+(function() {
+  const DEFAULTS = { minDark: 0.10, minFill: 0.15, eraseRatio: 0.60 };
+  const KEY = 'ntmix.omrSettings';
+
+  function loadOmr() {
+    try {
+      const saved = JSON.parse(localStorage.getItem(KEY) || 'null');
+      if (saved && typeof saved === 'object') {
+        return {
+          minDark: Math.max(0.05, Math.min(0.30, Number(saved.minDark) || DEFAULTS.minDark)),
+          minFill: Math.max(0.10, Math.min(0.30, Number(saved.minFill) || DEFAULTS.minFill)),
+          eraseRatio: Math.max(0.40, Math.min(0.70, Number(saved.eraseRatio) || DEFAULTS.eraseRatio))
+        };
+      }
+    } catch (e) {}
+    return Object.assign({}, DEFAULTS);
+  }
+
+  let state = loadOmr();
+  window.NTMIX_OMR_CFG = state;
+
+  const darkIn = document.getElementById('omrDarkIn');
+  const fillIn = document.getElementById('omrFillIn');
+  const eraseIn = document.getElementById('omrEraseIn');
+  const darkVal = document.getElementById('omrDarkVal');
+  const fillVal = document.getElementById('omrFillVal');
+  const eraseVal = document.getElementById('omrEraseVal');
+  const darkCircle = document.getElementById('omrDarkCircle');
+  const fillDot = document.getElementById('omrFillDot');
+  const eraseCircle = document.getElementById('omrEraseCircle');
+  const resetBtn = document.getElementById('btnOmrReset');
+
+  function syncUI() {
+    if (!darkIn) return;
+    darkIn.value = state.minDark.toFixed(2);
+    fillIn.value = state.minFill.toFixed(2);
+    eraseIn.value = state.eraseRatio.toFixed(2);
+
+    darkVal.textContent = state.minDark.toFixed(2);
+    fillVal.textContent = state.minFill.toFixed(2);
+    eraseVal.textContent = state.eraseRatio.toFixed(2);
+
+    // Cập nhật 3 hình minh hoạ theo thời gian thực
+    const darkAlpha = Math.min(0.90, state.minDark * 2.2).toFixed(2);
+    darkCircle.setAttribute('fill', 'rgba(107, 114, 128, ' + darkAlpha + ')');
+
+    const dotR = (13 * Math.sqrt(state.minFill)).toFixed(2);
+    fillDot.setAttribute('r', dotR);
+
+    const eraseAlpha = Math.min(0.85, state.eraseRatio * 0.85).toFixed(2);
+    eraseCircle.setAttribute('fill', 'rgba(115, 120, 128, ' + eraseAlpha + ')');
+
+    // Trạng thái nút Đặt lại
+    const isDefault =
+      Math.abs(state.minDark - DEFAULTS.minDark) < 0.001 &&
+      Math.abs(state.minFill - DEFAULTS.minFill) < 0.001 &&
+      Math.abs(state.eraseRatio - DEFAULTS.eraseRatio) < 0.001;
+
+    if (resetBtn) {
+      resetBtn.disabled = isDefault;
+      resetBtn.style.background = isDefault ? 'var(--line)' : '#d84315';
+      resetBtn.style.color = isDefault ? 'var(--muted)' : '#ffffff';
+    }
+  }
+
+  function saveOmr() {
+    window.NTMIX_OMR_CFG = state;
+    localStorage.setItem(KEY, JSON.stringify(state));
+  }
+
+  if (darkIn && fillIn && eraseIn) {
+    darkIn.addEventListener('input', function() {
+      state.minDark = parseFloat(this.value);
+      syncUI();
+      saveOmr();
+    });
+    fillIn.addEventListener('input', function() {
+      state.minFill = parseFloat(this.value);
+      syncUI();
+      saveOmr();
+    });
+    eraseIn.addEventListener('input', function() {
+      state.eraseRatio = parseFloat(this.value);
+      syncUI();
+      saveOmr();
+    });
+  }
+
+  if (resetBtn) {
+    resetBtn.addEventListener('click', function() {
+      state = Object.assign({}, DEFAULTS);
+      syncUI();
+      saveOmr();
+    });
+  }
+
+  syncUI();
 })();
 </script>
 </body>
