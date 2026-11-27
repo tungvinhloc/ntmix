@@ -1653,7 +1653,278 @@ html, body {
   border-color: #f27438;
   background: rgba(242, 116, 56, 0.12);
 } 
-    
+
+/* --- GIAO DIỆN TAB LỚP HỌC & CHI TIẾT LỚP HỌC (THÊM MỚI) --- */
+.cls-card {
+  background: #1a1d24;
+  border: 1px solid #272b36;
+  border-radius: 16px;
+  padding: 14px 16px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  cursor: pointer;
+  transition: transform 0.12s ease, border-color 0.2s ease;
+}
+.cls-card:active { transform: scale(0.99); }
+.cls-badge-sq {
+  width: 44px;
+  height: 44px;
+  border-radius: 11px;
+  background: rgba(242, 116, 56, 0.16);
+  color: #f27438;
+  font-weight: 800;
+  font-size: 14px;
+  display: grid;
+  place-items: center;
+  flex: none;
+  padding: 0 4px;
+  text-align: center;
+  line-height: 1.1;
+  word-break: break-word;
+}
+.cls-bottom-bar {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 45;
+  padding: 10px 16px max(16px, env(safe-area-inset-bottom));
+  background: linear-gradient(transparent, rgba(13, 15, 20, 0.92) 25%);
+  display: flex;
+  justify-content: center;
+  pointer-events: none;
+}
+.cls-bottom-inner {
+  width: 100%;
+  max-width: 640px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  pointer-events: auto;
+}
+.cls-search-box {
+  flex: 1;
+  height: 52px;
+  border-radius: 999px;
+  background: #1e212a;
+  border: 1px solid #2e3340;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 0 18px;
+  color: #9ca3af;
+}
+.cls-search-box input {
+  flex: 1;
+  min-width: 0;
+  border: none;
+  background: transparent;
+  color: #f3f4f6;
+  font-size: 16px;
+  outline: none;
+}
+.cls-fab {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: #f27438;
+  color: #111827;
+  border: none;
+  font-size: 32px;
+  font-weight: 400;
+  line-height: 1;
+  display: grid;
+  place-items: center;
+  flex: none;
+  cursor: pointer;
+  box-shadow: 0 6px 20px rgba(242, 116, 56, 0.4);
+}
+.cls-fab:active { transform: scale(0.94); }
+
+/* Modal Tạo lớp mới (Hình 2) */
+.cls-modal-bg {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.72);
+  z-index: 115;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+.cls-modal-bg[hidden] { display: none; }
+.cls-modal-box {
+  width: 100%;
+  max-width: 380px;
+  background: #22252e;
+  border: 1px solid #323644;
+  border-radius: 22px;
+  padding: 22px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.5);
+}
+.cls-modal-box h3 {
+  font-size: 20px;
+  font-weight: 800;
+  color: #ffffff;
+}
+.cls-modal-inp {
+  width: 100%;
+  height: 48px;
+  border-radius: 12px;
+  border: 1px solid #383d4d;
+  background: #2d313d;
+  color: #ffffff;
+  font-size: 16px;
+  padding: 0 14px;
+  outline: none;
+}
+.cls-modal-inp:focus { border-color: #f27438; }
+.cls-modal-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+.cls-btn-cancel {
+  height: 46px;
+  border-radius: 999px;
+  border: none;
+  background: #363a47;
+  color: #ffffff;
+  font-size: 16px;
+  font-weight: 700;
+  cursor: pointer;
+}
+.cls-btn-create {
+  height: 46px;
+  border-radius: 999px;
+  border: none;
+  background: #f27438;
+  color: #111827;
+  font-size: 16px;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+/* Màn hình chi tiết Lớp học (Hình 3 & 4) */
+.cls-detail-screen {
+  position: fixed;
+  inset: 0;
+  z-index: 110;
+  background: #0d0f14;
+  color: #f3f4f6;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+.cls-detail-screen[hidden] { display: none; }
+.cls-detail-header {
+  background: #14171f;
+  border-bottom: 1.5px solid #e06d3b;
+  border-bottom-left-radius: 22px;
+  border-bottom-right-radius: 22px;
+  padding: max(12px, env(safe-area-inset-top)) 16px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  flex: none;
+}
+.cls-detail-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.cls-circle-btn {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  border: 1px solid #2e3340;
+  background: #222631;
+  color: #ffffff;
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+}
+.cls-pill-tools {
+  height: 40px;
+  border-radius: 999px;
+  border: 1px solid #2e3340;
+  background: #222631;
+  display: inline-flex;
+  align-items: center;
+  padding: 0 6px;
+}
+.cls-pill-tools button {
+  border: none;
+  background: transparent;
+  color: #ffffff;
+  height: 34px;
+  padding: 0 10px;
+  cursor: pointer;
+  display: grid;
+  place-items: center;
+}
+.cls-seg-bar {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  background: #262a34;
+  border-radius: 999px;
+  padding: 3px;
+}
+.cls-seg-btn {
+  height: 36px;
+  border-radius: 999px;
+  border: none;
+  background: transparent;
+  color: #d1d5db;
+  font-size: 15px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.18s ease;
+}
+.cls-seg-btn.active {
+  background: #ffffff;
+  color: #111827;
+}
+.cls-detail-body {
+  flex: 1;
+  overflow-y: auto;
+  padding: 16px 16px 96px;
+  max-width: 640px;
+  width: 100%;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+}
+.cls-empty-center {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 55vh;
+  color: #9ca3af;
+  font-size: 17px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.cls-combo-btn {
+  height: 50px;
+  padding: 0 20px;
+  border-radius: 999px;
+  border: 1px solid #2e3340;
+  background: #1e212a;
+  color: #f3f4f6;
+  font-size: 16px;
+  font-weight: 700;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.35);
+}
 </style>
 </head>
 <body>
@@ -1673,6 +1944,10 @@ html, body {
         <div class="menu-item active" data-target="home">
            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
            Trang chủ
+        </div>
+        <div class="menu-item" data-target="classes">
+           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
+           Lớp học
         </div>
         <div class="menu-item" data-target="batches">
            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="16" rx="2"/><line x1="7" y1="9" x2="17" y2="9"/><line x1="7" y1="13" x2="17" y2="13"/><line x1="7" y1="17" x2="13" y2="17"/></svg>
@@ -1741,6 +2016,72 @@ html, body {
       </div>
     </section>
 
+    <!-- TAB LỚP HỌC (HÌNH 1 & HÌNH 2) -->
+    <section id="v-classes" class="view" hidden aria-label="Lớp học" style="padding-bottom: 86px;">
+      <div id="clsListContainer" style="display: flex; flex-direction: column; gap: 12px;"></div>
+
+      <!-- Thanh tìm kiếm + Nút tròn dấu + góc dưới bên phải -->
+      <div class="cls-bottom-bar">
+        <div class="cls-bottom-inner">
+          <div class="cls-search-box">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+            <input id="clsSearchInput" type="search" placeholder="Tìm kiếm">
+          </div>
+          <button type="button" class="cls-fab" id="btnOpenNewClassModal" aria-label="Tạo lớp mới">+</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- HỘP THOẠI TẠO LỚP MỚI (HÌNH 2) -->
+    <div class="cls-modal-bg" id="newClassModal" hidden role="dialog" aria-modal="true" aria-label="Tạo lớp mới">
+      <div class="cls-modal-box">
+        <h3>Tạo lớp mới</h3>
+        <input id="newClassNameInp" class="cls-modal-inp" type="text" placeholder="Tên lớp" autocomplete="off">
+        <div class="cls-modal-actions">
+          <button type="button" class="cls-btn-cancel" id="btnCancelNewClass">Huỷ</button>
+          <button type="button" class="cls-btn-create" id="btnConfirmNewClass">Tạo</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- MÀN HÌNH CHI TIẾT LỚP HỌC: KIỂM TRA / HỌC SINH (HÌNH 3 & HÌNH 4) -->
+    <div class="cls-detail-screen" id="clsDetailScreen" hidden role="dialog" aria-modal="true" aria-label="Chi tiết lớp học">
+      <div class="cls-detail-header">
+        <div class="cls-detail-top">
+          <button type="button" class="cls-circle-btn" id="btnCloseClsDetail" aria-label="Quay lại">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"></polyline></svg>
+          </button>
+          <div id="clsDetailTitle" style="font-size: 19px; font-weight: 800; color: #ffffff;">10B1</div>
+          <div class="cls-pill-tools">
+            <button type="button" id="btnClsSort" aria-label="Sắp xếp" title="Sắp xếp">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 4v16M7 4l-3 3M7 4l3 3M17 20V4M17 20l-3-3M17 20l3-3"/></svg>
+            </button>
+            <button type="button" id="btnClsMore" aria-label="Tuỳ chọn lớp" title="Đổi tên / Xoá lớp">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><circle cx="5" cy="12" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="19" cy="12" r="2"/></svg>
+            </button>
+          </div>
+        </div>
+
+        <div class="cls-seg-bar" role="tablist">
+          <button type="button" class="cls-seg-btn active" id="tabClsTests" data-clstab="tests">Kiểm tra</button>
+          <button type="button" class="cls-seg-btn" id="tabClsStudents" data-clstab="students">Học sinh</button>
+        </div>
+      </div>
+
+      <div class="cls-detail-body" id="clsDetailBody"></div>
+
+      <!-- Thanh nút dưới cùng của chi tiết lớp học -->
+      <div class="cls-bottom-bar" id="clsDetailBottomBar">
+        <div class="cls-bottom-inner" style="justify-content: space-between;">
+          <button type="button" class="cls-combo-btn" id="btnClsCombo">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 3 21 3 21 8"></polyline><line x1="4" y1="20" x2="21" y2="3"></line><polyline points="21 16 21 21 16 21"></polyline><line x1="15" y1="15" x2="21" y2="21"></line><line x1="4" y1="4" x2="9" y2="9"></line></svg>
+            Tổ hợp
+          </button>
+          <button type="button" class="cls-fab" id="btnClsDetailAdd" aria-label="Tạo bài chấm mới">+</button>
+        </div>
+      </div>
+    </div>
+      
     <!-- TAB CẤU HÌNH LẦN CHẤM (THÊM MỚI) -->
     <section id="v-batches" class="view" hidden aria-label="Cấu hình lần chấm" style="padding-bottom: 84px;">
       <div class="row" style="margin-bottom: 10px; padding: 0 4px;">
@@ -2117,6 +2458,7 @@ html, body {
 <nav class="tabs" aria-label="Chuyển mục">
   <div>
     <button class="tab" type="button" data-tab="home" aria-current="page">Trang chủ</button>
+    <button class="tab" type="button" data-tab="classes">Lớp học</button>
     <button class="tab" type="button" data-tab="omr">Nhận dạng ô tô</button>
     <button class="tab" type="button" data-tab="batches">Cấu hình lần chấm</button>
     <button class="tab" type="button" data-tab="scan">
@@ -10294,6 +10636,474 @@ let qrState = { kind: 'idle' },
   }
 
   upgradeSheetSelector();
+})();
+</script>
+<script>
+// --- QUẢN LÝ TAB LỚP HỌC, TẠO LỚP MỚI & TẠO BÀI CHẤM TRONG LỚP (ĐỘC LẬP) ---
+(function() {
+  const CLS_KEY = 'ntmix.classes';
+  const PENDING_KEY = 'ntmix.pendingBatchClass';
+
+  function getClasses() {
+    try {
+      const arr = JSON.parse(localStorage.getItem(CLS_KEY) || '[]');
+      return Array.isArray(arr) ? arr : [];
+    } catch (e) { return []; }
+  }
+  function saveClasses(arr) {
+    localStorage.setItem(CLS_KEY, JSON.stringify(arr));
+  }
+  function getLists() {
+    try {
+      const l = JSON.parse(localStorage.getItem('omr.lists') || 'null');
+      if (l && Array.isArray(l.items) && l.items.length) return l;
+    } catch (e) {}
+    return { items: [{ id: 'l1', name: 'Lần 1' }], active: 'l1' };
+  }
+  function getResults() {
+    try {
+      const r = JSON.parse(localStorage.getItem('omr.results2') || '[]');
+      return Array.isArray(r) ? r : [];
+    } catch (e) { return []; }
+  }
+  function escHtml(s) {
+    return String(s || '').replace(/[&<>"]/g, c => ({'&':'&','<':'<','>':'>','"':'"'}[c]));
+  }
+
+  // 1. Gắn lớp học & danh sách học sinh vào đợt chấm vừa tạo (nếu có)
+  try {
+    const pendingRaw = sessionStorage.getItem(PENDING_KEY);
+    if (pendingRaw) {
+      sessionStorage.removeItem(PENDING_KEY);
+      const pending = JSON.parse(pendingRaw);
+      const lists = getLists();
+      if (lists.items && lists.items[0] && pending && pending.classId) {
+        lists.items[0].classId = pending.classId;
+        lists.items[0].className = pending.className || '';
+        if (Array.isArray(pending.students) && pending.students.length) {
+          lists.items[0].students = pending.students;
+        }
+        localStorage.setItem('omr.lists', JSON.stringify(lists));
+      }
+    }
+  } catch (e) {}
+
+  let activeClassId = null;
+  let activeSubTab = 'tests'; // 'tests' | 'students'
+  let sortAsc = true;
+
+  const clsListContainer = document.getElementById('clsListContainer');
+  const clsSearchInput = document.getElementById('clsSearchInput');
+  const newClassModal = document.getElementById('newClassModal');
+  const newClassNameInp = document.getElementById('newClassNameInp');
+  const clsDetailScreen = document.getElementById('clsDetailScreen');
+  const clsDetailBody = document.getElementById('clsDetailBody');
+  const clsDetailTitle = document.getElementById('clsDetailTitle');
+  const clsDetailBottomBar = document.getElementById('clsDetailBottomBar');
+
+  function getBatchesForClass(cls) {
+    const lists = getLists();
+    return lists.items.filter(function(b) {
+      return b.classId === cls.id || (!b.classId && b.className && b.className.toLowerCase() === cls.name.toLowerCase());
+    });
+  }
+
+  function syncClassStudentsToBatches(cls) {
+    const lists = getLists();
+    let changed = false;
+    lists.items.forEach(function(b) {
+      if (b.classId === cls.id) {
+        b.students = JSON.parse(JSON.stringify(cls.students || []));
+        changed = true;
+      }
+    });
+    if (changed) localStorage.setItem('omr.lists', JSON.stringify(lists));
+
+    try {
+      const dict = JSON.parse(localStorage.getItem('omr.students') || '{}');
+      (cls.students || []).forEach(function(s) {
+        dict[s.k] = { name: s.name, cls: cls.name };
+      });
+      localStorage.setItem('omr.students', JSON.stringify(dict));
+    } catch (e) {}
+  }
+
+  // Render danh sách lớp ở tab Lớp học (Hình 1)
+  function renderClassList() {
+    if (!clsListContainer) return;
+    const classes = getClasses();
+    const q = (clsSearchInput ? clsSearchInput.value : '').trim().toLowerCase();
+    const filtered = classes.filter(function(c) {
+      return !q || c.name.toLowerCase().indexOf(q) >= 0;
+    });
+
+    if (!filtered.length) {
+      clsListContainer.innerHTML =
+        '<div style="text-align: center; color: var(--muted); padding: 60px 16px; font-size: 15px;">' +
+        (classes.length ? 'Không tìm thấy lớp phù hợp.' : 'Chưa có lớp học nào. Bấm dấu + góc phải bên dưới để tạo lớp mới.') +
+        '</div>';
+      return;
+    }
+
+    clsListContainer.innerHTML = filtered.map(function(c) {
+      const stuCount = Array.isArray(c.students) ? c.students.length : 0;
+      const testCount = getBatchesForClass(c).length;
+      const shortBadge = c.name.replace(/^khối\s*/i, '').slice(0, 6);
+      return `
+        <div class="cls-card" data-open-cls="${escHtml(c.id)}">
+          <div class="cls-badge-sq">${escHtml(shortBadge)}</div>
+          <div style="flex: 1; min-width: 0;">
+            <div style="font-size: 17px; font-weight: 800; color: #ffffff;">${escHtml(c.name)}</div>
+            <div style="font-size: 13px; color: #9ca3af; margin-top: 2px;">${stuCount} học sinh · ${testCount} bài chấm</div>
+          </div>
+          <div style="color: #9ca3af; font-size: 20px; font-weight: 700;">›</div>
+        </div>
+      `;
+    }).join('');
+
+    clsListContainer.querySelectorAll('[data-open-cls]').forEach(function(card) {
+      card.addEventListener('click', function() {
+        openClassDetail(this.dataset.openCls, 'tests');
+      });
+    });
+  }
+
+  if (clsSearchInput) {
+    clsSearchInput.addEventListener('input', renderClassList);
+  }
+
+  // Hộp thoại Tạo lớp mới (Hình 2)
+  document.getElementById('btnOpenNewClassModal').addEventListener('click', function() {
+    newClassNameInp.value = '';
+    newClassModal.hidden = false;
+    setTimeout(function() { newClassNameInp.focus(); }, 50);
+  });
+  document.getElementById('btnCancelNewClass').addEventListener('click', function() {
+    newClassModal.hidden = true;
+  });
+  document.getElementById('btnConfirmNewClass').addEventListener('click', function() {
+    const name = newClassNameInp.value.trim();
+    if (!name) {
+      newClassNameInp.focus();
+      return;
+    }
+    const classes = getClasses();
+    const newCls = {
+      id: 'cls_' + Date.now(),
+      name: name,
+      students: []
+    };
+    classes.unshift(newCls);
+    saveClasses(classes);
+    newClassModal.hidden = true;
+    renderClassList();
+  });
+
+  // Mở chi tiết lớp học (Hình 3 & Hình 4)
+  function openClassDetail(clsId, subTab) {
+    const classes = getClasses();
+    const cls = classes.find(x => x.id === clsId);
+    if (!cls) return;
+    activeClassId = cls.id;
+    activeSubTab = subTab || 'tests';
+    clsDetailTitle.textContent = cls.name;
+
+    document.getElementById('tabClsTests').classList.toggle('active', activeSubTab === 'tests');
+    document.getElementById('tabClsStudents').classList.toggle('active', activeSubTab === 'students');
+    clsDetailBottomBar.hidden = (activeSubTab !== 'tests');
+
+    renderClassDetailBody(cls);
+    clsDetailScreen.hidden = false;
+  }
+
+  function renderClassDetailBody(cls) {
+    if (activeSubTab === 'tests') {
+      const batches = getBatchesForClass(cls);
+      const allRes = getResults();
+      if (!batches.length) {
+        clsDetailBody.innerHTML =
+          '<div class="cls-empty-center" id="clsEmptyCreateTrigger">(+) Tạo bài chấm của bạn</div>';
+        document.getElementById('clsEmptyCreateTrigger').addEventListener('click', function() {
+          triggerCreateTestForClass(cls);
+        });
+        return;
+      }
+
+      const sorted = batches.slice();
+      if (!sortAsc) sorted.reverse();
+
+      clsDetailBody.innerHTML =
+        '<div style="display: flex; flex-direction: column; gap: 12px;">' +
+        sorted.map(function(b) {
+          const c = b.cfg || { n1: 12, n2: 4, n3: 6 };
+          const graded = allRes.filter(r => r.lid === b.id).length;
+          return `
+            <div style="background: #1a1d24; border: 1px solid #272b36; border-radius: 16px; padding: 14px 16px; display: flex; flex-direction: column; gap: 10px;">
+              <div style="display: flex; justify-content: space-between; align-items: center;">
+                <strong style="font-size: 17px; color: #fff;">${escHtml(b.name)}</strong>
+                <span style="font-size: 12px; font-weight: 700; color: #f27438;">${graded} bài đã chấm</span>
+              </div>
+              <div style="font-size: 13px; color: #9ca3af;">Cấu trúc: <b>${c.n1} · ${c.n2} · ${c.n3} câu</b></div>
+              <div style="display: flex; gap: 8px;">
+                <button type="button" class="btn small primary" data-cls-act="scan" data-bid="${escHtml(b.id)}" style="flex: 1; background: #f27438; border-color: #f27438; color: #111827; font-weight: 800;">Chấm bài</button>
+                <button type="button" class="btn small" data-cls-act="key" data-bid="${escHtml(b.id)}" style="background: #262a34; border-color: #323746; color: #fff;">Đáp án</button>
+                <button type="button" class="btn small" data-cls-act="res" data-bid="${escHtml(b.id)}" style="background: #262a34; border-color: #323746; color: #fff;">Kết quả</button>
+              </div>
+            </div>
+          `;
+        }).join('') +
+        '</div>';
+
+      clsDetailBody.querySelectorAll('[data-cls-act]').forEach(function(btn) {
+        btn.addEventListener('click', function() {
+          const act = this.dataset.clsAct;
+          const bid = this.dataset.bid;
+          const lists = getLists();
+          const idx = lists.items.findIndex(x => x.id === bid);
+          if (idx >= 0) {
+            lists.active = bid;
+            localStorage.setItem('omr.lists', JSON.stringify(lists));
+            if (lists.items[idx].cfg) {
+              localStorage.setItem('omr.cfg2', JSON.stringify(lists.items[idx].cfg));
+            }
+          }
+          sessionStorage.setItem('ntmix.openTab', act);
+          location.reload();
+        });
+      });
+    } else {
+      // Tab Học sinh của lớp
+      const stds = Array.isArray(cls.students) ? cls.students : [];
+      clsDetailBody.innerHTML = `
+        <div style="background: #1a1d24; border: 1px solid #272b36; border-radius: 16px; padding: 14px; display: flex; flex-direction: column; gap: 10px; margin-bottom: 14px;">
+          <div style="display: flex; justify-content: space-between; align-items: center;">
+            <strong style="font-size: 16px; color: #fff;">Danh sách lớp ${escHtml(cls.name)}</strong>
+            <span style="font-size: 13px; color: #f27438; font-weight: 700;">${stds.length} học sinh</span>
+          </div>
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
+            <label for="clsExcelFile" style="height: 42px; border-radius: 10px; border: 1.5px dashed #f27438; color: #f27438; font-weight: 700; font-size: 13px; display: grid; place-items: center; cursor: pointer;">+ Nạp file Excel</label>
+            <input id="clsExcelFile" type="file" accept=".xlsx,.xls,.csv" hidden>
+            <button type="button" id="clsPasteBtn" style="height: 42px; border-radius: 10px; border: 1px solid #323746; background: #262a34; color: #fff; font-weight: 700; font-size: 13px; cursor: pointer;">Dán từ Excel</button>
+          </div>
+          <div style="display: flex; gap: 8px;">
+            <input id="clsAddSbd" type="text" inputmode="numeric" placeholder="SBD" style="width: 110px; height: 40px; border-radius: 8px; border: 1px solid #323746; background: #262a34; color: #fff; padding: 0 10px;">
+            <input id="clsAddName" type="text" placeholder="Họ và tên học sinh" style="flex: 1; min-width: 0; height: 40px; border-radius: 8px; border: 1px solid #323746; background: #262a34; color: #fff; padding: 0 10px;">
+            <button type="button" id="clsAddOneBtn" style="height: 40px; padding: 0 14px; border-radius: 8px; border: none; background: #f27438; color: #111827; font-weight: 800; cursor: pointer;">Thêm</button>
+          </div>
+        </div>
+        <div style="display: flex; flex-direction: column; gap: 8px;">
+          ${stds.length ? stds.map(function(s, i) {
+            return `
+              <div style="background: #1a1d24; border: 1px solid #272b36; border-radius: 12px; padding: 10px 14px; display: flex; align-items: center; justify-content: space-between;">
+                <div>
+                  <div style="font-weight: 700; color: #fff; font-size: 15px;">${escHtml(s.name)}</div>
+                  <div style="font-size: 12px; color: #9ca3af; font-variant-numeric: tabular-nums;">SBD: ${escHtml(s.k)}</div>
+                </div>
+                <button type="button" data-del-stu="${i}" style="width: 32px; height: 32px; border-radius: 8px; border: 1px solid #323746; background: transparent; color: #9ca3af; cursor: pointer;">✕</button>
+              </div>
+            `;
+          }).join('') : '<div style="text-align: center; color: #9ca3af; padding: 24px;">Chưa có học sinh trong lớp này.</div>'}
+        </div>
+      `;
+
+      // Nạp Excel cho lớp
+      document.getElementById('clsExcelFile').onchange = async function() {
+        const f = this.files && this.files[0];
+        this.value = '';
+        if (!f || typeof window.XLSX === 'undefined') return;
+        try {
+          const buf = await f.arrayBuffer();
+          const wb = window.XLSX.read(buf, { type: 'array' });
+          const rows = window.XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]], { header: 1, raw: true, defval: '' });
+          const imported = [];
+          rows.forEach(function(r, idx) {
+            if (!r || r.length < 2) return;
+            let sbd = '', name = '';
+            if (r.length >= 3 && /^\d+$/.test(String(r[1]).trim())) {
+              sbd = String(r[1]).replace(/\D/g, '').replace(/^0+/, '');
+              name = String(r[2]).trim();
+            } else if (/^\d+$/.test(String(r[0]).trim())) {
+              sbd = String(r[0]).replace(/\D/g, '').replace(/^0+/, '');
+              name = String(r[1]).trim();
+            }
+            if (sbd && name && !/họ.*tên|sbd|báo danh/i.test(name)) {
+              imported.push({ k: sbd, name: name, cls: cls.name });
+            }
+          });
+          if (imported.length) {
+            const allCls = getClasses();
+            const target = allCls.find(x => x.id === cls.id);
+            target.students = imported;
+            saveClasses(allCls);
+            syncClassStudentsToBatches(target);
+            renderClassList();
+            renderClassDetailBody(target);
+            alert('Đã nạp ' + imported.length + ' học sinh vào lớp ' + cls.name);
+          } else {
+            alert('Không tìm thấy cột SBD và Họ tên hợp lệ trong file.');
+          }
+        } catch (err) { alert('Lỗi đọc file: ' + err.message); }
+      };
+
+      // Dán nhanh từ Excel
+      document.getElementById('clsPasteBtn').onclick = function() {
+        const txt = prompt('Dán các dòng từ Excel (mỗi dòng gồm SBD và Họ tên):');
+        if (!txt) return;
+        const imported = [];
+        txt.split(/\r?\n/).forEach(function(line) {
+          const cols = line.split(/\t|;|,/).map(x => x.trim()).filter(Boolean);
+          if (cols.length >= 2) {
+            const sbdIdx = /^\d+$/.test(cols[0]) ? 0 : (/^\d+$/.test(cols[1]) ? 1 : -1);
+            if (sbdIdx >= 0) {
+              const sbd = cols[sbdIdx].replace(/\D/g, '').replace(/^0+/, '');
+              const name = cols[sbdIdx === 0 ? 1 : 2] || '';
+              if (sbd && name) imported.push({ k: sbd, name: name, cls: cls.name });
+            }
+          }
+        });
+        if (imported.length) {
+          const allCls = getClasses();
+          const target = allCls.find(x => x.id === cls.id);
+          target.students = imported;
+          saveClasses(allCls);
+          syncClassStudentsToBatches(target);
+          renderClassList();
+          renderClassDetailBody(target);
+        }
+      };
+
+      // Thêm lẻ 1 học sinh
+      document.getElementById('clsAddOneBtn').onclick = function() {
+        const sbd = document.getElementById('clsAddSbd').value.replace(/\D/g, '').replace(/^0+/, '');
+        const name = document.getElementById('clsAddName').value.trim();
+        if (!sbd || !name) return;
+        const allCls = getClasses();
+        const target = allCls.find(x => x.id === cls.id);
+        target.students = target.students || [];
+        const ex = target.students.findIndex(x => x.k === sbd);
+        if (ex >= 0) target.students[ex].name = name;
+        else target.students.unshift({ k: sbd, name: name, cls: cls.name });
+        saveClasses(allCls);
+        syncClassStudentsToBatches(target);
+        renderClassList();
+        renderClassDetailBody(target);
+      };
+
+      // Xoá học sinh
+      clsDetailBody.querySelectorAll('[data-del-stu]').forEach(function(b) {
+        b.onclick = function() {
+          const allCls = getClasses();
+          const target = allCls.find(x => x.id === cls.id);
+          target.students.splice(+this.dataset.delStu, 1);
+          saveClasses(allCls);
+          syncClassStudentsToBatches(target);
+          renderClassList();
+          renderClassDetailBody(target);
+        };
+      });
+    }
+  }
+
+  // Chuyển tab Kiểm tra / Học sinh trong chi tiết lớp
+  document.getElementById('tabClsTests').addEventListener('click', function() {
+    if (activeClassId) openClassDetail(activeClassId, 'tests');
+  });
+  document.getElementById('tabClsStudents').addEventListener('click', function() {
+    if (activeClassId) openClassDetail(activeClassId, 'students');
+  });
+
+  // Đóng chi tiết lớp
+  document.getElementById('btnCloseClsDetail').addEventListener('click', function() {
+    clsDetailScreen.hidden = true;
+    renderClassList();
+  });
+
+  // Sắp xếp & Tuỳ chọn lớp (Đổi tên / Xoá)
+  document.getElementById('btnClsSort').addEventListener('click', function() {
+    sortAsc = !sortAsc;
+    const cls = getClasses().find(x => x.id === activeClassId);
+    if (cls) renderClassDetailBody(cls);
+  });
+  document.getElementById('btnClsMore').addEventListener('click', function() {
+    const allCls = getClasses();
+    const idx = allCls.findIndex(x => x.id === activeClassId);
+    if (idx < 0) return;
+    const choice = prompt('Nhập tên mới cho lớp (hoặc gõ XOA để xoá lớp này):', allCls[idx].name);
+    if (!choice || !choice.trim()) return;
+    if (choice.trim().toUpperCase() === 'XOA') {
+      if (confirm('Xoá lớp "' + allCls[idx].name + '"?')) {
+        allCls.splice(idx, 1);
+        saveClasses(allCls);
+        clsDetailScreen.hidden = true;
+        renderClassList();
+      }
+    } else {
+      allCls[idx].name = choice.trim();
+      saveClasses(allCls);
+      clsDetailTitle.textContent = allCls[idx].name;
+      renderClassList();
+    }
+  });
+
+  // Nút Tổ hợp (thống kê gộp điểm của lớp)
+  document.getElementById('btnClsCombo').addEventListener('click', function() {
+    const cls = getClasses().find(x => x.id === activeClassId);
+    if (!cls) return;
+    const batches = getBatchesForClass(cls);
+    const allRes = getResults();
+    const totalPapers = batches.reduce((sum, b) => sum + allRes.filter(r => r.lid === b.id).length, 0);
+    alert('Lớp ' + cls.name + ':\n- Sĩ số: ' + (cls.students ? cls.students.length : 0) + ' học sinh\n- Số bài kiểm tra: ' + batches.length + '\n- Tổng số bài đã chấm: ' + totalPapers);
+  });
+
+  // Bấm dấu + ở tab Kiểm tra -> Mở màn hình Tạo bài chấm (Hình 5 & Hình 6) với Lớp học đã chọn sẵn
+  function triggerCreateTestForClass(cls) {
+    const fabBatch = document.getElementById('btnAddBatchFab');
+    if (fabBatch) {
+      fabBatch.click();
+      // Điền sẵn tên lớp vào mục Lớp học trên màn hình Tạo bài chấm
+      const clsValEl = document.getElementById('tbClassVal');
+      if (clsValEl) {
+        clsValEl.textContent = cls.name + ' ›';
+        clsValEl.style.color = '#ffffff';
+      }
+      window.NTMIX_LOCKED_CLASS = cls;
+    }
+  }
+
+  document.getElementById('btnClsDetailAdd').addEventListener('click', function() {
+    const cls = getClasses().find(x => x.id === activeClassId);
+    if (cls) triggerCreateTestForClass(cls);
+  });
+
+  // Khi bấm Tạo bài chấm trên màn hình Tạo bài chấm -> Gắn lớp học & danh sách học sinh của lớp vào bài chấm
+  const confirmBatchBtn = document.getElementById('btnConfirmCreateBatch');
+  if (confirmBatchBtn) {
+    confirmBatchBtn.addEventListener('click', function() {
+      const cls = window.NTMIX_LOCKED_CLASS;
+      if (cls) {
+        sessionStorage.setItem(PENDING_KEY, JSON.stringify({
+          classId: cls.id,
+          className: cls.name,
+          students: cls.students || []
+        }));
+      }
+    }, true);
+  }
+
+  // Reset lớp khóa nếu mở Tạo bài chấm từ bên ngoài tab Lớp học
+  const outerBatchFab = document.getElementById('btnAddBatchFab');
+  if (outerBatchFab) {
+    outerBatchFab.addEventListener('click', function() {
+      window.NTMIX_LOCKED_CLASS = null;
+    }, true);
+  }
+
+  // Cập nhật danh sách mỗi khi mở tab Lớp học
+  const clsMenuBtn = document.querySelector('.menu-item[data-target="classes"]');
+  if (clsMenuBtn) {
+    clsMenuBtn.addEventListener('click', renderClassList);
+  }
+  renderClassList();
 })();
 </script>
 </body>
