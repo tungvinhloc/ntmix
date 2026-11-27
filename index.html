@@ -1371,7 +1371,7 @@ html, body {
   overflow-x: hidden !important;
   width: 100%;
 }
-/* --- GIAO DIỆN CẤU HÌNH LẦN CHẤM & MODAL LẦN CHẤM MỚI (THÊM MỚI) --- */
+/* --- GIAO DIỆN CẤU HÌNH LẦN CHẤM & MÀN HÌNH TẠO BÀI CHẤM (THÊM MỚI) --- */
 .fab-add {
   position: fixed;
   right: 20px;
@@ -1416,88 +1416,243 @@ html, body {
   color: var(--ink);
 }
 
-/* Modal Lần chấm mới */
-.batch-modal-bg {
+/* Màn hình toàn trang Tạo bài chấm */
+.tb-screen {
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, 0.65);
   z-index: 120;
+  background: #0d0f14;
+  color: #f3f4f6;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+.tb-screen[hidden] { display: none; }
+.tb-header {
   display: flex;
   align-items: center;
-  justify-content: center;
-  padding: 14px;
+  justify-content: space-between;
+  padding: max(14px, env(safe-area-inset-top)) 16px 14px;
+  background: #14171f;
+  border-bottom: 1.5px solid #e06d3b;
+  border-bottom-left-radius: 20px;
+  border-bottom-right-radius: 20px;
+  flex: none;
 }
-.batch-modal-bg[hidden] { display: none; }
-.batch-modal {
-  background: var(--card);
-  color: var(--fg);
-  border: 1px solid var(--line);
-  border-radius: 20px;
-  width: 100%;
-  max-width: 480px;
-  max-height: 92vh;
-  overflow-y: auto;
-  padding: 20px 16px;
-  display: flex;
-  flex-direction: column;
-  gap: 14px;
-  box-shadow: 0 12px 36px rgba(0, 0, 0, 0.35);
-}
-.batch-modal h2 {
-  font-size: 21px;
-  font-weight: 800;
-  color: var(--ink);
-}
-.sheet-grid-2x2 {
+.tb-close {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  border: 1px solid #2e3340;
+  background: #222631;
+  color: #e5e7eb;
+  font-size: 18px;
   display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 10px;
-}
-.sheet-opt {
-  background: var(--bg);
-  border: 1.5px solid var(--line);
-  border-radius: 14px;
-  padding: 10px;
-  text-align: left;
+  place-items: center;
   cursor: pointer;
+}
+.tb-title {
+  font-size: 19px;
+  font-weight: 800;
+  color: #ffffff;
+}
+.tb-scroll {
+  flex: 1;
+  overflow-y: auto;
+  padding: 14px 16px max(28px, env(safe-area-inset-bottom));
   display: flex;
   flex-direction: column;
-  gap: 6px;
-}
-.sheet-opt.selected {
-  border: 2px solid var(--ink);
-  background: var(--ink-soft);
-}
-.sheet-opt img {
+  gap: 12px;
+  max-width: 600px;
   width: 100%;
-  height: 76px;
+  margin: 0 auto;
+}
+.tb-sec-lbl {
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: #9ca3af;
+  margin: 4px 0 -4px 4px;
+}
+.tb-box {
+  background: #1a1d24;
+  border: 1px solid #272b36;
+  border-radius: 16px;
+  padding: 14px 16px;
+  display: flex;
+  flex-direction: column;
+}
+.tb-sheet-card {
+  flex-direction: row;
+  align-items: center;
+  gap: 12px;
+  cursor: pointer;
+}
+.tb-sheet-card img {
+  width: 46px;
+  height: 60px;
   object-fit: cover;
   object-position: top center;
-  border-radius: 8px;
+  border-radius: 6px;
   background: #fff;
-  border: 1px solid var(--line);
+  border: 1px solid #374151;
+  flex: none;
 }
-.sheet-opt .s-title {
-  font-size: 14px;
-  font-weight: 800;
-  color: var(--fg);
-  line-height: 1.25;
-}
-.sheet-opt .s-desc {
-  font-size: 11.5px;
-  color: var(--muted);
-  line-height: 1.35;
-}
-.batch-select {
-  width: 100%;
+.tb-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
   min-height: 44px;
-  padding: 8px 12px;
-  border: 1px solid var(--line);
-  border-radius: 10px;
-  background: var(--bg);
-  color: var(--fg);
+}
+.tb-row + .tb-row {
+  border-top: 1px solid #272b36;
+  margin-top: 6px;
+  padding-top: 10px;
+}
+.tb-row-lbl {
+  font-size: 16px;
   font-weight: 600;
-}    
+  color: #f3f4f6;
+}
+.tb-row-head {
+  font-size: 17px;
+  font-weight: 800;
+  color: #ffffff;
+}
+.tb-num-inp {
+  width: 82px;
+  height: 36px;
+  border-radius: 8px;
+  border: 1px solid #323746;
+  background: #262a34;
+  color: #ffffff;
+  font-weight: 700;
+  font-size: 16px;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+}
+.tb-num-inp:focus {
+  outline: none;
+  border-color: #f27438;
+}
+.tb-name-inp {
+  flex: 1;
+  max-width: 210px;
+  height: 36px;
+  border-radius: 8px;
+  border: 1px solid #323746;
+  background: #262a34;
+  color: #ffffff;
+  font-weight: 700;
+  font-size: 15px;
+  text-align: right;
+  padding: 0 12px;
+}
+.tb-name-inp:focus {
+  outline: none;
+  border-color: #f27438;
+}
+
+/* Công tắc gạt cam kiểu iOS */
+.tb-switch {
+  position: relative;
+  display: inline-block;
+  width: 52px;
+  height: 30px;
+  flex: none;
+}
+.tb-switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+.tb-slider {
+  position: absolute;
+  inset: 0;
+  background: #3a3f4c;
+  border-radius: 999px;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+.tb-slider::before {
+  content: "";
+  position: absolute;
+  width: 24px;
+  height: 24px;
+  left: 3px;
+  top: 3px;
+  background: #ffffff;
+  border-radius: 50%;
+  transition: transform 0.2s ease;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+}
+.tb-switch input:checked + .tb-slider {
+  background: #f27438;
+}
+.tb-switch input:checked + .tb-slider::before {
+  transform: translateX(22px);
+}
+
+.tb-submit-btn {
+  width: 100%;
+  min-height: 52px;
+  border-radius: 999px;
+  border: none;
+  background: #f27438;
+  color: #111827;
+  font-size: 17px;
+  font-weight: 800;
+  cursor: pointer;
+  margin-top: 6px;
+  box-shadow: 0 6px 18px rgba(242, 116, 56, 0.3);
+}
+.tb-submit-btn:active {
+  transform: scale(0.98);
+}
+
+/* Popup phụ chọn Mẫu phiếu / Lớp học */
+.tb-submodal-bg {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.75);
+  z-index: 140;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  padding: 12px;
+}
+.tb-submodal-bg[hidden] { display: none; }
+.tb-submodal {
+  background: #1a1d24;
+  border: 1px solid #2e3340;
+  border-radius: 20px;
+  width: 100%;
+  max-width: 520px;
+  max-height: 82vh;
+  overflow-y: auto;
+  padding: 18px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.tb-pick-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 12px;
+  border-radius: 12px;
+  border: 1.5px solid #2c313d;
+  background: #14171f;
+  color: #f3f4f6;
+  text-align: left;
+  cursor: pointer;
+}
+.tb-pick-item.active {
+  border-color: #f27438;
+  background: rgba(242, 116, 56, 0.12);
+} 
     
 </style>
 </head>
@@ -1598,51 +1753,169 @@ html, body {
       <button type="button" class="fab-add" id="btnAddBatchFab" aria-label="Tạo lần chấm mới">+</button>
     </section>
 
-    <!-- HỘP THOẠI LẦN CHẤM MỚI (GIỐNG HÌNH 2) -->
-    <div class="batch-modal-bg" id="batchModal" hidden role="dialog" aria-modal="true" aria-label="Lần chấm mới">
-      <div class="batch-modal">
-        <h2>Lần chấm mới</h2>
-        
-        <div class="field">
-          <label class="lbl" for="newBatchName">Tên lần chấm</label>
-          <input id="newBatchName" type="text" placeholder="Ví dụ: 10_KTGK_I">
+    <!-- MÀN HÌNH TẠO BÀI CHẤM (GIAO DIỆN CHUẨN HÌNH 1 & 2) -->
+    <div class="tb-screen" id="batchModal" hidden role="dialog" aria-modal="true" aria-label="Tạo bài chấm">
+      <div class="tb-header">
+        <button type="button" class="tb-close" id="btnCancelCreateBatch" aria-label="Đóng">✕</button>
+        <div class="tb-title">Tạo bài chấm</div>
+        <div style="width: 40px;"></div>
+      </div>
+
+      <div class="tb-scroll">
+        <!-- MẪU PHIẾU -->
+        <div class="tb-sec-lbl">MẪU PHIẾU</div>
+        <div class="tb-box tb-sheet-card" id="tbOpenSheetPicker">
+          <img id="tbSheetThumb" src="assets/bgd2025.jpg" alt="Mẫu phiếu">
+          <div style="flex: 1; min-width: 0;">
+            <div id="tbSheetTitle" style="font-size: 16px; font-weight: 800; color: #fff;">Phiếu TNMaker BGD 2025(4MĐ)</div>
+            <div id="tbSheetSub1" style="font-size: 13px; color: #9ca3af; margin-top: 2px;">Mã đề 4 số · 4 đáp án</div>
+            <div id="tbSheetSub2" style="font-size: 13px; color: #9ca3af;">Phần I 40 · II 8 · III 6 câu</div>
+          </div>
+          <div style="color: #f27438; font-weight: 700; font-size: 15px; white-space: nowrap;">Đổi ›</div>
         </div>
 
-        <div class="field">
-          <label class="lbl">Chọn loại phiếu (cố định cho cả lần, tránh nhầm khi chấm)</label>
-          <div class="sheet-grid-2x2" id="newBatchSheetGrid">
-            <button type="button" class="sheet-opt selected" data-sheet-id="nh">
-              <img src="assets/bgd2025_cv1239.jpg" alt="Phiếu BGD 2025 CV 1239">
-              <div class="s-title">Phiếu BGD 2025</div>
-              <div class="s-desc">CV 1239 · 40 câu P.I · 8 câu P.II · 6 câu P.III</div>
-            </button>
-            <button type="button" class="sheet-opt" data-sheet-id="kt">
-              <img src="assets/NTMark_2025.jpg" alt="Phiếu NTMark_2025">
-              <div class="s-title">Phiếu NTMark</div>
-              <div class="s-desc">40 câu P.I · 8 câu P.II · 6 câu P.III</div>
-            </button>
-            <button type="button" class="sheet-opt" data-sheet-id="m">
-              <img src="assets/vx_02.jpg" alt="Phiếu NH">
-              <div class="s-title">Phiếu NH</div>
-              <div class="s-desc">12 câu P.I · 2 câu P.II · 4 câu P.III</div>
-            </button>
-            <button type="button" class="sheet-opt" data-sheet-id="bgd25">
-              <img src="assets/bgd2025.jpg" alt="Phiếu TNMaker BGD 2025">
-              <div class="s-title">Phiếu TNMaker</div>
-              <div class="s-desc">BGD 2025 (4MĐ) · 40 P.I · 8 P.II · 6 P.III</div>
-            </button>
+        <!-- THÔNG TIN -->
+        <div class="tb-sec-lbl">THÔNG TIN</div>
+        <div class="tb-box">
+          <div class="tb-row">
+            <label class="tb-row-lbl" for="newBatchName">Tên bài</label>
+            <input id="newBatchName" class="tb-name-inp" type="text" placeholder="Nhập tên lần chấm">
+          </div>
+          <div class="tb-row" id="tbOpenClassPicker" style="cursor: pointer;">
+            <span class="tb-row-lbl">Lớp học</span>
+            <span id="tbClassVal" style="color: #9ca3af; font-weight: 600; font-size: 15px;">Không có ›</span>
           </div>
         </div>
 
-        <div class="field">
-          <label class="lbl" for="copyFromBatchSel">Sao chép đáp án và danh sách lớp từ lần (tuỳ chọn)</label>
-          <select id="copyFromBatchSel" class="batch-select"></select>
+        <!-- PHẦN 1 -->
+        <div class="tb-box">
+          <div class="tb-row">
+            <span class="tb-row-head">Phần 1</span>
+            <label class="tb-switch">
+              <input type="checkbox" id="tbP1On" checked>
+              <span class="tb-slider"></span>
+            </label>
+          </div>
+          <div id="tbP1Body">
+            <div class="tb-row">
+              <label class="tb-row-lbl" for="tbP1Count">Số câu</label>
+              <input id="tbP1Count" class="tb-num-inp" type="number" inputmode="numeric" min="1" max="40" value="12">
+            </div>
+            <div class="tb-row">
+              <label class="tb-row-lbl" for="tbP1Total">Tổng điểm</label>
+              <input id="tbP1Total" class="tb-num-inp" type="text" inputmode="decimal" value="3">
+            </div>
+          </div>
         </div>
 
-        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 4px;">
-          <button type="button" class="btn primary" id="btnConfirmCreateBatch" style="border-radius: 12px;">Tạo lần chấm</button>
-          <button type="button" class="btn" id="btnCancelCreateBatch" style="border-radius: 12px;">Huỷ</button>
+        <!-- PHẦN 2 -->
+        <div class="tb-box">
+          <div class="tb-row">
+            <span class="tb-row-head">Phần 2</span>
+            <label class="tb-switch">
+              <input type="checkbox" id="tbP2On" checked>
+              <span class="tb-slider"></span>
+            </label>
+          </div>
+          <div id="tbP2Body">
+            <div class="tb-row">
+              <label class="tb-row-lbl" for="tbP2Count">Số câu</label>
+              <input id="tbP2Count" class="tb-num-inp" type="number" inputmode="numeric" min="1" max="8" value="4">
+            </div>
+            <div class="tb-row">
+              <label class="tb-row-lbl" for="tbP2D1">Đúng 1 ý</label>
+              <input id="tbP2D1" class="tb-num-inp" type="text" inputmode="decimal" value="0.1">
+            </div>
+            <div class="tb-row">
+              <label class="tb-row-lbl" for="tbP2D2">Đúng 2 ý</label>
+              <input id="tbP2D2" class="tb-num-inp" type="text" inputmode="decimal" value="0.25">
+            </div>
+            <div class="tb-row">
+              <label class="tb-row-lbl" for="tbP2D3">Đúng 3 ý</label>
+              <input id="tbP2D3" class="tb-num-inp" type="text" inputmode="decimal" value="0.5">
+            </div>
+            <div class="tb-row">
+              <label class="tb-row-lbl" for="tbP2D4">Đúng 4 ý</label>
+              <input id="tbP2D4" class="tb-num-inp" type="text" inputmode="decimal" value="1">
+            </div>
+          </div>
         </div>
+
+        <!-- PHẦN 3 -->
+        <div class="tb-box">
+          <div class="tb-row">
+            <span class="tb-row-head">Phần 3</span>
+            <label class="tb-switch">
+              <input type="checkbox" id="tbP3On" checked>
+              <span class="tb-slider"></span>
+            </label>
+          </div>
+          <div id="tbP3Body">
+            <div class="tb-row">
+              <label class="tb-row-lbl" for="tbP3Count">Số câu</label>
+              <input id="tbP3Count" class="tb-num-inp" type="number" inputmode="numeric" min="1" max="6" value="6">
+            </div>
+            <div class="tb-row">
+              <label class="tb-row-lbl" for="tbP3Total">Tổng điểm</label>
+              <input id="tbP3Total" class="tb-num-inp" type="text" inputmode="decimal" value="3">
+            </div>
+          </div>
+        </div>
+
+        <!-- PHẦN TỰ LUẬN -->
+        <div class="tb-box">
+          <div class="tb-row">
+            <span class="tb-row-head">Phần Tự Luận</span>
+            <label class="tb-switch">
+              <input type="checkbox" id="tbEssayOn">
+              <span class="tb-slider"></span>
+            </label>
+          </div>
+          <div id="tbEssayOffNote" style="font-size: 14px; color: #9ca3af; margin-top: 6px;">Đã tắt — không tính điểm</div>
+          <div id="tbEssayBody" hidden>
+            <div class="tb-row">
+              <label class="tb-row-lbl" for="tbEssayTotal">Tổng điểm tự luận</label>
+              <input id="tbEssayTotal" class="tb-num-inp" type="text" inputmode="decimal" value="0">
+            </div>
+          </div>
+        </div>
+        <div style="font-size: 13px; color: #9ca3af; margin: -4px 0 2px 4px;">Bật để nhập điểm tự luận cho từng bài.</div>
+
+        <!-- TỔNG ĐIỂM -->
+        <div class="tb-box">
+          <div class="tb-row" style="min-height: auto;">
+            <div>
+              <div class="tb-row-head">Tổng điểm</div>
+              <div id="tbFormulaText" style="font-size: 14px; color: #9ca3af; margin-top: 4px; font-variant-numeric: tabular-nums;">3 + 4 + 3 = 10</div>
+            </div>
+            <div id="tbGrandTotal" style="font-size: 26px; font-weight: 800; color: #f27438; font-variant-numeric: tabular-nums;">10</div>
+          </div>
+        </div>
+
+        <!-- NÚT TẠO BÀI CHẤM -->
+        <button type="button" class="tb-submit-btn" id="btnConfirmCreateBatch">Tạo bài chấm</button>
+      </div>
+    </div>
+
+    <!-- POPUP PHỤ CHỌN MẪU PHIẾU -->
+    <div class="tb-submodal-bg" id="tbSheetPickerModal" hidden>
+      <div class="tb-submodal">
+        <div class="row" style="margin-bottom: 4px;">
+          <strong style="font-size: 17px; color: #fff;">Chọn mẫu phiếu</strong>
+          <button type="button" class="tb-close" id="tbCloseSheetPicker" style="width: 34px; height: 34px; font-size: 15px;">✕</button>
+        </div>
+        <div id="tbSheetOptionsList" style="display: flex; flex-direction: column; gap: 8px;"></div>
+      </div>
+    </div>
+
+    <!-- POPUP PHỤ CHỌN LỚP HỌC (SAO CHÉP DS THÍ SINH / ĐÁP ÁN) -->
+    <div class="tb-submodal-bg" id="tbClassPickerModal" hidden>
+      <div class="tb-submodal">
+        <div class="row" style="margin-bottom: 4px;">
+          <strong style="font-size: 17px; color: #fff;">Chọn lớp học / lần sao chép</strong>
+          <button type="button" class="tb-close" id="tbCloseClassPicker" style="width: 34px; height: 34px; font-size: 15px;">✕</button>
+        </div>
+        <div id="tbClassOptionsList" style="display: flex; flex-direction: column; gap: 8px;"></div>
       </div>
     </div>
 
@@ -9191,19 +9464,41 @@ let qrState = { kind: 'idle' },
 })();
 </script>
 <script>
-// --- QUẢN LÝ CẤU HÌNH LẦN CHẤM & LẦN CHẤM MỚI (ĐỘC LẬP) ---
+// --- QUẢN LÝ CẤU HÌNH LẦN CHẤM & MÀN HÌNH TẠO BÀI CHẤM (ĐỘC LẬP) ---
 (function() {
-  const SHEET_NAMES = {
-    nh: 'Phiếu BGD 2025 CV 1239',
-    kt: 'Phiếu NTMark_2025',
-    m: 'Phiếu NH',
-    bgd25: 'Phiếu TNMaker BGD 2025(4MĐ)'
-  };
-  const SHEET_DEFAULTS = {
-    nh: { n1: 40, n2: 8, n3: 6, p1: 0.25, p2: 1, p3: 0.5 },
-    kt: { n1: 40, n2: 8, n3: 6, p1: 0.25, p2: 1, p3: 0.5 },
-    m:  { n1: 12, n2: 2, n3: 4, p1: 0.25, p2: 1, p3: 0.5 },
-    bgd25: { n1: 40, n2: 8, n3: 6, p1: 0.25, p2: 1, p3: 0.5 }
+  const SHEET_INFO = {
+    bgd25: {
+      id: 'bgd25',
+      title: 'Phiếu TNMaker BGD 2025(4MĐ)',
+      sub1: 'Mã đề 4 số · 4 đáp án',
+      sub2: 'Phần I 40 · II 8 · III 6 câu',
+      img: 'assets/bgd2025.jpg',
+      max1: 40, max2: 8, max3: 6
+    },
+    nh: {
+      id: 'nh',
+      title: 'Phiếu BGD 2025 CV 1239',
+      sub1: 'Mã đề 4 số · 4 đáp án',
+      sub2: 'Phần I 40 · II 8 · III 6 câu',
+      img: 'assets/bgd2025_cv1239.jpg',
+      max1: 40, max2: 8, max3: 6
+    },
+    kt: {
+      id: 'kt',
+      title: 'Phiếu NTMark_2025',
+      sub1: 'Mã đề 4 số · 4 đáp án',
+      sub2: 'Phần I 40 · II 8 · III 6 câu',
+      img: 'assets/NTMark_2025.jpg',
+      max1: 40, max2: 8, max3: 6
+    },
+    m: {
+      id: 'm',
+      title: 'Phiếu NH',
+      sub1: 'Mã đề 3 số · 4 đáp án',
+      sub2: 'Phần I 12 · II 2 · III 4 câu',
+      img: 'assets/vx_02.jpg',
+      max1: 12, max2: 2, max3: 4
+    }
   };
 
   function getLists() {
@@ -9227,12 +9522,20 @@ let qrState = { kind: 'idle' },
   function escHtml(s) {
     return String(s || '').replace(/[&<>"]/g, c => ({'&':'&','<':'<','>':'>','"':'"'}[c]));
   }
+  function numVal(el, fallback) {
+    if (!el) return fallback;
+    const v = parseFloat(String(el.value || '').replace(',', '.'));
+    return isFinite(v) && v >= 0 ? v : fallback;
+  }
+  function fmtNum(x) {
+    return String(Math.round(x * 100) / 100);
+  }
 
-  let selectedSheet = 'nh';
+  let selectedSheet = 'bgd25';
+  let selectedCopyBatchId = '';
+
   const batchModal = document.getElementById('batchModal');
   const fabBtn = document.getElementById('btnAddBatchFab');
-  const nameInput = document.getElementById('newBatchName');
-  const copySel = document.getElementById('copyFromBatchSel');
   const listContainer = document.getElementById('batchListContainer');
   const countLbl = document.getElementById('batchCountLbl');
 
@@ -9246,8 +9549,8 @@ let qrState = { kind: 'idle' },
     let html = '';
     lists.items.forEach(function(item) {
       const isActive = item.id === lists.active;
-      const c = isActive && curCfg ? curCfg : (item.cfg || curCfg || { sheet: 'nh', n1: 18, n2: 4, n3: 6 });
-      const shName = SHEET_NAMES[c.sheet] || SHEET_NAMES.nh;
+      const c = isActive && curCfg ? curCfg : (item.cfg || curCfg || { sheet: 'bgd25', n1: 12, n2: 4, n3: 6 });
+      const shName = (SHEET_INFO[c.sheet] && SHEET_INFO[c.sheet].title) || SHEET_INFO.bgd25.title;
       const paperCount = allRes.filter(r => (r.lid || lists.items[0].id) === item.id).length;
       const stuCount = Array.isArray(item.students) ? item.students.length : 0;
 
@@ -9319,86 +9622,258 @@ let qrState = { kind: 'idle' },
     });
   }
 
-  // Chọn loại phiếu trong Modal 2x2
-  document.querySelectorAll('#newBatchSheetGrid .sheet-opt').forEach(function(btn) {
-    btn.addEventListener('click', function() {
-      document.querySelectorAll('#newBatchSheetGrid .sheet-opt').forEach(b => b.classList.remove('selected'));
-      this.classList.add('selected');
-      selectedSheet = this.dataset.sheetId || 'nh';
-    });
+  function syncSheetCardUI() {
+    const info = SHEET_INFO[selectedSheet] || SHEET_INFO.bgd25;
+    document.getElementById('tbSheetThumb').src = info.img;
+    document.getElementById('tbSheetTitle').textContent = info.title;
+    document.getElementById('tbSheetSub1').textContent = info.sub1;
+    document.getElementById('tbSheetSub2').textContent = info.sub2;
+
+    const c1 = document.getElementById('tbP1Count');
+    const c2 = document.getElementById('tbP2Count');
+    const c3 = document.getElementById('tbP3Count');
+    c1.max = info.max1;
+    c2.max = info.max2;
+    c3.max = info.max3;
+    if (parseInt(c1.value, 10) > info.max1) c1.value = info.max1;
+    if (parseInt(c2.value, 10) > info.max2) c2.value = info.max2;
+    if (parseInt(c3.value, 10) > info.max3) c3.value = info.max3;
+    recalcTotalFormula();
+  }
+
+  function recalcTotalFormula() {
+    const p1On = document.getElementById('tbP1On').checked;
+    const p2On = document.getElementById('tbP2On').checked;
+    const p3On = document.getElementById('tbP3On').checked;
+    const essayOn = document.getElementById('tbEssayOn').checked;
+
+    document.getElementById('tbP1Body').hidden = !p1On;
+    document.getElementById('tbP2Body').hidden = !p2On;
+    document.getElementById('tbP3Body').hidden = !p3On;
+    document.getElementById('tbEssayBody').hidden = !essayOn;
+    document.getElementById('tbEssayOffNote').hidden = essayOn;
+
+    const parts = [];
+    let sum = 0;
+
+    if (p1On) {
+      const p1 = numVal(document.getElementById('tbP1Total'), 0);
+      parts.push(fmtNum(p1));
+      sum += p1;
+    }
+    if (p2On) {
+      const n2 = Math.max(0, Math.round(numVal(document.getElementById('tbP2Count'), 0)));
+      const d4 = numVal(document.getElementById('tbP2D4'), 0);
+      const p2 = n2 * d4;
+      parts.push(fmtNum(p2));
+      sum += p2;
+    }
+    if (p3On) {
+      const p3 = numVal(document.getElementById('tbP3Total'), 0);
+      parts.push(fmtNum(p3));
+      sum += p3;
+    }
+    if (essayOn) {
+      const pe = numVal(document.getElementById('tbEssayTotal'), 0);
+      parts.push(fmtNum(pe));
+      sum += pe;
+    }
+
+    const totalStr = fmtNum(sum);
+    document.getElementById('tbGrandTotal').textContent = totalStr;
+    document.getElementById('tbFormulaText').textContent =
+      parts.length ? (parts.join(' + ') + ' = ' + totalStr) : '0';
+  }
+
+  ['tbP1On', 'tbP2On', 'tbP3On', 'tbEssayOn'].forEach(function(id) {
+    const el = document.getElementById(id);
+    if (el) el.addEventListener('change', recalcTotalFormula);
+  });
+  ['tbP1Count', 'tbP1Total', 'tbP2Count', 'tbP2D1', 'tbP2D2', 'tbP2D3', 'tbP2D4', 'tbP3Count', 'tbP3Total', 'tbEssayTotal'].forEach(function(id) {
+    const el = document.getElementById(id);
+    if (el) el.addEventListener('input', recalcTotalFormula);
   });
 
-  // Mở Modal khi bấm nút tròn dấu +
+  const sheetPickerModal = document.getElementById('tbSheetPickerModal');
+  document.getElementById('tbOpenSheetPicker').addEventListener('click', function() {
+    const host = document.getElementById('tbSheetOptionsList');
+    host.innerHTML = Object.keys(SHEET_INFO).map(function(k) {
+      const it = SHEET_INFO[k];
+      return `
+        <button type="button" class="tb-pick-item ${k === selectedSheet ? 'active' : ''}" data-pick-sh="${k}">
+          <img src="${it.img}" width="42" height="54" style="border-radius: 5px; background: #fff; object-fit: cover; object-position: top;">
+          <div style="flex: 1;">
+            <div style="font-weight: 800; font-size: 15px;">${escHtml(it.title)}</div>
+            <div style="font-size: 12px; color: #9ca3af; margin-top: 2px;">${escHtml(it.sub2)}</div>
+          </div>
+          ${k === selectedSheet ? '<span style="color: #f27438; font-weight: 800;">✓</span>' : ''}
+        </button>
+      `;
+    }).join('');
+    host.querySelectorAll('[data-pick-sh]').forEach(function(b) {
+      b.addEventListener('click', function() {
+        selectedSheet = this.dataset.pickSh;
+        syncSheetCardUI();
+        sheetPickerModal.hidden = true;
+      });
+    });
+    sheetPickerModal.hidden = false;
+  });
+  document.getElementById('tbCloseSheetPicker').addEventListener('click', function() {
+    sheetPickerModal.hidden = true;
+  });
+
+  const classPickerModal = document.getElementById('tbClassPickerModal');
+  document.getElementById('tbOpenClassPicker').addEventListener('click', function() {
+    const lists = getLists();
+    const host = document.getElementById('tbClassOptionsList');
+    let html = `
+      <button type="button" class="tb-pick-item ${selectedCopyBatchId === '' ? 'active' : ''}" data-pick-cls="">
+        <div style="flex: 1;">
+          <div style="font-weight: 700; font-size: 15px;">Không có</div>
+          <div style="font-size: 12px; color: #9ca3af;">Tạo lần chấm mới với danh sách trống</div>
+        </div>
+        ${selectedCopyBatchId === '' ? '<span style="color: #f27438; font-weight: 800;">✓</span>' : ''}
+      </button>
+    `;
+    lists.items.forEach(function(it) {
+      const sCount = Array.isArray(it.students) ? it.students.length : 0;
+      html += `
+        <button type="button" class="tb-pick-item ${selectedCopyBatchId === it.id ? 'active' : ''}" data-pick-cls="${escHtml(it.id)}">
+          <div style="flex: 1;">
+            <div style="font-weight: 700; font-size: 15px;">${escHtml(it.name)}</div>
+            <div style="font-size: 12px; color: #9ca3af;">Sao chép ${sCount} thí sinh & bộ đáp án</div>
+          </div>
+          ${selectedCopyBatchId === it.id ? '<span style="color: #f27438; font-weight: 800;">✓</span>' : ''}
+        </button>
+      `;
+    });
+    host.innerHTML = html;
+    host.querySelectorAll('[data-pick-cls]').forEach(function(b) {
+      b.addEventListener('click', function() {
+        selectedCopyBatchId = this.dataset.pickCls;
+        const found = lists.items.find(x => x.id === selectedCopyBatchId);
+        document.getElementById('tbClassVal').textContent = found ? (found.name + ' ›') : 'Không có ›';
+        classPickerModal.hidden = true;
+      });
+    });
+    classPickerModal.hidden = false;
+  });
+  document.getElementById('tbCloseClassPicker').addEventListener('click', function() {
+    classPickerModal.hidden = true;
+  });
+
   if (fabBtn && batchModal) {
     fabBtn.addEventListener('click', function() {
       const lists = getLists();
-      if (nameInput) nameInput.value = String(lists.items.length + 1);
-      if (copySel) {
-        let opts = '<option value="">Không sao chép, tạo lần trống</option>';
-        lists.items.forEach(function(it) {
-          const sCount = Array.isArray(it.students) ? it.students.length : 0;
-          opts += `<option value="${escHtml(it.id)}">Sao chép từ: ${escHtml(it.name)} (${sCount} HS)</option>`;
-        });
-        copySel.innerHTML = opts;
-      }
+      const curCfg = getCurCfg();
+      selectedSheet = (curCfg && curCfg.sheet && SHEET_INFO[curCfg.sheet]) ? curCfg.sheet : 'bgd25';
+      selectedCopyBatchId = '';
+      document.getElementById('tbClassVal').textContent = 'Không có ›';
+
+      const nameInp = document.getElementById('newBatchName');
+      if (nameInp) nameInp.value = 'Lần ' + (lists.items.length + 1);
+
+      const n1 = curCfg ? (curCfg.n1 || 0) : 12;
+      const p1 = curCfg ? (curCfg.p1 || 0.25) : 0.25;
+      document.getElementById('tbP1On').checked = n1 > 0;
+      document.getElementById('tbP1Count').value = n1 > 0 ? n1 : 12;
+      document.getElementById('tbP1Total').value = fmtNum(n1 > 0 ? n1 * p1 : 3);
+
+      const n2 = curCfg ? (curCfg.n2 || 0) : 4;
+      const p2 = curCfg ? (curCfg.p2 || 1) : 1;
+      const isLin = curCfg && curCfg.tfLinear;
+      document.getElementById('tbP2On').checked = n2 > 0;
+      document.getElementById('tbP2Count').value = n2 > 0 ? n2 : 4;
+      document.getElementById('tbP2D1').value = fmtNum(isLin ? p2 * 0.25 : p2 * 0.1);
+      document.getElementById('tbP2D2').value = fmtNum(isLin ? p2 * 0.5 : p2 * 0.25);
+      document.getElementById('tbP2D3').value = fmtNum(isLin ? p2 * 0.75 : p2 * 0.5);
+      document.getElementById('tbP2D4').value = fmtNum(p2);
+
+      const n3 = curCfg ? (curCfg.n3 || 0) : 6;
+      const p3 = curCfg ? (curCfg.p3 || 0.5) : 0.5;
+      document.getElementById('tbP3On').checked = n3 > 0;
+      document.getElementById('tbP3Count').value = n3 > 0 ? n3 : 6;
+      document.getElementById('tbP3Total').value = fmtNum(n3 > 0 ? n3 * p3 : 3);
+
+      document.getElementById('tbEssayOn').checked = false;
+      document.getElementById('tbEssayTotal').value = '0';
+
+      syncSheetCardUI();
       batchModal.hidden = false;
     });
   }
 
-  // Nút Huỷ
   const cancelBtn = document.getElementById('btnCancelCreateBatch');
   if (cancelBtn && batchModal) {
-    cancelBtn.addEventListener('click', function() { batchModal.hidden = true; });
+    cancelBtn.addEventListener('click', function() {
+      batchModal.hidden = true;
+    });
   }
 
-  // Nút Tạo lần chấm
   const confirmBtn = document.getElementById('btnConfirmCreateBatch');
   if (confirmBtn) {
     confirmBtn.addEventListener('click', function() {
       const lists = getLists();
       const curCfg = getCurCfg();
-      const bName = (nameInput && nameInput.value.trim()) ? nameInput.value.trim() : ('Lần ' + (lists.items.length + 1));
-      const copyId = copySel ? copySel.value : '';
-      const srcBatch = copyId ? lists.items.find(x => x.id === copyId) : null;
+      const sh = SHEET_INFO[selectedSheet] || SHEET_INFO.bgd25;
+      const nameInp = document.getElementById('newBatchName');
+      const bName = (nameInp && nameInp.value.trim()) ? nameInp.value.trim() : ('Lần ' + (lists.items.length + 1));
 
-      const defStruct = SHEET_DEFAULTS[selectedSheet] || SHEET_DEFAULTS.nh;
-      let newCfg = {
-        v: 2,
-        sheet: selectedSheet,
-        n1: defStruct.n1,
-        n2: defStruct.n2,
-        n3: defStruct.n3,
-        p1: defStruct.p1,
-        p2: defStruct.p2,
-        p3: defStruct.p3,
-        tfLinear: false,
-        thr: 0.08,
-        td: 1,
-        active: 0,
-        versions: [{
-          code: '0201',
-          mcq: new Array(40).fill(null),
-          tf: Array.from({ length: 8 }, () => [null, null, null, null]),
-          num: ['', '', '', '', '', '']
-        }]
-      };
+      const p1On = document.getElementById('tbP1On').checked;
+      const n1 = p1On ? Math.min(sh.max1, Math.max(0, Math.round(numVal(document.getElementById('tbP1Count'), 12)))) : 0;
+      const p1Total = p1On ? numVal(document.getElementById('tbP1Total'), 0) : 0;
+      const p1 = n1 > 0 ? Math.round((p1Total / n1) * 10000) / 10000 : 0;
+
+      const p2On = document.getElementById('tbP2On').checked;
+      const n2 = p2On ? Math.min(sh.max2, Math.max(0, Math.round(numVal(document.getElementById('tbP2Count'), 4)))) : 0;
+      const d1 = numVal(document.getElementById('tbP2D1'), 0.1);
+      const d2 = numVal(document.getElementById('tbP2D2'), 0.25);
+      const d3 = numVal(document.getElementById('tbP2D3'), 0.5);
+      const d4 = p2On ? numVal(document.getElementById('tbP2D4'), 1) : 0;
+      const tfLinear = (d4 > 0 && Math.abs(d1 - d4 * 0.25) < 1e-4 && Math.abs(d2 - d4 * 0.5) < 1e-4 && Math.abs(d3 - d4 * 0.75) < 1e-4);
+
+      const p3On = document.getElementById('tbP3On').checked;
+      const n3 = p3On ? Math.min(sh.max3, Math.max(0, Math.round(numVal(document.getElementById('tbP3Count'), 6)))) : 0;
+      const p3Total = p3On ? numVal(document.getElementById('tbP3Total'), 0) : 0;
+      const p3 = n3 > 0 ? Math.round((p3Total / n3) * 10000) / 10000 : 0;
+
+      let versions = [{
+        code: '0201',
+        mcq: new Array(40).fill(null),
+        tf: Array.from({ length: 8 }, () => [null, null, null, null]),
+        num: ['', '', '', '', '', '']
+      }];
       let newStudents = [];
 
-      if (srcBatch) {
-        const srcCfg = (srcBatch.id === lists.active && curCfg) ? curCfg : srcBatch.cfg;
-        if (srcCfg) {
-          newCfg = JSON.parse(JSON.stringify(srcCfg));
-          newCfg.sheet = selectedSheet; // Cố định loại phiếu mới chọn
-          if (selectedSheet === 'm') {
-            newCfg.n1 = Math.min(newCfg.n1, 12);
-            newCfg.n2 = Math.min(newCfg.n2, 2);
-            newCfg.n3 = Math.min(newCfg.n3, 4);
+      if (selectedCopyBatchId) {
+        const srcBatch = lists.items.find(x => x.id === selectedCopyBatchId);
+        if (srcBatch) {
+          const srcCfg = (srcBatch.id === lists.active && curCfg) ? curCfg : srcBatch.cfg;
+          if (srcCfg && Array.isArray(srcCfg.versions)) {
+            versions = JSON.parse(JSON.stringify(srcCfg.versions));
+          }
+          if (Array.isArray(srcBatch.students)) {
+            newStudents = JSON.parse(JSON.stringify(srcBatch.students));
           }
         }
-        if (Array.isArray(srcBatch.students)) {
-          newStudents = JSON.parse(JSON.stringify(srcBatch.students));
-        }
       }
+
+      const newCfg = {
+        v: 2,
+        sheet: selectedSheet,
+        n1: n1,
+        n2: n2,
+        n3: n3,
+        p1: p1,
+        p2: d4,
+        p3: p3,
+        tfLinear: tfLinear,
+        thr: (curCfg && curCfg.thr) || 0.08,
+        td: 1,
+        active: 0,
+        versions: versions
+      };
 
       const newId = 'l_' + Date.now();
       lists.items.unshift({
@@ -9411,19 +9886,17 @@ let qrState = { kind: 'idle' },
 
       localStorage.setItem('omr.lists', JSON.stringify(lists));
       localStorage.setItem('omr.cfg2', JSON.stringify(newCfg));
-      sessionStorage.setItem('ntmix.openTab', 'scan'); // Tạo xong mở ngay tab Chấm bài
+      sessionStorage.setItem('ntmix.openTab', 'scan');
       location.reload();
     });
   }
 
-  // Cập nhật danh sách mỗi khi mở tab Cấu hình lần chấm
   const batchMenuBtn = document.querySelector('.menu-item[data-target="batches"]');
   if (batchMenuBtn) {
     batchMenuBtn.addEventListener('click', renderBatchList);
   }
   renderBatchList();
 
-  // Khôi phục tab đích sau khi tạo/chuyển lần chấm
   const pendingTab = sessionStorage.getItem('ntmix.openTab');
   if (pendingTab) {
     sessionStorage.removeItem('ntmix.openTab');
