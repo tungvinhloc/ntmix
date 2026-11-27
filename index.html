@@ -11837,5 +11837,223 @@ let qrState = { kind: 'idle' },
   });
 })();
 </script>
+<!-- --- GIAO DIỆN THẺ BÀI CHẤM TỐI GIẢN & THANH TÌM KIẾM TRONG KIỂM TRA CỦA LỚP (ĐỘC LẬP 100%) --- -->
+<style>
+  .cls-test-card {
+    background: #1a1d24;
+    border: 1px solid #272b36;
+    border-radius: 16px;
+    padding: 16px 18px;
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    cursor: pointer;
+    transition: transform 0.12s ease, border-color 0.2s ease, background 0.15s ease;
+  }
+  .cls-test-card:active {
+    transform: scale(0.99);
+    background: #222631;
+    border-color: #f27438;
+  }
+  .cls-test-card .tc-title {
+    font-size: 18px;
+    font-weight: 800;
+    color: #ffffff;
+    margin-bottom: 3px;
+  }
+  .cls-test-card .tc-line {
+    font-size: 14.5px;
+    color: #b0b6c3;
+    line-height: 1.45;
+  }
+  .cls-test-card .tc-meta {
+    font-size: 14px;
+    color: #8e95a5;
+    margin-top: 3px;
+    font-variant-numeric: tabular-nums;
+  }
+  #clsDetailBottomBar .cls-bottom-inner {
+    gap: 8px !important;
+  }
+  #clsDetailBottomBar .cls-combo-btn {
+    height: 48px !important;
+    padding: 0 14px !important;
+    font-size: 14.5px !important;
+    white-space: nowrap;
+    flex: none;
+  }
+  #clsDetailBottomBar .cls-search-box {
+    height: 48px !important;
+    padding: 0 12px !important;
+    min-width: 0;
+  }
+  #clsDetailBottomBar .cls-search-box input {
+    font-size: 14.5px !important;
+  }
+  #clsDetailBottomBar .cls-fab {
+    width: 50px !important;
+    height: 50px !important;
+    font-size: 30px !important;
+    flex: none;
+  }
+</style>
+
+<script>
+(function() {
+  const SHEET_LABELS = {
+    bgd25: 'Phiếu BGD-2025(4MĐ)',
+    nh: 'Phiếu BGD 2025 CV 1239',
+    kt: 'Phiếu NTMark_2025',
+    m: 'Phiếu NH'
+  };
+
+  const clsDetailBody = document.getElementById('clsDetailBody');
+  const clsDetailBottomBar = document.getElementById('clsDetailBottomBar');
+  const clsDetailTitle = document.getElementById('clsDetailTitle');
+  if (!clsDetailBody || !clsDetailBottomBar) return;
+
+  function fmtDate(d) {
+    const dd = String(d.getDate()).padStart(2, '0');
+    const mm = String(d.getMonth() + 1).padStart(2, '0');
+    return dd + '/' + mm + '/' + d.getFullYear();
+  }
+
+  function getDateStr(item) {
+    if (item && item.createdAt) return item.createdAt;
+    if (item && typeof item.id === 'string' && /^l_\d{10,}$/.test(item.id)) {
+      const ts = Number(item.id.slice(2));
+      if (isFinite(ts) && ts > 0) return fmtDate(new Date(ts));
+    }
+    return fmtDate(new Date());
+  }
+
+  function escHtml(s) {
+    return String(s || '').replace(/[&<>"]/g, c => ({'&':'&','<':'<','>':'>','"':'"'}[c]));
+  }
+
+  // 1. Ghi nhận ngày tạo khi bấm Tạo bài chấm mới
+  const confirmBatchBtn = document.getElementById('btnConfirmCreateBatch');
+  if (confirmBatchBtn) {
+    confirmBatchBtn.addEventListener('click', function() {
+      try {
+        const lists = JSON.parse(localStorage.getItem('omr.lists') || 'null');
+        if (lists && Array.isArray(lists.items) && lists.items[0] && !lists.items[0].createdAt) {
+          lists.items[0].createdAt = fmtDate(new Date());
+          localStorage.setItem('omr.lists', JSON.stringify(lists));
+        }
+      } catch (e) {}
+    });
+  }
+
+  // 2. Chèn ô Tìm kiếm vào thanh đáy giữa nút Tổ hợp và dấu + (giống hình 1)
+  const bottomInner = clsDetailBottomBar.querySelector('.cls-bottom-inner');
+  const addBtn = document.getElementById('btnClsDetailAdd');
+  if (bottomInner && addBtn && !document.getElementById('clsTestSearchBox')) {
+    const searchWrap = document.createElement('div');
+    searchWrap.className = 'cls-search-box';
+    searchWrap.id = 'clsTestSearchBox';
+    searchWrap.innerHTML =
+      '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="flex:none;"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>' +
+      '<input id="clsTestSearchInput" type="search" placeholder="Tìm kiếm" autocomplete="off">';
+    bottomInner.insertBefore(searchWrap, addBtn);
+
+    const searchInp = document.getElementById('clsTestSearchInput');
+    searchInp.addEventListener('input', filterTestCards);
+  }
+
+  function filterTestCards() {
+    const inp = document.getElementById('clsTestSearchInput');
+    const q = (inp ? inp.value : '').trim().toLowerCase();
+    clsDetailBody.querySelectorAll('.cls-test-card').forEach(function(card) {
+      const txt = (card.textContent || '').toLowerCase();
+      card.style.display = (!q || txt.indexOf(q) >= 0) ? '' : 'none';
+    });
+  }
+
+  // 3. Nâng cấp giao diện các thẻ bài chấm trong tab Kiểm tra thành dạng tối giản chuẩn hình 1
+  const obs = new MutationObserver(function() {
+    transformTestCards();
+  });
+
+  function transformTestCards() {
+    const tabTests = document.getElementById('tabClsTests');
+    if (tabTests && !tabTests.classList.contains('active')) return;
+
+    const listWrapper = clsDetailBody.firstElementChild;
+    if (!listWrapper || listWrapper.id === 'clsEmptyCreateTrigger') return;
+
+    const oldCards = Array.prototype.slice.call(listWrapper.children);
+    if (!oldCards.length) return;
+
+    // Kiểm tra xem đã chuyển đổi chưa
+    if (oldCards[0].classList.contains('cls-test-card')) {
+      filterTestCards();
+      return;
+    }
+
+    obs.disconnect();
+    try {
+      let lists = { items: [], active: 'l1' };
+      let allRes = [];
+      let curCfg = null;
+      try {
+        lists = JSON.parse(localStorage.getItem('omr.lists') || 'null') || lists;
+        allRes = JSON.parse(localStorage.getItem('omr.results2') || '[]') || [];
+        curCfg = JSON.parse(localStorage.getItem('omr.cfg2') || 'null');
+      } catch (e) {}
+
+      const clsName = clsDetailTitle ? clsDetailTitle.textContent.trim() : '';
+
+      oldCards.forEach(function(card) {
+        const refBtn = card.querySelector('button[data-bid]');
+        if (!refBtn) return;
+        const bid = refBtn.getAttribute('data-bid');
+        const item = (lists.items || []).find(x => x.id === bid);
+        if (!item) return;
+
+        const c = (item.id === lists.active && curCfg) ? curCfg : (item.cfg || curCfg || { sheet: 'bgd25', n1: 12, n2: 4, n3: 6 });
+        const shLabel = SHEET_LABELS[c.sheet] || SHEET_LABELS.bgd25;
+        const totalQ = (c.n1 || 0) + (c.n2 || 0) + (c.n3 || 0);
+        const graded = allRes.filter(r => (r.lid || (lists.items[0] && lists.items[0].id)) === item.id).length;
+        const dateStr = getDateStr(item);
+
+        const cleanCard = document.createElement('div');
+        cleanCard.className = 'cls-test-card';
+        cleanCard.innerHTML =
+          '<div class="tc-title">' + escHtml(item.name || 'Chưa đặt tên') + '</div>' +
+          '<div class="tc-line">' + escHtml(shLabel) + ' ·</div>' +
+          '<div class="tc-line">' + totalQ + ' câu' + (clsName ? ' · ' + escHtml(clsName) : '') + '</div>' +
+          '<div class="tc-meta">' + graded + ' bài · ' + escHtml(dateStr) + '</div>' +
+          '<button type="button" data-bid="' + escHtml(bid) + '" hidden></button>';
+
+        // Chạm nhanh vào thẻ bài chấm -> Kích hoạt bài chấm và mở màn hình Chấm bài ngay
+        cleanCard.addEventListener('click', function() {
+          const latestLists = JSON.parse(localStorage.getItem('omr.lists') || 'null');
+          if (latestLists && Array.isArray(latestLists.items)) {
+            const idx = latestLists.items.findIndex(x => x.id === bid);
+            if (idx >= 0) {
+              latestLists.active = bid;
+              localStorage.setItem('omr.lists', JSON.stringify(latestLists));
+              if (latestLists.items[idx].cfg) {
+                localStorage.setItem('omr.cfg2', JSON.stringify(latestLists.items[idx].cfg));
+              }
+            }
+          }
+          sessionStorage.setItem('ntmix.openTab', 'scan');
+          location.reload();
+        });
+
+        listWrapper.replaceChild(cleanCard, card);
+      });
+
+      filterTestCards();
+    } finally {
+      obs.observe(clsDetailBody, { childList: true });
+    }
+  }
+
+  obs.observe(clsDetailBody, { childList: true });
+})();
+</script>
 </body>
 </html>
