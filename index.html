@@ -11424,5 +11424,418 @@ let qrState = { kind: 'idle' },
   justify-content: center !important;
 }
 </style>
+<!-- --- BẤM ĐÈ VÀO LẦN CHẤM ĐỂ CHỈNH SỬA / SAO CHÉP / XOÁ (ĐỘC LẬP 100%) --- -->
+<style>
+  #clsDetailBody > div > div,
+  #clsDetailBody > div > div *,
+  #batchListContainer .batch-card,
+  #batchListContainer .batch-card * {
+    -webkit-touch-callout: none !important;
+    -webkit-user-select: none !important;
+    user-select: none !important;
+  }
+  .batch-ctx-bg {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.74);
+    backdrop-filter: blur(2px);
+    -webkit-backdrop-filter: blur(2px);
+    z-index: 145;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+  }
+  .batch-ctx-bg[hidden] { display: none; }
+  .batch-ctx-wrap {
+    width: 100%;
+    max-width: 360px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 14px;
+    animation: batchPopIn 0.16s ease-out;
+  }
+  @keyframes batchPopIn {
+    from { opacity: 0; transform: scale(0.94); }
+    to { opacity: 1; transform: scale(1); }
+  }
+  .batch-ctx-preview {
+    width: 100%;
+    background: #22252e;
+    border: 1px solid #383d4d;
+    border-radius: 16px;
+    padding: 16px;
+    color: #f3f4f6;
+    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.5);
+    pointer-events: none;
+  }
+  .batch-ctx-menu {
+    width: 240px;
+    background: #22252e;
+    border: 1px solid #343846;
+    border-radius: 18px;
+    overflow: hidden;
+    box-shadow: 0 16px 40px rgba(0, 0, 0, 0.55);
+  }
+  .batch-ctx-item {
+    width: 100%;
+    padding: 15px 20px;
+    border: none;
+    background: transparent;
+    color: #ffffff;
+    font-size: 17px;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    cursor: pointer;
+    text-align: left;
+  }
+  .batch-ctx-item:active {
+    background: rgba(255, 255, 255, 0.08);
+  }
+  .batch-ctx-item + .batch-ctx-item {
+    border-top: 1px solid #323644;
+  }
+  .batch-ctx-item.danger {
+    color: #ff5e57;
+    border-top: 1px solid #383d4d;
+  }
+</style>
+
+<script>
+(function() {
+  const SHEET_LABELS = {
+    bgd25: 'Phiếu BGD-2025(4MĐ)',
+    nh: 'Phiếu BGD 2025 CV 1239',
+    kt: 'Phiếu NTMark_2025',
+    m: 'Phiếu NH'
+  };
+
+  const clsDetailBody = document.getElementById('clsDetailBody');
+  const batchListContainer = document.getElementById('batchListContainer');
+  if (!clsDetailBody && !batchListContainer) return;
+
+  // Tạo Menu bấm đè (Chỉnh sửa / Sao chép / Xoá)
+  const overlay = document.createElement('div');
+  overlay.className = 'batch-ctx-bg';
+  overlay.id = 'batchCtxOverlay';
+  overlay.hidden = true;
+  overlay.innerHTML = `
+    <div class="batch-ctx-wrap" id="batchCtxWrap">
+      <div class="batch-ctx-preview" id="batchCtxPreview"></div>
+      <div class="batch-ctx-menu">
+        <button type="button" class="batch-ctx-item" id="btnCtxEditBatch">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"></path></svg>
+          <span>Chỉnh sửa</span>
+        </button>
+        <button type="button" class="batch-ctx-item" id="btnCtxCopyBatch">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+          <span>Sao chép</span>
+        </button>
+        <button type="button" class="batch-ctx-item danger" id="btnCtxDeleteBatch">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path><line x1="10" y1="11" x2="10" y2="17"></line><line x1="14" y1="11" x2="14" y2="17"></line></svg>
+          <span>Xoá</span>
+        </button>
+      </div>
+    </div>
+  `;
+  document.body.appendChild(overlay);
+
+  // Modal Chỉnh sửa tên lần chấm
+  const editModal = document.createElement('div');
+  editModal.className = 'cls-modal-bg';
+  editModal.id = 'editBatchModal';
+  editModal.style.zIndex = '150';
+  editModal.hidden = true;
+  editModal.innerHTML = `
+    <div class="cls-modal-box">
+      <h3>Chỉnh sửa bài chấm</h3>
+      <input id="editBatchNameInp" class="cls-modal-inp" type="text" placeholder="Tên bài chấm" autocomplete="off">
+      <button type="button" id="btnEditBatchGoKey" style="height: 42px; border-radius: 10px; border: 1px solid #383d4d; background: #2a2e39; color: #f27438; font-size: 14px; font-weight: 700; cursor: pointer;">
+        Cài đặt đáp án & thang điểm ›
+      </button>
+      <div class="cls-modal-actions">
+        <button type="button" class="cls-btn-cancel" id="btnCancelEditBatch">Huỷ</button>
+        <button type="button" class="cls-btn-create" id="btnConfirmEditBatch">Lưu</button>
+      </div>
+    </div>
+  `;
+  document.body.appendChild(editModal);
+
+  let targetBatchId = null;
+  let sourceZone = 'detail'; // 'detail' | 'batches'
+  let pressTimer = null;
+  let startX = 0;
+  let startY = 0;
+  let longPressFired = false;
+
+  function getLists() {
+    try {
+      const l = JSON.parse(localStorage.getItem('omr.lists') || 'null');
+      if (l && Array.isArray(l.items) && l.items.length) return l;
+    } catch (e) {}
+    return { items: [{ id: 'l1', name: 'Lần 1' }], active: 'l1' };
+  }
+  function saveLists(l) {
+    localStorage.setItem('omr.lists', JSON.stringify(l));
+  }
+  function getResults() {
+    try {
+      const r = JSON.parse(localStorage.getItem('omr.results2') || '[]');
+      return Array.isArray(r) ? r : [];
+    } catch (e) { return []; }
+  }
+  function getCurCfg() {
+    try {
+      return JSON.parse(localStorage.getItem('omr.cfg2') || 'null');
+    } catch (e) { return null; }
+  }
+  function escHtml(s) {
+    return String(s || '').replace(/[&<>"]/g, c => ({'&':'&','<':'<','>':'>','"':'"'}[c]));
+  }
+
+  function findTargetBatch(target) {
+    if (clsDetailBody && clsDetailBody.contains(target)) {
+      let el = target;
+      while (el && el !== clsDetailBody) {
+        if (el.tagName !== 'BUTTON' && el.parentElement && el.parentElement.parentElement === clsDetailBody) {
+          const btn = el.querySelector('button[data-bid]');
+          if (btn) return { bid: btn.getAttribute('data-bid'), zone: 'detail' };
+        }
+        el = el.parentElement;
+      }
+    }
+    if (batchListContainer && batchListContainer.contains(target)) {
+      const card = target.closest('.batch-card[data-batch-id]');
+      if (card) return { bid: card.getAttribute('data-batch-id'), zone: 'batches' };
+    }
+    return null;
+  }
+
+  function openBatchMenu(bid, zone) {
+    const lists = getLists();
+    const item = lists.items.find(x => x.id === bid);
+    if (!item) return;
+
+    targetBatchId = bid;
+    sourceZone = zone;
+
+    const curCfg = getCurCfg();
+    const c = (item.id === lists.active && curCfg) ? curCfg : (item.cfg || curCfg || { sheet: 'bgd25', n1: 12, n2: 4, n3: 6 });
+    const shLabel = SHEET_LABELS[c.sheet] || SHEET_LABELS.bgd25;
+    const totalQ = (c.n1 || 0) + (c.n2 || 0) + (c.n3 || 0);
+    const clsName = item.className || (document.getElementById('clsDetailTitle') ? document.getElementById('clsDetailTitle').textContent.trim() : '');
+    const graded = getResults().filter(r => (r.lid || lists.items[0].id) === item.id).length;
+
+    const preview = document.getElementById('batchCtxPreview');
+    preview.innerHTML = `
+      <div style="font-size: 18px; font-weight: 800; color: #ffffff; margin-bottom: 4px;">${escHtml(item.name || 'Chưa đặt tên')}</div>
+      <div style="font-size: 14px; color: #d1d5db; line-height: 1.45;">
+        ${escHtml(shLabel)} ·<br>
+        ${totalQ} câu${clsName ? ' · ' + escHtml(clsName) : ''}
+      </div>
+      <div style="font-size: 13.5px; color: #9ca3af; margin-top: 4px;">${graded} bài đã chấm</div>
+    `;
+
+    overlay.hidden = false;
+    if (navigator.vibrate) {
+      try { navigator.vibrate(25); } catch (e) {}
+    }
+  }
+
+  function closeBatchMenu() {
+    overlay.hidden = true;
+  }
+
+  function refreshAfterChange() {
+    if (sourceZone === 'detail') {
+      const tabTests = document.getElementById('tabClsTests');
+      if (tabTests) tabTests.click();
+      const searchInp = document.getElementById('clsSearchInput');
+      if (searchInp) searchInp.dispatchEvent(new Event('input'));
+    } else {
+      sessionStorage.setItem('ntmix.openTab', 'batches');
+      location.reload();
+    }
+  }
+
+  overlay.addEventListener('click', function(e) {
+    if (e.target === overlay || e.target.id === 'batchCtxWrap') {
+      closeBatchMenu();
+    }
+  });
+
+  function bindLongPressOnHost(host) {
+    if (!host) return;
+
+    host.addEventListener('contextmenu', function(e) {
+      if (findTargetBatch(e.target)) e.preventDefault();
+    });
+
+    host.addEventListener('click', function(e) {
+      if (longPressFired) {
+        longPressFired = false;
+        e.stopImmediatePropagation();
+        e.preventDefault();
+      }
+    }, true);
+
+    function startHold(x, y, target) {
+      clearTimeout(pressTimer);
+      longPressFired = false;
+      const found = findTargetBatch(target);
+      if (!found) return;
+      startX = x;
+      startY = y;
+      pressTimer = setTimeout(function() {
+        longPressFired = true;
+        openBatchMenu(found.bid, found.zone);
+      }, 420);
+    }
+
+    function cancelHold() {
+      clearTimeout(pressTimer);
+    }
+
+    host.addEventListener('touchstart', function(e) {
+      if (e.touches.length !== 1) return;
+      startHold(e.touches[0].clientX, e.touches[0].clientY, e.target);
+    }, { passive: true });
+
+    host.addEventListener('touchmove', function(e) {
+      if (!pressTimer || e.touches.length !== 1) return;
+      if (Math.hypot(e.touches[0].clientX - startX, e.touches[0].clientY - startY) > 10) cancelHold();
+    }, { passive: true });
+
+    host.addEventListener('touchend', cancelHold);
+    host.addEventListener('touchcancel', cancelHold);
+
+    host.addEventListener('mousedown', function(e) {
+      if (e.button !== 0) return;
+      startHold(e.clientX, e.clientY, e.target);
+    });
+    host.addEventListener('mousemove', function(e) {
+      if (!pressTimer) return;
+      if (Math.hypot(e.clientX - startX, e.clientY - startY) > 10) cancelHold();
+    });
+    host.addEventListener('mouseup', cancelHold);
+    host.addEventListener('mouseleave', cancelHold);
+  }
+
+  bindLongPressOnHost(clsDetailBody);
+  bindLongPressOnHost(batchListContainer);
+
+  // 1. Chỉnh sửa lần chấm
+  document.getElementById('btnCtxEditBatch').addEventListener('click', function() {
+    closeBatchMenu();
+    const lists = getLists();
+    const item = lists.items.find(x => x.id === targetBatchId);
+    if (!item) return;
+    const inp = document.getElementById('editBatchNameInp');
+    inp.value = item.name || '';
+    editModal.hidden = false;
+    setTimeout(function() {
+      inp.focus();
+      inp.select();
+    }, 50);
+  });
+
+  document.getElementById('btnEditBatchGoKey').addEventListener('click', function() {
+    const lists = getLists();
+    const idx = lists.items.findIndex(x => x.id === targetBatchId);
+    if (idx >= 0) {
+      const newName = document.getElementById('editBatchNameInp').value.trim();
+      if (newName) lists.items[idx].name = newName;
+      lists.active = targetBatchId;
+      saveLists(lists);
+      if (lists.items[idx].cfg) {
+        localStorage.setItem('omr.cfg2', JSON.stringify(lists.items[idx].cfg));
+      }
+    }
+    sessionStorage.setItem('ntmix.openTab', 'key');
+    location.reload();
+  });
+
+  document.getElementById('btnCancelEditBatch').addEventListener('click', function() {
+    editModal.hidden = true;
+  });
+
+  document.getElementById('btnConfirmEditBatch').addEventListener('click', function() {
+    const inp = document.getElementById('editBatchNameInp');
+    const newName = inp.value.trim();
+    if (!newName) {
+      inp.focus();
+      return;
+    }
+    const lists = getLists();
+    const idx = lists.items.findIndex(x => x.id === targetBatchId);
+    if (idx >= 0) {
+      lists.items[idx].name = newName;
+      saveLists(lists);
+    }
+    editModal.hidden = true;
+    refreshAfterChange();
+  });
+
+  // 2. Sao chép lần chấm (giữ nguyên cấu trúc, đáp án, danh sách HS & lớp học)
+  document.getElementById('btnCtxCopyBatch').addEventListener('click', function() {
+    closeBatchMenu();
+    const lists = getLists();
+    const idx = lists.items.findIndex(x => x.id === targetBatchId);
+    if (idx < 0) return;
+
+    const src = lists.items[idx];
+    const curCfg = getCurCfg();
+    const srcCfg = (src.id === lists.active && curCfg) ? curCfg : src.cfg;
+
+    const cloned = {
+      id: 'l_' + Date.now(),
+      name: (src.name || 'Lần chấm') + ' (Bản sao)',
+      cfg: srcCfg ? JSON.parse(JSON.stringify(srcCfg)) : null,
+      students: Array.isArray(src.students) ? JSON.parse(JSON.stringify(src.students)) : []
+    };
+    if (src.classId) cloned.classId = src.classId;
+    if (src.className) cloned.className = src.className;
+
+    lists.items.splice(idx, 0, cloned);
+    saveLists(lists);
+    refreshAfterChange();
+  });
+
+  // 3. Xoá lần chấm
+  document.getElementById('btnCtxDeleteBatch').addEventListener('click', function() {
+    closeBatchMenu();
+    const lists = getLists();
+    const idx = lists.items.findIndex(x => x.id === targetBatchId);
+    if (idx < 0) return;
+
+    if (lists.items.length <= 1) {
+      alert('Không thể xoá lần chấm duy nhất còn lại trong hệ thống.');
+      return;
+    }
+
+    if (confirm('Bạn có chắc muốn xoá "' + (lists.items[idx].name || 'lần chấm này') + '" không?')) {
+      const removedId = lists.items[idx].id;
+      lists.items.splice(idx, 1);
+      if (lists.active === removedId) {
+        lists.active = lists.items[0].id;
+        if (lists.items[0].cfg) {
+          localStorage.setItem('omr.cfg2', JSON.stringify(lists.items[0].cfg));
+        }
+      }
+      saveLists(lists);
+
+      try {
+        const res = getResults().filter(r => r.lid !== removedId);
+        localStorage.setItem('omr.results2', JSON.stringify(res));
+      } catch (e) {}
+
+      refreshAfterChange();
+    }
+  });
+})();
+</script>
 </body>
 </html>
