@@ -12055,5 +12055,455 @@ let qrState = { kind: 'idle' },
   obs.observe(clsDetailBody, { childList: true });
 })();
 </script>
+<!-- --- MÀN HÌNH CHI TIẾT BÀI CHẤM KHI BẤM VÀO BÀI KIỂM TRA TRONG LỚP (ĐỘC LẬP 100%) --- -->
+<style>
+  .thub-screen {
+    position: fixed;
+    inset: 0;
+    z-index: 118;
+    background: #0d0f14;
+    color: #f3f4f6;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+  .thub-screen[hidden] { display: none; }
+  .thub-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: max(14px, env(safe-area-inset-top)) 16px 14px;
+    background: #14171f;
+    border-bottom: 1.5px solid #e06d3b;
+    border-bottom-left-radius: 22px;
+    border-bottom-right-radius: 22px;
+    flex: none;
+  }
+  .thub-back {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    border: 1px solid #2e3340;
+    background: #222631;
+    color: #ffffff;
+    display: grid;
+    place-items: center;
+    cursor: pointer;
+  }
+  .thub-title {
+    font-size: 19px;
+    font-weight: 800;
+    color: #ffffff;
+    text-align: center;
+    padding: 0 8px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .thub-scroll {
+    flex: 1;
+    overflow-y: auto;
+    padding: 16px 16px max(32px, env(safe-area-inset-bottom));
+    max-width: 600px;
+    width: 100%;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+  .thub-sec-lbl {
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: #9ca3af;
+    margin: 6px 0 -4px 4px;
+  }
+  .thub-card {
+    background: #1a1d24;
+    border: 1px solid #272b36;
+    border-radius: 16px;
+    overflow: hidden;
+  }
+  .thub-info-box {
+    padding: 14px 16px;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+  }
+  .thub-info-box img {
+    width: 48px;
+    height: 64px;
+    object-fit: cover;
+    object-position: top center;
+    border-radius: 6px;
+    background: #ffffff;
+    border: 1px solid #374151;
+    flex: none;
+  }
+  .thub-row {
+    width: 100%;
+    padding: 14px 16px;
+    border: none;
+    background: transparent;
+    color: #f3f4f6;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    text-align: left;
+    cursor: pointer;
+    transition: background 0.15s ease;
+  }
+  .thub-row:active {
+    background: rgba(255, 255, 255, 0.06);
+  }
+  .thub-row + .thub-row {
+    border-top: 1px solid #272b36;
+  }
+  .thub-ico {
+    width: 38px;
+    height: 38px;
+    border-radius: 10px;
+    background: rgba(242, 116, 56, 0.15);
+    color: #f27438;
+    display: grid;
+    place-items: center;
+    flex: none;
+  }
+  .thub-row-text {
+    flex: 1;
+    min-width: 0;
+  }
+  .thub-row-title {
+    font-size: 16.5px;
+    font-weight: 700;
+    color: #ffffff;
+    line-height: 1.25;
+  }
+  .thub-row-sub {
+    font-size: 13.5px;
+    color: #9ca3af;
+    margin-top: 2px;
+    font-variant-numeric: tabular-nums;
+  }
+  .thub-arrow {
+    color: #6b7280;
+    font-size: 20px;
+    font-weight: 700;
+    flex: none;
+  }
+</style>
+
+<script>
+(function() {
+  const SHEET_META = {
+    bgd25: { title: 'Phiếu BGD-2025(4MĐ)', img: 'assets/bgd2025.jpg' },
+    nh:    { title: 'Phiếu BGD 2025 CV 1239', img: 'assets/bgd2025_cv1239.jpg' },
+    kt:    { title: 'Phiếu NTMark_2025', img: 'assets/NTMark_2025.jpg' },
+    m:     { title: 'Phiếu NH', img: 'assets/vx_02.jpg' }
+  };
+
+  const clsDetailBody = document.getElementById('clsDetailBody');
+  const clsDetailTitle = document.getElementById('clsDetailTitle');
+  if (!clsDetailBody) return;
+
+  // Tạo màn hình Chi tiết bài chấm (giống Hình 1)
+  const hubScreen = document.createElement('div');
+  hubScreen.className = 'thub-screen';
+  hubScreen.id = 'testHubScreen';
+  hubScreen.hidden = true;
+  hubScreen.setAttribute('role', 'dialog');
+  hubScreen.setAttribute('aria-modal', 'true');
+  hubScreen.innerHTML = `
+    <div class="thub-header">
+      <button type="button" class="thub-back" id="btnCloseTestHub" aria-label="Quay lại">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"></polyline></svg>
+      </button>
+      <div class="thub-title" id="thubTitle">Bài kiểm tra</div>
+      <div style="width: 40px;"></div>
+    </div>
+    <div class="thub-scroll" id="thubBody"></div>
+  `;
+  document.body.appendChild(hubScreen);
+
+  // Popup phụ xem nhanh Thông tin chi tiết (khi bấm dòng Thông tin)
+  const infoPopup = document.createElement('div');
+  infoPopup.className = 'cls-modal-bg';
+  infoPopup.id = 'thubInfoPopup';
+  infoPopup.style.zIndex = '155';
+  infoPopup.hidden = true;
+  infoPopup.innerHTML = `
+    <div class="cls-modal-box" style="max-width: 400px;">
+      <h3>Thông tin chi tiết</h3>
+      <div id="thubInfoPopupContent" style="font-size: 14.5px; color: #d1d5db; line-height: 1.65;"></div>
+      <button type="button" class="cls-btn-create" id="btnCloseThubInfoPopup" style="width: 100%;">Đóng</button>
+    </div>
+  `;
+  document.body.appendChild(infoPopup);
+
+  document.getElementById('btnCloseThubInfoPopup').addEventListener('click', function() {
+    infoPopup.hidden = true;
+  });
+  infoPopup.addEventListener('click', function(e) {
+    if (e.target === infoPopup) infoPopup.hidden = true;
+  });
+
+  document.getElementById('btnCloseTestHub').addEventListener('click', function() {
+    hubScreen.hidden = true;
+  });
+
+  function getLists() {
+    try {
+      const l = JSON.parse(localStorage.getItem('omr.lists') || 'null');
+      if (l && Array.isArray(l.items) && l.items.length) return l;
+    } catch (e) {}
+    return { items: [{ id: 'l1', name: 'Lần 1' }], active: 'l1' };
+  }
+  function getResults() {
+    try {
+      const r = JSON.parse(localStorage.getItem('omr.results2') || '[]');
+      return Array.isArray(r) ? r : [];
+    } catch (e) { return []; }
+  }
+  function getCurCfg() {
+    try {
+      return JSON.parse(localStorage.getItem('omr.cfg2') || 'null');
+    } catch (e) { return null; }
+  }
+  function fmtNum(x) {
+    return String(Math.round(x * 100) / 100);
+  }
+  function escHtml(s) {
+    return String(s || '').replace(/[&<>"]/g, c => ({'&':'&','<':'<','>':'>','"':'"'}[c]));
+  }
+  function getDateStr(item) {
+    if (item && item.createdAt) return item.createdAt;
+    if (item && typeof item.id === 'string' && /^l_\d{10,}$/.test(item.id)) {
+      const ts = Number(item.id.slice(2));
+      if (isFinite(ts) && ts > 0) {
+        const d = new Date(ts);
+        return String(d.getDate()).padStart(2, '0') + '/' + String(d.getMonth() + 1).padStart(2, '0') + '/' + d.getFullYear();
+      }
+    }
+    const now = new Date();
+    return String(now.getDate()).padStart(2, '0') + '/' + String(now.getMonth() + 1).padStart(2, '0') + '/' + now.getFullYear();
+  }
+
+  function activateBatchAndNavigate(bid, targetTab, autoAction) {
+    const lists = getLists();
+    const idx = lists.items.findIndex(x => x.id === bid);
+    const alreadyActive = (lists.active === bid);
+
+    if (idx >= 0) {
+      lists.active = bid;
+      localStorage.setItem('omr.lists', JSON.stringify(lists));
+      if (lists.items[idx].cfg) {
+        localStorage.setItem('omr.cfg2', JSON.stringify(lists.items[idx].cfg));
+      }
+    }
+
+    if (alreadyActive) {
+      hubScreen.hidden = true;
+      const clsDetail = document.getElementById('clsDetailScreen');
+      if (clsDetail) clsDetail.hidden = true;
+      const menuBtn = document.querySelector('.menu-item[data-target="' + targetTab + '"]');
+      if (menuBtn) menuBtn.click();
+      if (autoAction === 'pick') {
+        const pickInp = document.getElementById('pick');
+        if (pickInp) pickInp.click();
+      } else if (autoAction === 'live') {
+        const liveBtn = document.getElementById('btnLive');
+        if (liveBtn) liveBtn.click();
+      }
+    } else {
+      sessionStorage.setItem('ntmix.openTab', targetTab);
+      if (autoAction) sessionStorage.setItem('ntmix.autoAction', autoAction);
+      location.reload();
+    }
+  }
+
+  // Thực thi hành động tự động sau khi tải lại trang (nếu có)
+  const pendingAuto = sessionStorage.getItem('ntmix.autoAction');
+  if (pendingAuto) {
+    sessionStorage.removeItem('ntmix.autoAction');
+    setTimeout(function() {
+      if (pendingAuto === 'pick') {
+        const pickInp = document.getElementById('pick');
+        if (pickInp) pickInp.click();
+      } else if (pendingAuto === 'live') {
+        const liveBtn = document.getElementById('btnLive');
+        if (liveBtn) liveBtn.click();
+      }
+    }, 180);
+  }
+
+  function openTestHub(bid) {
+    const lists = getLists();
+    const item = lists.items.find(x => x.id === bid);
+    if (!item) return;
+
+    const curCfg = getCurCfg();
+    const c = (item.id === lists.active && curCfg) ? curCfg : (item.cfg || curCfg || { sheet: 'bgd25', n1: 12, n2: 4, n3: 6, p1: 0.25, p2: 1, p3: 0.5, versions: [{}] });
+    const sh = SHEET_META[c.sheet] || SHEET_META.bgd25;
+
+    const totalQ = (c.n1 || 0) + (c.n2 || 0) + (c.n3 || 0);
+    const maxPts = (c.n1 || 0) * (c.p1 || 0) + (c.n2 || 0) * (c.p2 || 0) + (c.n3 || 0) * (c.p3 || 0);
+    const verCount = Array.isArray(c.versions) ? c.versions.length : 1;
+    const clsName = item.className || (clsDetailTitle ? clsDetailTitle.textContent.trim() : '');
+    const dateStr = getDateStr(item);
+
+    const papers = getResults().filter(r => (r.lid || lists.items[0].id) === item.id);
+    const gradedCount = papers.length;
+    let avgStr = 'Chưa có bài chấm';
+    let minMaxStr = 'Chưa có bài chấm';
+    let avgVal = 0, minVal = 0, maxVal = 0;
+
+    if (gradedCount > 0) {
+      const scores = papers.map(p => Number(p.total) || 0);
+      avgVal = scores.reduce((a, b) => a + b, 0) / gradedCount;
+      minVal = Math.min.apply(null, scores);
+      maxVal = Math.max.apply(null, scores);
+      avgStr = 'Điểm TB ' + fmtNum(avgVal);
+      minMaxStr = 'Thấp nhất ' + fmtNum(minVal) + ' · cao nhất ' + fmtNum(maxVal);
+    }
+
+    document.getElementById('thubTitle').textContent = item.name || 'Bài kiểm tra';
+
+    document.getElementById('thubBody').innerHTML = `
+      <!-- THÔNG TIN BÀI -->
+      <div class="thub-sec-lbl">THÔNG TIN BÀI</div>
+      <div class="thub-card">
+        <div class="thub-info-box">
+          <img src="${sh.img}" alt="${escHtml(sh.title)}">
+          <div style="flex: 1; min-width: 0;">
+            <div style="font-size: 17px; font-weight: 800; color: #ffffff;">${escHtml(sh.title)}</div>
+            <div style="font-size: 14px; color: #b0b6c3; margin-top: 3px;">${totalQ} câu · Hệ điểm ${fmtNum(maxPts)}</div>
+            <div style="font-size: 13.5px; color: #9ca3af; margin-top: 2px;">${clsName ? 'Lớp ' + escHtml(clsName) + ' · ' : ''}Tạo ${escHtml(dateStr)}</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- CHẤM BÀI -->
+      <div class="thub-sec-lbl">CHẤM BÀI</div>
+      <div class="thub-card">
+        <button type="button" class="thub-row" id="thubActKey">
+          <div class="thub-ico">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="15" r="4"></circle><line x1="10.85" y1="12.15" x2="19" y2="4"></line><line x1="18" y1="5" x2="20" y2="7"></line><line x1="15" y1="8" x2="17" y2="10"></line></svg>
+          </div>
+          <div class="thub-row-text">
+            <div class="thub-row-title">Đáp án</div>
+            <div class="thub-row-sub">${verCount} mã đề</div>
+          </div>
+          <span class="thub-arrow">›</span>
+        </button>
+
+        <button type="button" class="thub-row" id="thubActScan">
+          <div class="thub-ico">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path><circle cx="12" cy="13" r="4"></circle></svg>
+          </div>
+          <div class="thub-row-text">
+            <div class="thub-row-title">Chấm bài</div>
+            <div class="thub-row-sub">Quét phiếu bằng camera</div>
+          </div>
+          <span class="thub-arrow">›</span>
+        </button>
+
+        <button type="button" class="thub-row" id="thubActPick">
+          <div class="thub-ico">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><polyline points="21 15 16 10 5 21"></polyline></svg>
+          </div>
+          <div class="thub-row-text">
+            <div class="thub-row-title">Chấm từ ảnh</div>
+            <div class="thub-row-sub">Chọn ảnh hoặc thư mục</div>
+          </div>
+          <span class="thub-arrow">›</span>
+        </button>
+      </div>
+
+      <!-- KẾT QUẢ -->
+      <div class="thub-sec-lbl">KẾT QUẢ</div>
+      <div class="thub-card">
+        <button type="button" class="thub-row" id="thubActRes">
+          <div class="thub-ico">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="8" y1="6" x2="21" y2="6"></line><line x1="8" y1="12" x2="21" y2="12"></line><line x1="8" y1="18" x2="21" y2="18"></line><line x1="3" y1="6" x2="3.01" y2="6"></line><line x1="3" y1="12" x2="3.01" y2="12"></line><line x1="3" y1="18" x2="3.01" y2="18"></line></svg>
+          </div>
+          <div class="thub-row-text">
+            <div class="thub-row-title">Xem lại</div>
+            <div class="thub-row-sub">${gradedCount} bài đã chấm</div>
+          </div>
+          <span class="thub-arrow">›</span>
+        </button>
+
+        <button type="button" class="thub-row" id="thubActStats">
+          <div class="thub-ico">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="10" width="3" height="10" rx="1"></rect><rect x="10.5" y="4" width="3" height="16" rx="1"></rect><rect x="17" y="13" width="3" height="7" rx="1"></rect></svg>
+          </div>
+          <div class="thub-row-text">
+            <div class="thub-row-title">Thống kê</div>
+            <div class="thub-row-sub">${avgStr}</div>
+          </div>
+          <span class="thub-arrow">›</span>
+        </button>
+
+        <button type="button" class="thub-row" id="thubActInfo">
+          <div class="thub-ico">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>
+          </div>
+          <div class="thub-row-text">
+            <div class="thub-row-title">Thông tin</div>
+            <div class="thub-row-sub">${minMaxStr}</div>
+          </div>
+          <span class="thub-arrow">›</span>
+        </button>
+      </div>
+    `;
+
+    // Gắn sự kiện cho 6 nút chức năng
+    document.getElementById('thubActKey').onclick = function() {
+      activateBatchAndNavigate(bid, 'key');
+    };
+    document.getElementById('thubActScan').onclick = function() {
+      activateBatchAndNavigate(bid, 'scan');
+    };
+    document.getElementById('thubActPick').onclick = function() {
+      activateBatchAndNavigate(bid, 'scan', 'pick');
+    };
+    document.getElementById('thubActRes').onclick = function() {
+      activateBatchAndNavigate(bid, 'res');
+    };
+    document.getElementById('thubActStats').onclick = function() {
+      activateBatchAndNavigate(bid, 'stats');
+    };
+    document.getElementById('thubActInfo').onclick = function() {
+      document.getElementById('thubInfoPopupContent').innerHTML =
+        '<div>• <b>Tên bài:</b> ' + escHtml(item.name) + '</div>' +
+        (clsName ? '<div>• <b>Lớp học:</b> ' + escHtml(clsName) + '</div>' : '') +
+        '<div>• <b>Mẫu phiếu:</b> ' + escHtml(sh.title) + '</div>' +
+        '<div>• <b>Cấu trúc:</b> Phần I (' + (c.n1 || 0) + ' câu) · Phần II (' + (c.n2 || 0) + ' câu) · Phần III (' + (c.n3 || 0) + ' câu)</div>' +
+        '<div>• <b>Hệ điểm tối đa:</b> ' + fmtNum(maxPts) + ' điểm (' + verCount + ' mã đề)</div>' +
+        '<div>• <b>Tiến độ:</b> Đã chấm ' + gradedCount + ' bài</div>' +
+        (gradedCount > 0
+          ? '<div>• <b>Điểm trung bình:</b> ' + fmtNum(avgVal) + ' (Thấp nhất: ' + fmtNum(minVal) + ' · Cao nhất: ' + fmtNum(maxVal) + ')</div>'
+          : '');
+      infoPopup.hidden = false;
+    };
+
+    hubScreen.hidden = false;
+  }
+
+  // Chặn cú chạm nhanh trên thẻ bài kiểm tra ở Hình 2 để mở màn hình Hình 1 (vẫn giữ nguyên thao tác bấm đè)
+  clsDetailBody.addEventListener('click', function(e) {
+    if (e.defaultPrevented) return;
+    const card = e.target.closest('.cls-test-card');
+    if (!card) return;
+    const refBtn = card.querySelector('button[data-bid]');
+    if (!refBtn) return;
+
+    e.stopImmediatePropagation();
+    e.preventDefault();
+    openTestHub(refBtn.getAttribute('data-bid'));
+  }, true);
+})();
+</script>
 </body>
 </html>
