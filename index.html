@@ -12505,5 +12505,26 @@ let qrState = { kind: 'idle' },
   }, true);
 })();
 </script>
+<style>
+/* --- TỐI ƯU KHOẢNG ĐỆM ĐỂ HIỂN THỊ ĐẦY ĐỦ MỤC THÔNG TIN PHÍA DƯỚI CÙNG --- */
+.thub-scroll {
+  padding-top: 10px !important;
+  padding-bottom: calc(96px + env(safe-area-inset-bottom, 20px)) !important;
+  gap: 8px !important;
+}
+.thub-sec-lbl {
+  margin-top: 2px !important;
+}
+.thub-info-box {
+  padding: 10px 14px !important;
+}
+.thub-info-box img {
+  width: 42px !important;
+  height: 56px !important;
+}
+.thub-row {
+  padding: 11px 14px !important;
+}
+</style>
 </body>
 </html>
