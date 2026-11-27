@@ -11106,5 +11106,303 @@ let qrState = { kind: 'idle' },
   renderClassList();
 })();
 </script>
+<!-- --- TÍNH NĂNG BẤM ĐÈ VÀO LỚP HỌC ĐỂ CHỈNH SỬA / XOÁ (ĐỘC LẬP 100%) --- -->
+<style>
+  #clsListContainer .cls-card,
+  #clsListContainer .cls-card * {
+    -webkit-touch-callout: none !important;
+    -webkit-user-select: none !important;
+    user-select: none !important;
+  }
+  .cls-ctx-bg {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.72);
+    backdrop-filter: blur(2px);
+    -webkit-backdrop-filter: blur(2px);
+    z-index: 135;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+  }
+  .cls-ctx-bg[hidden] { display: none; }
+  .cls-ctx-wrap {
+    width: 100%;
+    max-width: 360px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 14px;
+    animation: clsPopIn 0.16s ease-out;
+  }
+  @keyframes clsPopIn {
+    from { opacity: 0; transform: scale(0.94); }
+    to { opacity: 1; transform: scale(1); }
+  }
+  .cls-ctx-preview {
+    width: 100%;
+    pointer-events: none;
+  }
+  .cls-ctx-preview .cls-card {
+    background: #22252e;
+    border-color: #383d4d;
+    box-shadow: 0 10px 28px rgba(0, 0, 0, 0.45);
+  }
+  .cls-ctx-menu {
+    width: 240px;
+    background: #22252e;
+    border: 1px solid #343846;
+    border-radius: 18px;
+    overflow: hidden;
+    box-shadow: 0 16px 40px rgba(0, 0, 0, 0.55);
+  }
+  .cls-ctx-item {
+    width: 100%;
+    padding: 15px 20px;
+    border: none;
+    background: transparent;
+    color: #ffffff;
+    font-size: 17px;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    cursor: pointer;
+    text-align: left;
+  }
+  .cls-ctx-item:active {
+    background: rgba(255, 255, 255, 0.08);
+  }
+  .cls-ctx-item + .cls-ctx-item {
+    border-top: 1px solid #323644;
+  }
+  .cls-ctx-item.danger {
+    color: #ff5e57;
+  }
+</style>
+
+<script>
+(function() {
+  const CLS_KEY = 'ntmix.classes';
+  const listHost = document.getElementById('clsListContainer');
+  if (!listHost) return;
+
+  // Tạo sẵn Menu bấm đè & Modal chỉnh sửa tên lớp
+  const overlay = document.createElement('div');
+  overlay.className = 'cls-ctx-bg';
+  overlay.id = 'clsContextOverlay';
+  overlay.hidden = true;
+  overlay.innerHTML = `
+    <div class="cls-ctx-wrap" id="clsCtxWrap">
+      <div class="cls-ctx-preview" id="clsCtxPreview"></div>
+      <div class="cls-ctx-menu">
+        <button type="button" class="cls-ctx-item" id="btnCtxEditClass">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"></path></svg>
+          <span>Chỉnh sửa</span>
+        </button>
+        <button type="button" class="cls-ctx-item danger" id="btnCtxDeleteClass">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path><line x1="10" y1="11" x2="10" y2="17"></line><line x1="14" y1="11" x2="14" y2="17"></line></svg>
+          <span>Xoá</span>
+        </button>
+      </div>
+    </div>
+  `;
+  document.body.appendChild(overlay);
+
+  const editModal = document.createElement('div');
+  editModal.className = 'cls-modal-bg';
+  editModal.id = 'editClassModal';
+  editModal.hidden = true;
+  editModal.innerHTML = `
+    <div class="cls-modal-box">
+      <h3>Chỉnh sửa lớp</h3>
+      <input id="editClassNameInp" class="cls-modal-inp" type="text" placeholder="Tên lớp" autocomplete="off">
+      <div class="cls-modal-actions">
+        <button type="button" class="cls-btn-cancel" id="btnCancelEditClass">Huỷ</button>
+        <button type="button" class="cls-btn-create" id="btnConfirmEditClass">Lưu</button>
+      </div>
+    </div>
+  `;
+  document.body.appendChild(editModal);
+
+  let targetClassId = null;
+  let pressTimer = null;
+  let startX = 0;
+  let startY = 0;
+  let longPressFired = false;
+
+  function getClasses() {
+    try {
+      const arr = JSON.parse(localStorage.getItem(CLS_KEY) || '[]');
+      return Array.isArray(arr) ? arr : [];
+    } catch (e) { return []; }
+  }
+  function saveClasses(arr) {
+    localStorage.setItem(CLS_KEY, JSON.stringify(arr));
+  }
+  function refreshClassUI() {
+    const searchInp = document.getElementById('clsSearchInput');
+    if (searchInp) {
+      searchInp.dispatchEvent(new Event('input'));
+    }
+  }
+
+  function openCtxMenu(cardEl, clsId) {
+    targetClassId = clsId;
+    const preview = document.getElementById('clsCtxPreview');
+    preview.innerHTML = '';
+    const clone = cardEl.cloneNode(true);
+    clone.removeAttribute('data-open-cls');
+    preview.appendChild(clone);
+    overlay.hidden = false;
+    if (navigator.vibrate) {
+      try { navigator.vibrate(25); } catch (e) {}
+    }
+  }
+
+  function closeCtxMenu() {
+    overlay.hidden = true;
+  }
+
+  // Chạm ra vùng tối bên ngoài để đóng menu
+  overlay.addEventListener('click', function(e) {
+    if (e.target === overlay || e.target.id === 'clsCtxWrap') {
+      closeCtxMenu();
+    }
+  });
+
+  // Chặn trình duyệt hiện menu chuột phải / menu chọn chữ mặc định khi bấm đè
+  listHost.addEventListener('contextmenu', function(e) {
+    if (e.target.closest('[data-open-cls]')) {
+      e.preventDefault();
+    }
+  });
+
+  // Chặn sự kiện click mở chi tiết lớp ngay sau khi vừa kích hoạt bấm đè
+  listHost.addEventListener('click', function(e) {
+    if (longPressFired) {
+      longPressFired = false;
+      e.stopImmediatePropagation();
+      e.preventDefault();
+    }
+  }, true);
+
+  function startHold(x, y, cardEl) {
+    clearTimeout(pressTimer);
+    longPressFired = false;
+    startX = x;
+    startY = y;
+    const clsId = cardEl.getAttribute('data-open-cls');
+    if (!clsId) return;
+
+    pressTimer = setTimeout(function() {
+      longPressFired = true;
+      openCtxMenu(cardEl, clsId);
+    }, 420);
+  }
+
+  function cancelHold() {
+    clearTimeout(pressTimer);
+  }
+
+  // Hỗ trợ cảm ứng trên điện thoại (iOS / Android)
+  listHost.addEventListener('touchstart', function(e) {
+    const card = e.target.closest('[data-open-cls]');
+    if (!card || e.touches.length !== 1) return;
+    startHold(e.touches[0].clientX, e.touches[0].clientY, card);
+  }, { passive: true });
+
+  listHost.addEventListener('touchmove', function(e) {
+    if (!pressTimer || e.touches.length !== 1) return;
+    if (Math.hypot(e.touches[0].clientX - startX, e.touches[0].clientY - startY) > 10) {
+      cancelHold();
+    }
+  }, { passive: true });
+
+  listHost.addEventListener('touchend', cancelHold);
+  listHost.addEventListener('touchcancel', cancelHold);
+
+  // Hỗ trợ nhấn giữ chuột trên máy tính
+  listHost.addEventListener('mousedown', function(e) {
+    if (e.button !== 0) return;
+    const card = e.target.closest('[data-open-cls]');
+    if (!card) return;
+    startHold(e.clientX, e.clientY, card);
+  });
+  listHost.addEventListener('mousemove', function(e) {
+    if (!pressTimer) return;
+    if (Math.hypot(e.clientX - startX, e.clientY - startY) > 10) {
+      cancelHold();
+    }
+  });
+  listHost.addEventListener('mouseup', cancelHold);
+  listHost.addEventListener('mouseleave', cancelHold);
+
+  // Nút Chỉnh sửa tên lớp
+  document.getElementById('btnCtxEditClass').addEventListener('click', function() {
+    closeCtxMenu();
+    const classes = getClasses();
+    const cls = classes.find(x => x.id === targetClassId);
+    if (!cls) return;
+    const inp = document.getElementById('editClassNameInp');
+    inp.value = cls.name || '';
+    editModal.hidden = false;
+    setTimeout(function() {
+      inp.focus();
+      inp.select();
+    }, 50);
+  });
+
+  document.getElementById('btnCancelEditClass').addEventListener('click', function() {
+    editModal.hidden = true;
+  });
+
+  document.getElementById('btnConfirmEditClass').addEventListener('click', function() {
+    const inp = document.getElementById('editClassNameInp');
+    const newName = inp.value.trim();
+    if (!newName) {
+      inp.focus();
+      return;
+    }
+    const classes = getClasses();
+    const idx = classes.findIndex(x => x.id === targetClassId);
+    if (idx >= 0) {
+      classes[idx].name = newName;
+      saveClasses(classes);
+
+      // Đồng bộ tên lớp sang các đợt chấm liên kết (nếu có)
+      try {
+        const lists = JSON.parse(localStorage.getItem('omr.lists') || 'null');
+        if (lists && Array.isArray(lists.items)) {
+          let changed = false;
+          lists.items.forEach(function(b) {
+            if (b.classId === targetClassId) {
+              b.className = newName;
+              changed = true;
+            }
+          });
+          if (changed) localStorage.setItem('omr.lists', JSON.stringify(lists));
+        }
+      } catch (e) {}
+    }
+    editModal.hidden = true;
+    refreshClassUI();
+  });
+
+  // Nút Xoá lớp
+  document.getElementById('btnCtxDeleteClass').addEventListener('click', function() {
+    closeCtxMenu();
+    const classes = getClasses();
+    const idx = classes.findIndex(x => x.id === targetClassId);
+    if (idx < 0) return;
+    if (confirm('Bạn có chắc muốn xoá lớp "' + classes[idx].name + '" không?')) {
+      classes.splice(idx, 1);
+      saveClasses(classes);
+      refreshClassUI();
+    }
+  });
+})();
+</script>
 </body>
 </html>
