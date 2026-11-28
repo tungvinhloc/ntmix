@@ -69,6 +69,8 @@ ntmix/
 ---
 
 ## 🚀 Hướng dẫn sử dụng nhanh
+<img width="591" height="1280" alt="1795837907749_1478256703196162995_698414531484894337_bd69e0cd82bfaf13da45327a95c922df" src="https://github.com/user-attachments/assets/d22271cd-5eff-4d6a-9edd-d6171fdf436e" />
+
 
 1. **In phiếu trắc nghiệm:** Vào mục **Tải giấy thi**, chọn mẫu phiếu phù hợp và tải tệp PDF gốc. In trên khổ giấy **A4** với tỷ lệ **100%** (không chọn *Fit to page / Vừa trang*).
 2. **Tạo lớp & Bài chấm:** Vào mục **Lớp học** (hoặc **Cấu hình lần chấm**), bấm nút **`+`** để tạo lớp, nạp danh sách SBD học sinh từ Excel và thiết lập cấu trúc đề/thang điểm.
