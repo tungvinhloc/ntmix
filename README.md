@@ -70,17 +70,22 @@ ntmix/
 
 ## 🚀 Hướng dẫn sử dụng nhanh
 <img width="591" height="1280" alt="1795837907749_1478256703196162995_698414531484894337_bd69e0cd82bfaf13da45327a95c922df" src="https://github.com/user-attachments/assets/d22271cd-5eff-4d6a-9edd-d6171fdf436e" />
+
 1. **In phiếu trắc nghiệm:** Vào mục **Tải giấy thi**, chọn mẫu phiếu phù hợp và tải tệp PDF gốc. In trên khổ giấy **A4** với tỷ lệ **100%** (không chọn *Fit to page / Vừa trang*).
 <img width="591" height="1280" alt="1795837904910_1478256703196162995_698414531484894337_658b49f8c5bd754da7a04df203f3e3d7" src="https://github.com/user-attachments/assets/05adf707-4180-4bd7-a4db-08e2bbd394cc" />
+
 2. **Tạo lớp & Bài chấm:** Vào mục **Lớp học** (hoặc **Cấu hình lần chấm**), bấm nút **`+`** để tạo lớp, nạp danh sách SBD học sinh từ Excel và thiết lập cấu trúc đề/thang điểm.
 <img width="591" height="1280" alt="1795837907210_1478256703196162995_698414531484894337_2838b8982b6b22bb51dfad4eab88d31a" src="https://github.com/user-attachments/assets/68b66f83-d001-4a30-86c1-b1149330eab0" />
 <img width="591" height="1280" alt="1795837907487_1478256703196162995_698414531484894337_e4bc91aa39fd4b4d6431de82f500c0c2" src="https://github.com/user-attachments/assets/faf4ef33-70f9-474d-acd5-02267279d949" />
 <img width="591" height="1280" alt="1795837906958_1478256703196162995_698414531484894337_b72f5efa528163a6cba6d03d16c5f61b" src="https://github.com/user-attachments/assets/b1f4768b-ce81-464c-bdfb-3e6baa1c6f5f" />
 <img width="591" height="1280" alt="1795837906718_1478256703196162995_698414531484894337_3d867ba4e215b122e90e8d259340ddba" src="https://github.com/user-attachments/assets/28f0dbaa-7cf7-4f6e-9851-192940f67448" />
+
 3. **Nhập đáp án:** Vào mục **Cài đặt đáp án**, quét mã QR, nạp từ file Excel hoặc chạm chọn trực tiếp đáp án cho từng mã đề.
 <img width="591" height="1280" alt="1795837906461_1478256703196162995_698414531484894337_422590d6d14cf653fd687e040c63947a" src="https://github.com/user-attachments/assets/a8d4b561-820b-4898-aa21-95b1c60393b0" />
+
 4. **Chấm bài:** Vào mục **Chấm bài**, chọn **Chấm ngay** để quét trực tiếp bằng camera hoặc **Chọn ảnh có sẵn** để chấm hàng loạt.
 <img width="591" height="1280" alt="1795837905822_1478256703196162995_698414531484894337_d3c01b6595a5ba41b57a60bf728d4b7a" src="https://github.com/user-attachments/assets/2750e16b-1ea4-46be-98d1-3e291c0c63da" />
+
 5. **Xem kết quả & Xuất báo cáo:** Kiểm tra lại bài làm trong mục **Kết quả**, xem biểu đồ phổ điểm tại **Thống kê**, và tải bảng điểm Excel hoặc hồ sơ bài thi PDF về máy.
 <img width="591" height="1280" alt="1795837906124_1478256703196162995_698414531484894337_b9b0bf39b4ea6886f713f367293f46b6" src="https://github.com/user-attachments/assets/0ad9557a-1661-49d9-8fed-ece6ba7934c9" />
 <img width="591" height="1280" alt="1795837905417_1478256703196162995_698414531484894337_1960e2eeef1f78defbfc7b6b1011a967" src="https://github.com/user-attachments/assets/91f135fa-1fe3-455b-807e-67f98a8b32d7" />
